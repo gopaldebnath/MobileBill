@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Page</title>
+</head>
+<body>
+    <h1>Response Received</h1>
+    <div id="response"></div>
+
+    <script>
+        // Retrieve the reply JSON data from local storage
+        var replyData = JSON.parse(localStorage.getItem('replyData'));
+
+        // Display the reply message on the page
+        document.getElementById('response').innerText = replyData.reply;
+
+        // Clear the local storage
+        localStorage.removeItem('requestData');
+        localStorage.removeItem('replyData');
+    </script>
+</body>
+</html>
