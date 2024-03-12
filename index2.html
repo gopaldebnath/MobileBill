@@ -8,18 +8,33 @@
 <body>
     <h1>Send JSON Data</h1>
     <form id="jsonForm">
-        <label for="jsonData">Enter JSON Data:</label><br>
-        <textarea id="jsonData" name="jsonData" rows="4" cols="50"></textarea><br>
+        <label for="app">App:</label><br>
+        <input type="text" id="app" name="app"><br>
+        <label for="sender">Sender:</label><br>
+        <input type="text" id="sender" name="sender"><br>
+        <label for="message">Message:</label><br>
+        <textarea id="message" name="message" rows="4" cols="50"></textarea><br>
+        <label for="group_name">Group Name:</label><br>
+        <input type="text" id="group_name" name="group_name"><br>
         <button type="button" onclick="postData()">Submit</button>
     </form>
 
     <script>
-
-
         function postData() {
-            var jsonData = document.getElementById("jsonData").value;
+            var app = document.getElementById("app").value;
+            var sender = document.getElementById("sender").value;
+            var message = document.getElementById("message").value;
+            var group_name = document.getElementById("group_name").value;
+
+            var jsonData = JSON.stringify({
+                "app": app,
+                "sender": sender,
+                "message": message,
+                "group_name": group_name
+            });
+
             var xhr = new XMLHttpRequest();
-            xhr.open("POST", "https://gopaldebnath.github.io/MobileBill/response.html", true);
+            xhr.open("POST", "http://your-server-url.com/endpoint", true);
             xhr.setRequestHeader("Content-Type", "application/json");
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === XMLHttpRequest.DONE) {
@@ -32,8 +47,6 @@
             };
             xhr.send(jsonData);
         }
-
-
     </script>
 </body>
 </html>
