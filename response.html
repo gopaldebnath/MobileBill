@@ -3,22 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Client Page</title>
+    <title>JSON POST Receiver</title>
 </head>
 <body>
-    <h1>Response Received</h1>
-    <div id="response"></div>
+    <h1>JSON POST Receiver</h1>
+    <p>Waiting for JSON POST requests...</p>
 
     <script>
-        // Retrieve the reply JSON data from local storage
-        var replyData = JSON.parse(localStorage.getItem('replyData'));
+        // Function to handle incoming JSON POST requests
+        function handleRequest(request) {
+            // Assuming request is a JSON object
+            console.log("Received JSON POST request:", request);
+            
+            // Prepare your response
+            var response = {
+                message: "Received your request.",
+                status: "success"
+            };
 
-        // Display the reply message on the page
-        document.getElementById('response').innerText = replyData.reply;
+            // Send the response
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", request.origin); // Assuming the request origin is where we should reply
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        console.log("Response sent successfully.");
+                    } else {
+                        console.error("Failed to send response.");
+                    }
+                }
+            };
+            xhr.send(JSON.stringify(response));
+        }
 
-        // Clear the local storage
-        localStorage.removeItem('requestData');
-        localStorage.removeItem('replyData');
+        // Listen for incoming messages
+        window.addEventListener("message", function(event) {
+            if (event.data && event.data.type === "json-post") {
+                handleRequest(event.data.payload);
+            }
+        });
     </script>
 </body>
 </html>
