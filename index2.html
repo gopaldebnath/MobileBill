@@ -3,50 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JSON POST Form</title>
+    <title>Save Data to Appwrite</title>
 </head>
 <body>
-    <h1>Send JSON Data</h1>
-    <form id="jsonForm">
-        <label for="app">App:</label><br>
-        <input type="text" id="app" name="app"><br>
-        <label for="sender">Sender:</label><br>
-        <input type="text" id="sender" name="sender"><br>
-        <label for="message">Message:</label><br>
-        <textarea id="message" name="message" rows="4" cols="50"></textarea><br>
-        <label for="group_name">Group Name:</label><br>
-        <input type="text" id="group_name" name="group_name"><br>
-        <button type="button" onclick="postData()">Submit</button>
+    <h2>Save Data to Appwrite</h2>
+    <form id="dataForm">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+        <br><br>
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+        <br><br>
+        <button type="submit">Save</button>
     </form>
 
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@12"></script>
     <script>
-        function postData() {
-            var app = document.getElementById("app").value;
-            var sender = document.getElementById("sender").value;
-            var message = document.getElementById("message").value;
-            var group_name = document.getElementById("group_name").value;
+        // Initialize Appwrite SDK
+        const { Client, Databases } = Appwrite;
 
-            var jsonData = JSON.stringify({
-                "app": app,
-                "sender": sender,
-                "message": message,
-                "group_name": group_name
-            });
+        const client = new Client();
+        client.setEndpoint("https://cloud.appwrite.io/v1") // Replace with your Appwrite endpoint
+              .setProject("6768f205001bc598ce13"); // Replace with your Project ID
 
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", "http://your-server-url.com/endpoint", true);
-            xhr.setRequestHeader("Content-Type", "application/json");
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    if (xhr.status === 200) {
-                        console.log("Data sent successfully.");
-                    } else {
-                        console.error("Failed to send data.");
-                    }
-                }
-            };
-            xhr.send(jsonData);
-        }
+        const databases = new Databases(client);
+
+        document.getElementById("dataForm").addEventListener("submit", async function (event) {
+            event.preventDefault(); // Prevent form submission refresh
+
+            const name = document.getElementById("name").value;
+            const email = document.getElementById("email").value;
+
+            try {
+                const response = await databases.createDocument(
+                    "6768f24c0003c67ef9b2", // Replace with your Database ID
+                    "6768f25c002f48869fbb", // Replace with your Collection ID
+                    "unique()", // Auto-generate a unique document ID
+                    { name, email } // Data to be saved
+                );
+
+                alert("Data saved successfully!");
+                console.log(response);
+            } catch (error) {
+                console.error(error);
+                alert("Error saving data: " + error.message);
+            }
+        });
     </script>
 </body>
 </html>
