@@ -3,44 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JSON POST Receiver</title>
+    <title>Save Data to Appwrite</title>
 </head>
 <body>
-    <h1>JSON POST Receiver</h1>
-    <p>Waiting for JSON POST requests...</p>
+    <h2>Save Data to Appwrite</h2>
+    <form id="dataForm">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+        <br><br>
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+        <br><br>
+        <button type="submit">Save</button>
+    </form>
 
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@12"></script>
     <script>
-        // Function to handle incoming JSON POST requests
-        function handleRequest(request) {
-            // Assuming request is a JSON object
-            console.log("Received JSON POST request:", request);
-            
-            // Prepare your response
-            var response = {
-                reply: "Received your request.GOPAL DEBNATH",
-                status: "success"
-            };
+        // Initialize Appwrite SDK
+        const { Client, Databases } = Appwrite;
 
-            // Send the response
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", request.origin); // Assuming the request origin is where we should reply
-            xhr.setRequestHeader("Content-Type", "application/json");
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    if (xhr.status === 200) {
-                        console.log("Response sent successfully.");
-                    } else {
-                        console.error("Failed to send response.");
-                    }
-                }
-            };
-            xhr.send(JSON.stringify(response));
-        }
+        const client = new Client();
+        client.setEndpoint("https://cloud.appwrite.io/v1") // Replace with your Appwrite endpoint
+              .setProject("6768f205001bc598ce13"); // Replace with your Project ID
 
-        // Listen for incoming messages
-        window.addEventListener("message", function(event) {
-            if (event.data && event.data.type === "json-post") {
-                handleRequest(event.data.payload);
+        const databases = new Databases(client);
+
+        document.getElementById("dataForm").addEventListener("submit", async function (event) {
+            event.preventDefault(); // Prevent form submission refresh
+
+            const name = document.getElementById("name").value;
+            const email = document.getElementById("email").value;
+
+            try {
+                const response = await databases.createDocument(
+                    "6768f24c0003c67ef9b2", // Replace with your Database ID
+                    "6768f25c002f48869fbb", // Replace with your Collection ID
+                    "unique()", // Auto-generate a unique document ID
+                    { name, email } // Data to be saved
+                );
+
+                alert("Data saved successfully!");
+                console.log(response);
+            } catch (error) {
+                console.error(error);
+                alert("Error saving data: " + error.message);
             }
         });
     </script>
