@@ -3,52 +3,1070 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Save Data to Appwrite</title>
+    <title>FreshMart - Grocery Billing System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4CAF50;
+            --primary-dark: #388E3C;
+            --secondary: #FF9800;
+            --light: #f5f5f5;
+            --dark: #212121;
+            --gray: #757575;
+            --white: #ffffff;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f9f9f9;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 15px 0;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            font-size: 2rem;
+        }
+
+        .logo h1 {
+            font-weight: 700;
+            font-size: 1.8rem;
+        }
+
+        .datetime {
+            text-align: right;
+        }
+
+        .main {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            color: var(--primary-dark);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--gray);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: border 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: var(--white);
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+        }
+
+        .btn-secondary:hover {
+            background-color: #F57C00;
+        }
+
+        .btn i {
+            font-size: 0.9rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: var(--primary);
+            color: var(--white);
+            font-weight: 500;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .total-section {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f8f8;
+            border-radius: var(--border-radius);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .total-label {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .total-amount {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-container i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+        }
+
+        .search-container input {
+            padding-left: 40px;
+        }
+
+        /* Product Tabs */
+        .product-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+
+        .product-tab {
+            padding: 8px 15px;
+            background-color: #eee;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            transition: all 0.3s;
+        }
+
+        .product-tab.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .product-item {
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid #eee;
+            position: relative;
+        }
+
+        .product-item:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow);
+        }
+
+        .product-item img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+
+        .product-name {
+            font-weight: 500;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .product-price {
+            color: var(--primary-dark);
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .product-qty-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        .qty-btn {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .qty-btn.minus {
+            background-color: #f44336;
+        }
+
+        .qty-value {
+            min-width: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .selected-qty {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--secondary);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .receipt {
+            background-color: var(--white);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .receipt-header h2 {
+            color: var(--primary-dark);
+            margin-bottom: 5px;
+        }
+
+        .receipt-details {
+            margin-bottom: 20px;
+        }
+
+        .receipt-details div {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .receipt-footer {
+            border-top: 1px dashed #ccc;
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+
+        .print-btn {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px 0;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+    </style>
 </head>
 <body>
-    <h2>Save Data to Appwrite</h2>
-    <form id="dataForm">
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" required>
-        <br><br>
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required>
-        <br><br>
-        <button type="submit">Save</button>
-    </form>
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <i class="fas fa-shopping-basket"></i>
+                <h1>FreshMart</h1>
+            </div>
+            <div class="datetime">
+                <div id="current-date"></div>
+                <div id="current-time"></div>
+            </div>
+        </div>
+    </header>
 
-    <script src="https://cdn.jsdelivr.net/npm/appwrite@12"></script>
+    <div class="container">
+        <div class="main">
+            <div class="left-panel">
+                <div class="card">
+                    <h2 class="card-title">Product Information</h2>
+                    <div class="form-group">
+                        <label for="product-search">Search Product</label>
+                        <div class="search-container">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="product-search" placeholder="Search products...">
+                        </div>
+                    </div>
+
+                    <!-- Product Tabs -->
+                    <div class="product-tabs">
+                        <div class="product-tab active" data-category="all">All</div>
+                        <div class="product-tab" data-category="dairy">Dairy</div>
+                        <div class="product-tab" data-category="spices">Spices</div>
+                        <div class="product-tab" data-category="utensils">Utensils</div>
+                        <div class="product-tab" data-category="clothes">Clothes</div>
+                        <div class="product-tab" data-category="food">Food</div>
+                        <div class="product-tab" data-category="beverages">Beverages</div>
+                    </div>
+
+                    <div class="product-grid">
+                        <!-- Dairy Products -->
+                        <div class="product-item" data-id="P001" data-name="Milk" data-price="2.49" data-category="dairy">
+                            <img src="https://cdn-icons-png.flaticon.com/512/2674/2674482.png" alt="Milk">
+                            <div class="product-name">Milk</div>
+                            <div class="product-price">$2.49</div>
+                            <div class="product-qty-controls">
+                                <button class="qty-btn minus" onclick="adjustProductQty('P001', -1, event)">-</button>
+                                <span class="qty-value" id="qty-P001">0</span>
+                                <button class="qty-btn" onclick="adjustProductQty('P001', 1, event)">+</button>
+                            </div>
+                        </div>
+                        <div class="product-item" data-id="P002" data-name="Cheese" data-price="3.99" data-category="dairy">
+                            <img src="https://cdn-icons-png.flaticon.com/512/2779/2779775.png" alt="Cheese">
+                            <div class="product-name">Cheese</div>
+                            <div class="product-price">$3.99</div>
+                            <div class="product-qty-controls">
+                                <button class="qty-btn minus" onclick="adjustProductQty('P002', -1, event)">-</button>
+                                <span class="qty-value" id="qty-P002">0</span>
+                                <button class="qty-btn" onclick="adjustProductQty('P002', 1, event)">+</button>
+                            </div>
+                        </div>
+                        <div class="product-item" data-id="P003" data-name="Butter" data-price="2.99" data-category="dairy">
+                            <img src="https://cdn-icons-png.flaticon.com/512/3075/3075977.png" alt="Butter">
+                            <div class="product-name">Butter</div>
+                            <div class="product-price">$2.99</div>
+                            <div class="product-qty-controls">
+                                <button class="qty-btn minus" onclick="adjustProductQty('P003', -1, event)">-</button>
+                                <span class="qty-value" id="qty-P003">0</span>
+                                <button class="qty-btn" onclick="adjustProductQty('P003', 1, event)">+</button>
+                            </div>
+                        </div>
+                        <div class="product-item" data-id="P004" data-name="Yogurt" data-price="1.99" data-category="dairy">
+                            <img src="https://cdn-icons-png.flaticon.com/512/2489/2489348.png" alt="Yogurt">
+                            <div class="product-name">Yogurt</div>
+                            <div class="product-price">$1.99</div>
+                            <div class="product-qty-controls">
+                                <button class="qty-btn minus" onclick="adjustProductQty('P004', -1, event)">-</button>
+                                <span class="qty-value" id="qty-P004">0</span>
+                                <button class="qty-btn" onclick="adjustProductQty('P004', 1, event)">+</button>
+                            </div>
+                        </div>
+
+                        <!-- Spices -->
+                        <div class="product-item" data-id="P005" data-name="Salt" data-price="0.99" data-category="spices">
+                            <img src="https://cdn-icons-png.flaticon.com/512/2785/2785482.png" alt="Salt">
+                            <div class="product-name">Salt</div>
+                            <div class="product-price">$0.99</div>
+                            <div class="product-qty-controls">
+                                <button class="qty-btn minus" onclick="adjustProductQty('P005', -1, event)">-</button>
+                                <span class="qty-value" id="qty-P005">0</span>
+                                <button class="qty-btn" onclick="adjustProductQty('P005', 1, event)">+</button>
+                            </div>
+                        </div>
+                        <div class="product-item" data-id="P006" data-name="Pepper" data-price="1.49" data-category="spices">
+                            <img src="https://cdn-icons-png.flaticon.com/512/2830/2830762.png" alt="Pepper">
+                            <div class="product-name">Pepper</div>
+                            <div class="product-price">$1.49</div>
+                            <div class="product-qty-controls">
+                                <button class="qty-btn minus" onclick="adjustProductQty('P006', -1, event)">-</button>
+                                <span class="qty-value" id="qty-P006">0</span>
+                                <button class="qty-btn" onclick="adjustProductQty('P006', 1, event)">+</button>
+                            </div>
+                        </div>
+                        <div class="product-item" data-id="P007" data-name="Turmeric" data-price="1.29" data-category="spices">
+                            <img src="https://cdn-icons-png.flaticon.com/512/2830/2830735.png" alt="Turmeric">
+                            <div class="product-name">Turmeric</div>
+                            <div class="product-price">$1.29</div>
+                            <div class="product-qty-controls">
+                                <button class="qty-btn minus" onclick="adjustProductQty('P007', -1, event)">-</button>
+                                <span class="qty-value" id="qty-P007">0</span>
+                                <button class="qty-btn" onclick="adjustProductQty('P007', 1, event)">+</button>
+                            </div>
+                        </div>
+
+                        <!-- Utensils -->
+                        <div class="product-item" data-id="P008" data-name="Spoon Set" data-price="4.99" data-category="utensils">
+                            <img src="https://cdn-icons-png.flaticon.com/512/3174/3174832.png" alt="Spoon Set">
+                            <div class="product-name">Spoon Set</div>
+                            <div class="product-price">$4.99</div>
+                            <div class="product-qty-controls">
+                                <button class="qty-btn minus" onclick="adjustProductQty('P008', -1, event)">-</button>
+                                <span class="qty-value" id="qty-P008">0</span>
+                                <button class="qty-btn" onclick="adjustProductQty('P008', 1, event)">+</button>
+                            </div>
+                        </div>
+                        <div class="product-item" data-id="P009" data-name="Knife Set" data-price="7.99" data-category="utensils">
+                            <img src="https://cdn-icons-png.flaticon.com/512/3174/3174834.png" alt="Knife Set">
+                            <div class="product-name">Knife Set</div>
+                            <div class="product-price">$7.99</div>
+                            <div class="product-qty-controls">
+                                <button class="qty-btn minus" onclick="adjustProductQty('P009', -1, event)">-</button>
+                                <span class="qty-value" id="qty-P009">0</span>
+                                <button class="qty-btn" onclick="adjustProductQty('P009', 1, event)">+</button>
+                            </div>
+                        </div>
+
+                        <!-- Clothes -->
+                        <div class="product-item" data-id="P010" data-name="T-Shirt" data-price="9.99" data-category="clothes">
+                            <img src="https://cdn-icons-png.flaticon.com/512/2272/2272983.png" alt="T-Shirt">
+                            <div class="product-name">T-Shirt</div>
+                            <div class="product-price">$9.99</div>
+                            <div class="product-qty-controls">
+                                <button class="qty-btn minus" onclick="adjustProductQty('P010', -1, event)">-</button>
+                                <span class="qty-value" id="qty-P010">0</span>
+                                <button class="qty-btn" onclick="adjustProductQty('P010', 1, event)">+</button>
+                            </div>
+                        </div>
+                        <div class="product-item" data-id="P011" data-name="Jeans" data-price="19.99" data-category="clothes">
+                            <img src="https://cdn-icons-png.flaticon.com/512/2272/2272985.png" alt="Jeans">
+                            <div class="product-name">Jeans</div>
+                            <div class="product-price">$19.99</div>
+                            <div class="product-qty-controls">
+                                <button class="qty-btn minus" onclick="adjustProductQty('P011', -1, event)">-</button>
+                                <span class="qty-value" id="qty-P011">0</span>
+                                <button class="qty-btn" onclick="adjustProductQty('P011', 1, event)">+</button>
+                            </div>
+                        </div>
+
+                        <!-- Food -->
+                        <div class="product-item" data-id="P012" data-name="Apple" data-price="1.99" data-category="food">
+                            <img src="https://cdn-icons-png.flaticon.com/512/415/415682.png" alt="Apple">
+                            <div class="product-name">Apple</div>
+                            <div class="product-price">$1.99</div>
+                            <div class="product-qty-controls">
+                                <button class="qty-btn minus" onclick="adjustProductQty('P012', -1, event)">-</button>
+                                <span class="qty-value" id="qty-P012">0</span>
+                                <button class="qty-btn" onclick="adjustProductQty('P012', 1, event)">+</button>
+                            </div>
+                        </div>
+                        <div class="product-item" data-id="P013" data-name="Banana" data-price="0.99" data-category="food">
+                            <img src="https://cdn-icons-png.flaticon.com/512/2909/2909761.png" alt="Banana">
+                            <div class="product-name">Banana</div>
+                            <div class="product-price">$0.99</div>
+                            <div class="product-qty-controls">
+                                <button class="qty-btn minus" onclick="adjustProductQty('P013', -1, event)">-</button>
+                                <span class="qty-value" id="qty-P013">0</span>
+                                <button class="qty-btn" onclick="adjustProductQty('P013', 1, event)">+</button>
+                            </div>
+                        </div>
+                        <div class="product-item" data-id="P014" data-name="Bread" data-price="1.79" data-category="food">
+                            <img src="https://cdn-icons-png.flaticon.com/512/2489/2489274.png" alt="Bread">
+                            <div class="product-name">Bread</div>
+                            <div class="product-price">$1.79</div>
+                            <div class="product-qty-controls">
+                                <button class="qty-btn minus" onclick="adjustProductQty('P014', -1, event)">-</button>
+                                <span class="qty-value" id="qty-P014">0</span>
+                                <button class="qty-btn" onclick="adjustProductQty('P014', 1, event)">+</button>
+                            </div>
+                        </div>
+                        <div class="product-item" data-id="P015" data-name="Eggs" data-price="3.29" data-category="food">
+                            <img src="https://cdn-icons-png.flaticon.com/512/3654/3654906.png" alt="Eggs">
+                            <div class="product-name">Eggs</div>
+                            <div class="product-price">$3.29</div>
+                            <div class="product-qty-controls">
+                                <button class="qty-btn minus" onclick="adjustProductQty('P015', -1, event)">-</button>
+                                <span class="qty-value" id="qty-P015">0</span>
+                                <button class="qty-btn" onclick="adjustProductQty('P015', 1, event)">+</button>
+                            </div>
+                        </div>
+                        <div class="product-item" data-id="P016" data-name="Chicken" data-price="5.99" data-category="food">
+                            <img src="https://cdn-icons-png.flaticon.com/512/1046/1046857.png" alt="Chicken">
+                            <div class="product-name">Chicken</div>
+                            <div class="product-price">$5.99</div>
+                            <div class="product-qty-controls">
+                                <button class="qty-btn minus" onclick="adjustProductQty('P016', -1, event)">-</button>
+                                <span class="qty-value" id="qty-P016">0</span>
+                                <button class="qty-btn" onclick="adjustProductQty('P016', 1, event)">+</button>
+                            </div>
+                        </div>
+
+                        <!-- Beverages -->
+                        <div class="product-item" data-id="P017" data-name="Coffee" data-price="4.99" data-category="beverages">
+                            <img src="https://cdn-icons-png.flaticon.com/512/2936/2936886.png" alt="Coffee">
+                            <div class="product-name">Coffee</div>
+                            <div class="product-price">$4.99</div>
+                            <div class="product-qty-controls">
+                                <button class="qty-btn minus" onclick="adjustProductQty('P017', -1, event)">-</button>
+                                <span class="qty-value" id="qty-P017">0</span>
+                                <button class="qty-btn" onclick="adjustProductQty('P017', 1, event)">+</button>
+                            </div>
+                        </div>
+                        <div class="product-item" data-id="P018" data-name="Tea" data-price="3.49" data-category="beverages">
+                            <img src="https://cdn-icons-png.flaticon.com/512/2748/2748559.png" alt="Tea">
+                            <div class="product-name">Tea</div>
+                            <div class="product-price">$3.49</div>
+                            <div class="product-qty-controls">
+                                <button class="qty-btn minus" onclick="adjustProductQty('P018', -1, event)">-</button>
+                                <span class="qty-value" id="qty-P018">0</span>
+                                <button class="qty-btn" onclick="adjustProductQty('P018', 1, event)">+</button>
+                            </div>
+                        </div>
+                        <div class="product-item" data-id="P019" data-name="Juice" data-price="2.99" data-category="beverages">
+                            <img src="https://cdn-icons-png.flaticon.com/512/3050/3050158.png" alt="Juice">
+                            <div class="product-name">Juice</div>
+                            <div class="product-price">$2.99</div>
+                            <div class="product-qty-controls">
+                                <button class="qty-btn minus" onclick="adjustProductQty('P019', -1, event)">-</button>
+                                <span class="qty-value" id="qty-P019">0</span>
+                                <button class="qty-btn" onclick="adjustProductQty('P019', 1, event)">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2 class="card-title">Manual Entry</h2>
+                    <div class="form-group">
+                        <label for="product-id">Product ID</label>
+                        <input type="text" id="product-id" placeholder="Enter product ID">
+                    </div>
+                    <div class="form-group">
+                        <label for="product-name">Product Name</label>
+                        <input type="text" id="product-name" placeholder="Enter product name">
+                    </div>
+                    <div class="form-group">
+                        <label for="product-price">Price</label>
+                        <input type="number" id="product-price" placeholder="Enter price" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="product-qty">Quantity</label>
+                        <input type="number" id="product-qty" placeholder="Enter quantity" value="1">
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn" onclick="addManualItem()">
+                            <i class="fas fa-plus"></i> Add Item
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearManualForm()">
+                            <i class="fas fa-eraser"></i> Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div class="card">
+                    <h2 class="card-title">Current Bill</h2>
+                    <div class="form-group">
+                        <label for="customer-name">Customer Name</label>
+                        <input type="text" id="customer-name" placeholder="Enter customer name">
+                    </div>
+                    <table id="bill-table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Price</th>
+                                <th>Qty</th>
+                                <th>Total</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bill-items">
+                            <!-- Bill items will be added here dynamically -->
+                        </tbody>
+                    </table>
+                    <div class="total-section">
+                        <span class="total-label">Total Amount:</span>
+                        <span class="total-amount" id="total-amount">$0.00</span>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn" onclick="generateBill()">
+                            <i class="fas fa-file-invoice-dollar"></i> Generate Bill
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearBill()">
+                            <i class="fas fa-trash-alt"></i> Clear Bill
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card receipt" id="receipt" style="display: none;">
+                    <div class="receipt-header">
+                        <h2>FreshMart</h2>
+                        <p>123 Grocery Street, Foodville</p>
+                        <p>Tel: (123) 456-7890</p>
+                    </div>
+                    <div class="receipt-details">
+                        <div>
+                            <span>Bill No:</span>
+                            <span id="receipt-billno">1001</span>
+                        </div>
+                        <div>
+                            <span>Date:</span>
+                            <span id="receipt-date">01/01/2023</span>
+                        </div>
+                        <div>
+                            <span>Time:</span>
+                            <span id="receipt-time">10:00 AM</span>
+                        </div>
+                        <div>
+                            <span>Customer:</span>
+                            <span id="receipt-customer">Walk-in Customer</span>
+                        </div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Qty</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="receipt-items">
+                            <!-- Receipt items will be added here dynamically -->
+                        </tbody>
+                    </table>
+                    <div class="receipt-footer">
+                        <div>
+                            <span>Subtotal:</span>
+                            <span id="receipt-subtotal">$0.00</span>
+                        </div>
+                        <div>
+                            <span>Tax (5%):</span>
+                            <span id="receipt-tax">$0.00</span>
+                        </div>
+                        <div>
+                            <span>Total:</span>
+                            <span id="receipt-total">$0.00</span>
+                        </div>
+                    </div>
+                    <button class="btn print-btn" onclick="printReceipt()">
+                        <i class="fas fa-print"></i> Print Receipt
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>FreshMart Grocery Billing System &copy; 2023</p>
+    </footer>
+
     <script>
-        // Initialize Appwrite SDK
-        const { Client, Databases } = Appwrite;
+        // Update date and time
+        function updateDateTime() {
+            const now = new Date();
+            document.getElementById('current-date').textContent = now.toLocaleDateString();
+            document.getElementById('current-time').textContent = now.toLocaleTimeString();
+        }
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
 
-        const client = new Client();
-        client.setEndpoint("https://cloud.appwrite.io/v1") // Replace with your Appwrite endpoint
-              .setProject("6768f205001bc598ce13"); // Replace with your Project ID
+        // Bill items array
+        let billItems = [];
+        let billCounter = 1001;
+        let productQuantities = {};
 
-        const databases = new Databases(client);
+        // Initialize product quantities
+        function initProductQuantities() {
+            const productItems = document.querySelectorAll('.product-item');
+            productItems.forEach(item => {
+                const id = item.getAttribute('data-id');
+                productQuantities[id] = 0;
+            });
+        }
 
-        document.getElementById("dataForm").addEventListener("submit", async function (event) {
-            event.preventDefault(); // Prevent form submission refresh
-
-            const name = document.getElementById("name").value;
-            const email = document.getElementById("email").value;
-
-            try {
-                const response = await databases.createDocument(
-                    "6768f24c0003c67ef9b2", // Replace with your Database ID
-                    "6768f25c002f48869fbb", // Replace with your Collection ID
-                    "unique()", // Auto-generate a unique document ID
-                    { name, email } // Data to be saved
-                );
-
-                alert("Data saved successfully!");
-                console.log(response);
-            } catch (error) {
-                console.error(error);
-                alert("Error saving data: " + error.message);
+        // Adjust product quantity
+        function adjustProductQty(id, change, event) {
+            event.stopPropagation(); // Prevent triggering the parent click event
+            
+            // Initialize if not exists
+            if (productQuantities[id] === undefined) {
+                productQuantities[id] = 0;
             }
-        });
+            
+            // Calculate new quantity
+            let newQty = productQuantities[id] + change;
+            if (newQty < 0) newQty = 0;
+            
+            // Update quantity
+            productQuantities[id] = newQty;
+            document.getElementById(`qty-${id}`).textContent = newQty;
+            
+            // Get product details
+            const productItem = document.querySelector(`.product-item[data-id="${id}"]`);
+            const name = productItem.getAttribute('data-name');
+            const price = parseFloat(productItem.getAttribute('data-price'));
+            
+            // Update bill
+            updateProductInBill(id, name, price, newQty);
+            
+            // Update the visual indicator
+            updateQtyIndicator(id, newQty);
+        }
+
+        // Update product in bill
+        function updateProductInBill(id, name, price, qty) {
+            if (qty > 0) {
+                // Check if item already exists
+                const existingItem = billItems.find(item => item.id === id);
+                if (existingItem) {
+                    existingItem.qty = qty;
+                    existingItem.total = price * qty;
+                } else {
+                    billItems.push({
+                        id,
+                        name,
+                        price,
+                        qty,
+                        total: price * qty
+                    });
+                }
+            } else {
+                // Remove item if quantity is 0
+                billItems = billItems.filter(item => item.id !== id);
+            }
+            
+            updateBillTable();
+            calculateTotal();
+        }
+
+        // Update quantity indicator on product
+        function updateQtyIndicator(id, qty) {
+            const productItem = document.querySelector(`.product-item[data-id="${id}"]`);
+            let indicator = productItem.querySelector('.selected-qty');
+            
+            if (qty > 0) {
+                if (!indicator) {
+                    indicator = document.createElement('div');
+                    indicator.className = 'selected-qty';
+                    productItem.appendChild(indicator);
+                }
+                indicator.textContent = qty;
+            } else if (indicator) {
+                productItem.removeChild(indicator);
+            }
+        }
+
+        // Add manual item to bill
+        function addManualItem() {
+            const id = document.getElementById('product-id').value;
+            const name = document.getElementById('product-name').value;
+            const price = parseFloat(document.getElementById('product-price').value);
+            const qty = parseInt(document.getElementById('product-qty').value) || 1;
+
+            if (!id || !name || isNaN(price)) {
+                alert('Please fill all fields with valid values');
+                return;
+            }
+
+            addBillItem(id, name, price, qty);
+            clearManualForm();
+        }
+
+        // Clear manual form
+        function clearManualForm() {
+            document.getElementById('product-id').value = '';
+            document.getElementById('product-name').value = '';
+            document.getElementById('product-price').value = '';
+            document.getElementById('product-qty').value = '1';
+        }
+
+        // Add item to bill
+        function addBillItem(id, name, price, qty) {
+            // Check if item already exists
+            const existingItem = billItems.find(item => item.id === id);
+            if (existingItem) {
+                existingItem.qty += qty;
+                existingItem.total = existingItem.price * existingItem.qty;
+            } else {
+                billItems.push({
+                    id,
+                    name,
+                    price,
+                    qty,
+                    total: price * qty
+                });
+            }
+
+            // Update product quantity display if it's a grid product
+            if (productQuantities[id] !== undefined) {
+                productQuantities[id] += qty;
+                document.getElementById(`qty-${id}`).textContent = productQuantities[id];
+                updateQtyIndicator(id, productQuantities[id]);
+            }
+
+            updateBillTable();
+            calculateTotal();
+        }
+
+        // Update bill table
+        function updateBillTable() {
+            const tbody = document.getElementById('bill-items');
+            tbody.innerHTML = '';
+
+            billItems.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>$${item.price.toFixed(2)}</td>
+                    <td>${item.qty}</td>
+                    <td>$${item.total.toFixed(2)}</td>
+                    <td>
+                        <button onclick="removeItem(${index})" style="background: none; border: none; color: #f44336; cursor: pointer;">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Remove item from bill
+        function removeItem(index) {
+            const removedItem = billItems[index];
+            
+            // Update product quantity display if it's a grid product
+            if (productQuantities[removedItem.id] !== undefined) {
+                productQuantities[removedItem.id] = 0;
+                document.getElementById(`qty-${removedItem.id}`).textContent = '0';
+                updateQtyIndicator(removedItem.id, 0);
+            }
+            
+            billItems.splice(index, 1);
+            updateBillTable();
+            calculateTotal();
+        }
+
+        // Calculate total
+        function calculateTotal() {
+            const total = billItems.reduce((sum, item) => sum + item.total, 0);
+            document.getElementById('total-amount').textContent = `$${total.toFixed(2)}`;
+        }
+
+        // Clear bill
+        function clearBill() {
+            if (confirm('Are you sure you want to clear the current bill?')) {
+                billItems = [];
+                
+                // Reset all product quantities
+                for (const id in productQuantities) {
+                    productQuantities[id] = 0;
+                    document.getElementById(`qty-${id}`).textContent = '0';
+                    updateQtyIndicator(id, 0);
+                }
+                
+                document.getElementById('customer-name').value = '';
+                updateBillTable();
+                calculateTotal();
+                document.getElementById('receipt').style.display = 'none';
+            }
+        }
+
+        // Generate bill
+        function generateBill() {
+            if (billItems.length === 0) {
+                alert('Please add items to the bill first');
+                return;
+            }
+
+            const now = new Date();
+            const customerName = document.getElementById('customer-name').value || 'Walk-in Customer';
+            const total = billItems.reduce((sum, item) => sum + item.total, 0);
+            const tax = total * 0.05;
+            const grandTotal = total + tax;
+
+            // Update receipt details
+            document.getElementById('receipt-billno').textContent = billCounter++;
+            document.getElementById('receipt-date').textContent = now.toLocaleDateString();
+            document.getElementById('receipt-time').textContent = now.toLocaleTimeString();
+            document.getElementById('receipt-customer').textContent = customerName;
+
+            // Update receipt items
+            const receiptTbody = document.getElementById('receipt-items');
+            receiptTbody.innerHTML = '';
+            billItems.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.qty}</td>
+                    <td>$${item.total.toFixed(2)}</td>
+                `;
+                receiptTbody.appendChild(row);
+            });
+
+            // Update receipt totals
+            document.getElementById('receipt-subtotal').textContent = `$${total.toFixed(2)}`;
+            document.getElementById('receipt-tax').textContent = `$${tax.toFixed(2)}`;
+            document.getElementById('receipt-total').textContent = `$${grandTotal.toFixed(2)}`;
+
+            // Show receipt
+            document.getElementById('receipt').style.display = 'block';
+        }
+
+        // Print receipt
+        function printReceipt() {
+            const receipt = document.getElementById('receipt');
+            const printWindow = window.open('', '', 'width=600,height=600');
+            printWindow.document.write('<html><head><title>Receipt</title>');
+            printWindow.document.write('<style>body { font-family: Arial; } table { width: 100%; } th { text-align: left; } td { text-align: right; } .text-left { text-align: left; } .text-center { text-align: center; }</style>');
+            printWindow.document.write('</head><body>');
+            printWindow.document.write(receipt.innerHTML);
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+            printWindow.close();
+        }
+
+        // Filter products by category
+        function filterProducts(category) {
+            const productItems = document.querySelectorAll('.product-item');
+            
+            productItems.forEach(item => {
+                const itemCategory = item.getAttribute('data-category');
+                
+                if (category === 'all' || itemCategory === category) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // Initialize the product quantities when page loads
+        window.onload = function() {
+            initProductQuantities();
+            
+            // Add click event to product items to increase quantity by 1
+            document.querySelectorAll('.product-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    // Only trigger if the click wasn't on a button inside the product item
+                    if (!e.target.classList.contains('qty-btn')) {
+                        const id = this.getAttribute('data-id');
+                        adjustProductQty(id, 1, e);
+                    }
+                });
+            });
+
+            // Add click event to product tabs
+            document.querySelectorAll('.product-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs
+                    document.querySelectorAll('.product-tab').forEach(t => {
+                        t.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    // Filter products
+                    const category = this.getAttribute('data-category');
+                    filterProducts(category);
+                });
+            });
+        };
     </script>
 </body>
 </html>
