@@ -382,6 +382,14 @@
             color: var(--gray);
             font-size: 0.9rem;
         }
+
+        .no-products {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 20px;
+            color: var(--gray);
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -407,7 +415,7 @@
                         <label for="product-search">Search Product</label>
                         <div class="search-container">
                             <i class="fas fa-search"></i>
-                            <input type="text" id="product-search" placeholder="Search products...">
+                            <input type="text" id="product-search" placeholder="Search products..." oninput="searchProducts()">
                         </div>
                     </div>
 
@@ -422,7 +430,7 @@
                         <div class="product-tab" data-category="beverages">Beverages</div>
                     </div>
 
-                    <div class="product-grid">
+                    <div class="product-grid" id="product-grid">
                         <!-- Dairy Products -->
                         <div class="product-item" data-id="P001" data-name="Milk" data-price="2.49" data-category="dairy">
                             <img src="https://cdn-icons-png.flaticon.com/512/2674/2674482.png" alt="Milk">
@@ -767,6 +775,8 @@
         let billItems = [];
         let billCounter = 1001;
         let productQuantities = {};
+        let currentCategory = 'all';
+        let currentSearchTerm = '';
 
         // Initialize product quantities
         function initProductQuantities() {
@@ -1022,17 +1032,50 @@
 
         // Filter products by category
         function filterProducts(category) {
+            currentCategory = category;
+            applyFilters();
+        }
+
+        // Search products by name
+        function searchProducts() {
+            currentSearchTerm = document.getElementById('product-search').value.toLowerCase();
+            applyFilters();
+        }
+
+        // Apply both category and search filters
+        function applyFilters() {
             const productItems = document.querySelectorAll('.product-item');
+            let hasVisibleProducts = false;
             
             productItems.forEach(item => {
                 const itemCategory = item.getAttribute('data-category');
+                const itemName = item.getAttribute('data-name').toLowerCase();
                 
-                if (category === 'all' || itemCategory === category) {
+                // Check if item matches current category and search term
+                const matchesCategory = currentCategory === 'all' || itemCategory === currentCategory;
+                const matchesSearch = currentSearchTerm === '' || itemName.includes(currentSearchTerm);
+                
+                if (matchesCategory && matchesSearch) {
                     item.style.display = 'block';
+                    hasVisibleProducts = true;
                 } else {
                     item.style.display = 'none';
                 }
             });
+
+            // Show "no products" message if no products match the filters
+            const noProductsMsg = document.querySelector('.no-products');
+            if (!hasVisibleProducts) {
+                if (!noProductsMsg) {
+                    const productGrid = document.getElementById('product-grid');
+                    const msg = document.createElement('div');
+                    msg.className = 'no-products';
+                    msg.textContent = 'No products found matching your search';
+                    productGrid.appendChild(msg);
+                }
+            } else if (noProductsMsg) {
+                noProductsMsg.remove();
+            }
         }
 
         // Initialize the product quantities when page loads
