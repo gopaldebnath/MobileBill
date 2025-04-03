@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real-Time GPS Tracker</title>
+    <title>Distance Between Two Points</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         body {
@@ -20,6 +20,24 @@
             padding: 15px;
             text-align: center;
         }
+        #controls {
+            padding: 10px;
+            background-color: #f1f1f1;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        button {
+            padding: 8px 15px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
         #map-container {
             flex: 1;
             position: relative;
@@ -29,38 +47,65 @@
             width: 100%;
         }
         #info-panel {
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 15px;
             position: absolute;
-            bottom: 20px;
-            left: 20px;
+            top: 20px;
+            right: 20px;
             z-index: 1000;
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0,0,0,0.2);
             max-width: 300px;
         }
-        #status {
-            color: #e74c3c;
-            font-weight: bold;
-        }
         .coordinates {
             font-family: monospace;
         }
+        .distance {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-top: 10px;
+        }
+        .point-marker {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .marker-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            margin-right: 8px;
+            border: 2px solid white;
+            box-shadow: 0 0 3px rgba(0,0,0,0.3);
+        }
+        #point1-color { background-color: #e74c3c; }
+        #point2-color { background-color: #3498db; }
     </style>
 </head>
 <body>
     <header>
-        <h1>Real-Time GPS Tracker</h1>
-        <p id="status">Acquiring location...</p>
+        <h1>Distance Between Two Points</h1>
     </header>
+    <div id="controls">
+        <button id="btn-current-location">Use My Current Location</button>
+        <button id="btn-clear-points">Clear Points</button>
+    </div>
     <div id="map-container">
         <div id="map"></div>
         <div id="info-panel">
-            <h3>Location Information</h3>
-            <p><strong>Latitude:</strong> <span id="latitude" class="coordinates">--</span></p>
-            <p><strong>Longitude:</strong> <span id="longitude" class="coordinates">--</span></p>
-            <p><strong>Accuracy:</strong> <span id="accuracy">--</span> meters</p>
-            <p><strong>Last Update:</strong> <span id="timestamp">--</span></p>
+            <h3>Points Information</h3>
+            <div class="point-marker">
+                <div id="point1-color" class="marker-color"></div>
+                <span>Point 1: <span id="point1-coords">Not set</span></span>
+            </div>
+            <div class="point-marker">
+                <div id="point2-color" class="marker-color"></div>
+                <span>Point 2: <span id="point2-coords">Not set</span></span>
+            </div>
+            <div id="distance-info" class="distance">
+                Distance: --
+            </div>
         </div>
     </div>
 
@@ -68,120 +113,168 @@
     <script>
         // Initialize variables
         let map;
-        let marker;
-        let watchId;
-        let updateInterval = 5000; // Update every 5 seconds
+        let point1 = null;
+        let point2 = null;
+        let marker1 = null;
+        let marker2 = null;
+        let lineBetweenPoints = null;
         
         // Initialize the map
         function initMap() {
-            // Create a map centered on a default location (will be updated with real GPS)
-            map = L.map('map').setView([0, 0], 15);
+            // Create a map centered on a default location
+            map = L.map('map').setView([51.505, -0.09], 13);
             
             // Add OpenStreetMap tiles
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(map);
             
-            // Create a marker with a custom icon
+            // Set up click event on the map
+            map.on('click', function(e) {
+                addPoint(e.latlng);
+            });
+            
+            // Set up button events
+            document.getElementById('btn-current-location').addEventListener('click', getCurrentLocation);
+            document.getElementById('btn-clear-points').addEventListener('click', clearPoints);
+        }
+        
+        // Add a point to the map
+        function addPoint(latlng) {
+            if (!point1) {
+                // Set point 1
+                point1 = latlng;
+                marker1 = createMarker(point1, '#e74c3c', 'Point 1');
+                updatePointInfo(1, point1);
+            } else if (!point2) {
+                // Set point 2
+                point2 = latlng;
+                marker2 = createMarker(point2, '#3498db', 'Point 2');
+                updatePointInfo(2, point2);
+                
+                // Calculate distance
+                calculateDistance();
+            } else {
+                // Both points already set - replace point 2
+                point2 = latlng;
+                marker2.setLatLng(point2);
+                updatePointInfo(2, point2);
+                
+                // Update line and distance
+                if (lineBetweenPoints) {
+                    lineBetweenPoints.setLatLngs([point1, point2]);
+                } else {
+                    lineBetweenPoints = L.polyline([point1, point2], {color: '#27ae60'}).addTo(map);
+                }
+                calculateDistance();
+            }
+        }
+        
+        // Create a marker with custom icon
+        function createMarker(latlng, color, title) {
             const icon = L.divIcon({
-                className: 'gps-marker',
-                html: '<div style="background-color: #e74c3c; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);"></div>',
+                className: 'custom-marker',
+                html: `<div style="background-color: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);"></div>`,
                 iconSize: [26, 26],
                 iconAnchor: [13, 13]
             });
             
-            marker = L.marker([0, 0], {icon: icon}).addTo(map);
-            
-            // Start watching the position
-            startWatchingPosition();
+            return L.marker(latlng, {
+                icon: icon,
+                title: title,
+                draggable: true
+            }).addTo(map).on('dragend', function() {
+                const newLatLng = this.getLatLng();
+                if (this === marker1) {
+                    point1 = newLatLng;
+                    updatePointInfo(1, point1);
+                } else {
+                    point2 = newLatLng;
+                    updatePointInfo(2, point2);
+                }
+                
+                if (point1 && point2) {
+                    lineBetweenPoints.setLatLngs([point1, point2]);
+                    calculateDistance();
+                }
+            });
         }
         
-        // Start watching the device's position
-        function startWatchingPosition() {
-            if (navigator.geolocation) {
-                document.getElementById('status').textContent = "Tracking location...";
-                document.getElementById('status').style.color = "#27ae60";
+        // Update the point information display
+        function updatePointInfo(pointNum, latlng) {
+            const elementId = `point${pointNum}-coords`;
+            document.getElementById(elementId).textContent = `${latlng.lat.toFixed(6)}, ${latlng.lng.toFixed(6)}`;
+            
+            // Draw line if both points exist
+            if (point1 && point2) {
+                if (lineBetweenPoints) {
+                    lineBetweenPoints.setLatLngs([point1, point2]);
+                } else {
+                    lineBetweenPoints = L.polyline([point1, point2], {color: '#27ae60'}).addTo(map);
+                }
+            }
+        }
+        
+        // Calculate distance between points
+        function calculateDistance() {
+            if (point1 && point2) {
+                const distance = map.distance(point1, point2);
+                let distanceText;
                 
-                // Watch position with the specified interval
-                watchId = navigator.geolocation.watchPosition(
-                    updatePosition,
-                    handleLocationError,
-                    {
-                        enableHighAccuracy: true,
-                        maximumAge: 30000,
-                        timeout: 10000
-                    }
+                if (distance >= 1000) {
+                    distanceText = `${(distance / 1000).toFixed(2)} kilometers`;
+                } else {
+                    distanceText = `${Math.round(distance)} meters`;
+                }
+                
+                document.getElementById('distance-info').textContent = `Distance: ${distanceText}`;
+            }
+        }
+        
+        // Get current location
+        function getCurrentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const latlng = L.latLng(position.coords.latitude, position.coords.longitude);
+                        addPoint(latlng);
+                        map.setView(latlng, 15);
+                    },
+                    function(error) {
+                        alert(`Error getting location: ${error.message}`);
+                    },
+                    { enableHighAccuracy: true }
                 );
             } else {
-                document.getElementById('status').textContent = "Geolocation is not supported by this browser.";
-                document.getElementById('status').style.color = "#e74c3c";
+                alert("Geolocation is not supported by this browser.");
             }
         }
         
-        // Update the position on the map
-        function updatePosition(position) {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-            const accuracy = position.coords.accuracy;
-            
-            // Update the marker position
-            marker.setLatLng([lat, lng]);
-            
-            // Center the map on the new position
-            map.setView([lat, lng], map.getZoom());
-            
-            // Update the info panel
-            document.getElementById('latitude').textContent = lat.toFixed(6);
-            document.getElementById('longitude').textContent = lng.toFixed(6);
-            document.getElementById('accuracy').textContent = Math.round(accuracy);
-            
-            const now = new Date();
-            document.getElementById('timestamp').textContent = now.toLocaleTimeString();
-            
-            // Add a circle showing the accuracy
-            if (map.hasLayer(marker.accuracyCircle)) {
-                map.removeLayer(marker.accuracyCircle);
+        // Clear all points
+        function clearPoints() {
+            if (marker1) {
+                map.removeLayer(marker1);
+                marker1 = null;
+            }
+            if (marker2) {
+                map.removeLayer(marker2);
+                marker2 = null;
+            }
+            if (lineBetweenPoints) {
+                map.removeLayer(lineBetweenPoints);
+                lineBetweenPoints = null;
             }
             
-            marker.accuracyCircle = L.circle([lat, lng], {
-                color: '#2980b9',
-                fillColor: '#3498db',
-                fillOpacity: 0.2,
-                radius: accuracy
-            }).addTo(map);
-        }
-        
-        // Handle location errors
-        function handleLocationError(error) {
-            let message = "Error getting location: ";
-            switch(error.code) {
-                case error.PERMISSION_DENIED:
-                    message += "User denied the request for Geolocation.";
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    message += "Location information is unavailable.";
-                    break;
-                case error.TIMEOUT:
-                    message += "The request to get user location timed out.";
-                    break;
-                case error.UNKNOWN_ERROR:
-                    message += "An unknown error occurred.";
-                    break;
-            }
+            point1 = null;
+            point2 = null;
             
-            document.getElementById('status').textContent = message;
-            document.getElementById('status').style.color = "#e74c3c";
+            document.getElementById('point1-coords').textContent = 'Not set';
+            document.getElementById('point2-coords').textContent = 'Not set';
+            document.getElementById('distance-info').textContent = 'Distance: --';
         }
         
         // Initialize the map when the page loads
         window.onload = initMap;
-        
-        // Clean up when the page is closed
-        window.onbeforeunload = function() {
-            if (watchId) {
-                navigator.geolocation.clearWatch(watchId);
-            }
-        };
     </script>
 </body>
 </html>
