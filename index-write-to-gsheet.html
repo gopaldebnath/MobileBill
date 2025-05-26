@@ -23,7 +23,7 @@
       const webAppUrl = "https://script.google.com/macros/s/AKfycbykcgEPd3QfnsjKBzpj3fIrjKo9CYcLT40CQwcwoc8O/dev"; // Replace with your Apps Script URL
 
       fetch(webAppUrl, {
-        method: "POST",
+        method: "POST",mode: "no-cors", 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
       })
