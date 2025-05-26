@@ -1,54 +1,36 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Save Data to Appwrite</title>
+  <title>Submit to Google Sheets</title>
 </head>
 <body>
-    <h2>Save Data to Appwrite</h2>
-    <form id="dataForm">
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" required>
-        <br><br>
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required>
-        <br><br>
-        <button type="submit">Save</button>
-    </form>
+  <h1>Contact Form</h1>
+  <form id="contactForm">
+    <input type="text" id="name" placeholder="Name" required><br>
+    <input type="email" id="email" placeholder="Email" required><br>
+    <button type="submit">Submit</button>
+  </form>
 
-    <script src="https://cdn.jsdelivr.net/npm/appwrite@12"></script>
-    <script>
-        // Initialize Appwrite SDK
-        const { Client, Databases } = Appwrite;
+  <script>
+    document.getElementById("contactForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      
+      const data = {
+        name: document.getElementById("name").value,
+        email: document.getElementById("email").value
+      };
 
-        const client = new Client();
-        client.setEndpoint("https://cloud.appwrite.io/v1") // Replace with your Appwrite endpoint
-              .setProject("6768f205001bc598ce13"); // Replace with your Project ID
+      const webAppUrl = "https://script.google.com/macros/s/AKfycbykcgEPd3QfnsjKBzpj3fIrjKo9CYcLT40CQwcwoc8O/dev"; // Replace with your Apps Script URL
 
-        const databases = new Databases(client);
-
-        document.getElementById("dataForm").addEventListener("submit", async function (event) {
-            event.preventDefault(); // Prevent form submission refresh
-
-            const name = document.getElementById("name").value;
-            const email = document.getElementById("email").value;
-
-            try {
-                const response = await databases.createDocument(
-                    "6768f24c0003c67ef9b2", // Replace with your Database ID
-                    "6768f25c002f48869fbb", // Replace with your Collection ID
-                    "unique()", // Auto-generate a unique document ID
-                    { name, email } // Data to be saved
-                );
-
-                alert("Data saved successfully!");
-                console.log(response);
-            } catch (error) {
-                console.error(error);
-                alert("Error saving data: " + error.message);
-            }
-        });
-    </script>
+      fetch(webAppUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      })
+        .then(response => response.json())
+        .then(data => alert("Success! Data saved."))
+        .catch(error => alert("Error: " + error));
+    });
+  </script>
 </body>
 </html>
