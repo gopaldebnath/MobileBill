@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Distance Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4285F4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #3367D6;
+        }
+        input {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+        label {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Location Distance Calculator</h1>
+    <div class="container">
+        <div>
+            <label for="coordinates">Enter Target Coordinates (latitude,longitude):</label>
+            <input type="text" id="coordinates" placeholder="e.g., 37.7749,-122.4194">
+            <small>Format: latitude,longitude (Google Maps format)</small>
+        </div>
+        
+        <button id="getLocation">Get My Current Location</button>
+        
+        <div id="result" class="result" style="display: none;">
+            <h3>Distance Results</h3>
+            <p><strong>Your current location:</strong> <span id="currentLocation"></span></p>
+            <p><strong>Target location:</strong> <span id="targetLocation"></span></p>
+            <p><strong>Distance between locations:</strong> <span id="distance"></span></p>
+        </div>
+        
+        <div id="error" class="error"></div>
+    </div>
+
+    <script>
+        document.getElementById('getLocation').addEventListener('click', function() {
+            const coordinatesInput = document.getElementById('coordinates').value.trim();
+            const errorElement = document.getElementById('error');
+            const resultElement = document.getElementById('result');
+            
+            // Reset UI
+            errorElement.textContent = '';
+            resultElement.style.display = 'none';
+            
+            // Validate coordinates input
+            if (!coordinatesInput) {
+                errorElement.textContent = 'Please enter target coordinates';
+                return;
+            }
+            
+            const coordinates = coordinatesInput.split(',');
+            if (coordinates.length !== 2 || isNaN(coordinates[0]) || isNaN(coordinates[1])) {
+                errorElement.textContent = 'Invalid coordinates format. Please use "latitude,longitude"';
+                return;
+            }
+            
+            const targetLat = parseFloat(coordinates[0]);
+            const targetLng = parseFloat(coordinates[1]);
+            
+            if (targetLat < -90 || targetLat > 90 || targetLng < -180 || targetLng > 180) {
+                errorElement.textContent = 'Invalid coordinates. Latitude must be between -90 and 90, longitude between -180 and 180';
+                return;
+            }
+            
+            // Get current location
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const currentLat = position.coords.latitude;
+                        const currentLng = position.coords.longitude;
+                        
+                        // Calculate distance
+                        const distance = calculateDistance(
+                            currentLat, currentLng, 
+                            targetLat, targetLng
+                        );
+                        
+                        // Display results
+                        document.getElementById('currentLocation').textContent = 
+                            `${currentLat.toFixed(6)}, ${currentLng.toFixed(6)}`;
+                        document.getElementById('targetLocation').textContent = 
+                            `${targetLat.toFixed(6)}, ${targetLng.toFixed(6)}`;
+                        document.getElementById('distance').textContent = 
+                            `${distance.toFixed(2)} kilometers (${(distance * 0.621371).toFixed(2)} miles)`;
+                        
+                        resultElement.style.display = 'block';
+                    },
+                    function(error) {
+                        let errorMessage = 'Error getting your location: ';
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMessage += 'User denied the request for Geolocation.';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMessage += 'Location information is unavailable.';
+                                break;
+                            case error.TIMEOUT:
+                                errorMessage += 'The request to get user location timed out.';
+                                break;
+                            case error.UNKNOWN_ERROR:
+                                errorMessage += 'An unknown error occurred.';
+                                break;
+                        }
+                        errorElement.textContent = errorMessage;
+                    }
+                );
+            } else {
+                errorElement.textContent = 'Geolocation is not supported by this browser.';
+            }
+        });
+        
+        // Haversine formula to calculate distance between two coordinates in kilometers
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Earth radius in km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+    </script>
+</body>
+</html>
