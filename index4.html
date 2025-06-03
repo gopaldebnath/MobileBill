@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Road Distance Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            padding: 8px 15px;
+            background-color: #4285F4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #3367D6;
+        }
+        #map {
+            height: 400px;
+            width: 100%;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+        }
+        #result {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Road Distance Calculator</h1>
+    <div class="container">
+        <div class="input-group">
+            <label for="origin">Starting Point:</label>
+            <input type="text" id="origin" placeholder="Enter starting location">
+            <button onclick="setOriginFromMap()">Set from Map</button>
+        </div>
+        <div class="input-group">
+            <label for="destination">Destination:</label>
+            <input type="text" id="destination" placeholder="Enter destination">
+            <button onclick="setDestinationFromMap()">Set from Map</button>
+        </div>
+        
+        <button onclick="calculateDistance()">Calculate Distance</button>
+        <div id="result"></div>
+        <div id="map"></div>
+    </div>
+
+    <!-- Load Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places&callback=initMap" async defer></script>
+    
+    <script>
+        let map;
+        let directionsService;
+        let directionsRenderer;
+        let originMarker = null;
+        let destinationMarker = null;
+        
+        function initMap() {
+            // Initialize the map centered on a default location
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: { lat: 0, lng: 0 },
+                zoom: 2
+            });
+            
+            // Initialize the directions service and renderer
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer({
+                map: map,
+                suppressMarkers: true
+            });
+            
+            // Add click listener to the map to set points
+            map.addListener("click", (event) => {
+                if (window.activeInput === "origin") {
+                    setOrigin(event.latLng);
+                } else if (window.activeInput === "destination") {
+                    setDestination(event.latLng);
+                }
+            });
+            
+            // Initialize autocomplete for the input fields
+            const originInput = document.getElementById("origin");
+            const destinationInput = document.getElementById("destination");
+            
+            const originAutocomplete = new google.maps.places.Autocomplete(originInput);
+            const destinationAutocomplete = new google.maps.places.Autocomplete(destinationInput);
+            
+            originAutocomplete.bindTo("bounds", map);
+            destinationAutocomplete.bindTo("bounds", map);
+            
+            originAutocomplete.addListener("place_changed", () => {
+                const place = originAutocomplete.getPlace();
+                if (place.geometry) {
+                    setOrigin(place.geometry.location);
+                }
+            });
+            
+            destinationAutocomplete.addListener("place_changed", () => {
+                const place = destinationAutocomplete.getPlace();
+                if (place.geometry) {
+                    setDestination(place.geometry.location);
+                }
+            });
+        }
+        
+        function setOriginFromMap() {
+            window.activeInput = "origin";
+            document.getElementById("result").textContent = "Click on the map to set the starting point";
+        }
+        
+        function setDestinationFromMap() {
+            window.activeInput = "destination";
+            document.getElementById("result").textContent = "Click on the map to set the destination";
+        }
+        
+        function setOrigin(location) {
+            if (originMarker) {
+                originMarker.setMap(null);
+            }
+            
+            originMarker = new google.maps.Marker({
+                position: location,
+                map: map,
+                title: "Starting Point",
+                label: "A",
+                draggable: true
+            });
+            
+            // Update the origin input field
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ location: location }, (results, status) => {
+                if (status === "OK" && results[0]) {
+                    document.getElementById("origin").value = results[0].formatted_address;
+                }
+            });
+            
+            // Center the map on this location
+            map.panTo(location);
+            if (map.getZoom() < 12) {
+                map.setZoom(12);
+            }
+            
+            window.activeInput = null;
+            document.getElementById("result").textContent = "";
+            
+            // Add dragend listener
+            originMarker.addListener("dragend", (event) => {
+                setOrigin(event.latLng);
+                if (originMarker && destinationMarker) {
+                    calculateDistance();
+                }
+            });
+        }
+        
+        function setDestination(location) {
+            if (destinationMarker) {
+                destinationMarker.setMap(null);
+            }
+            
+            destinationMarker = new google.maps.Marker({
+                position: location,
+                map: map,
+                title: "Destination",
+                label: "B",
+                draggable: true
+            });
+            
+            // Update the destination input field
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ location: location }, (results, status) => {
+                if (status === "OK" && results[0]) {
+                    document.getElementById("destination").value = results[0].formatted_address;
+                }
+            });
+            
+            // Center the map on this location
+            map.panTo(location);
+            if (map.getZoom() < 12) {
+                map.setZoom(12);
+            }
+            
+            window.activeInput = null;
+            document.getElementById("result").textContent = "";
+            
+            // Add dragend listener
+            destinationMarker.addListener("dragend", (event) => {
+                setDestination(event.latLng);
+                if (originMarker && destinationMarker) {
+                    calculateDistance();
+                }
+            });
+        }
+        
+        function calculateDistance() {
+            if (!originMarker || !destinationMarker) {
+                document.getElementById("result").textContent = "Please set both starting point and destination";
+                return;
+            }
+            
+            const origin = originMarker.getPosition();
+            const destination = destinationMarker.getPosition();
+            
+            const request = {
+                origin: origin,
+                destination: destination,
+                travelMode: "DRIVING",
+                unitSystem: google.maps.UnitSystem.METRIC
+            };
+            
+            directionsService.route(request, (response, status) => {
+                if (status === "OK") {
+                    directionsRenderer.setDirections(response);
+                    
+                    // Get the distance
+                    const route = response.routes[0];
+                    let distance = 0;
+                    
+                    // Sum up the distance of all legs
+                    for (let i = 0; i < route.legs.length; i++) {
+                        distance += route.legs[i].distance.value;
+                    }
+                    
+                    // Convert meters to kilometers
+                    const distanceKm = (distance / 1000).toFixed(2);
+                    
+                    document.getElementById("result").innerHTML = `
+                        Road Distance: ${distanceKm} km<br>
+                        Approximate Travel Time: ${route.legs[0].duration.text}
+                    `;
+                } else {
+                    document.getElementById("result").textContent = "Could not calculate distance. Error: " + status;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
