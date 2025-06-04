@@ -2,53 +2,38 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Save Data to Appwrite</title>
+    <title>Read Data from Appwrite</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite"></script>
 </head>
 <body>
-    <h2>Save Data to Appwrite</h2>
-    <form id="dataForm">
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" required>
-        <br><br>
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required>
-        <br><br>
-        <button type="submit">Save</button>
-    </form>
+    <h1>Appwrite Data</h1>
+    <div id="data-container"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/appwrite@12"></script>
     <script>
-        // Initialize Appwrite SDK
         const { Client, Databases } = Appwrite;
 
-        const client = new Client();
-        client.setEndpoint("https://cloud.appwrite.io/v1") // Replace with your Appwrite endpoint
-              .setProject("6768f205001bc598ce13"); // Replace with your Project ID
+        // Initialize Appwrite client
+        const client = new Client()
+            .setEndpoint('https://fra.cloud.appwrite.io/v1') // e.g., https://cloud.appwrite.io/v1
+            .setProject('6768f205001bc598ce13'); // Your Appwrite project ID
 
+        // Initialize Databases service
         const databases = new Databases(client);
 
-        document.getElementById("dataForm").addEventListener("submit", async function (event) {
-            event.preventDefault(); // Prevent form submission refresh
-
-            const name = document.getElementById("name").value;
-            const email = document.getElementById("email").value;
-
+        // Fetch documents from your collection
+        async function fetchData() {
             try {
-                const response = await databases.createDocument(
-                    "6768f24c0003c67ef9b2", // Replace with your Database ID
-                    "6768f25c002f48869fbb", // Replace with your Collection ID
-                    "unique()", // Auto-generate a unique document ID
-                    { name, email } // Data to be saved
-                );
-
-                alert("Data saved successfully!");
-                console.log(response);
+                const response = await databases.listDocuments('6768f24c0003c67ef9b2', '6768f25c002f48869fbb');
+                const dataContainer = document.getElementById('data-container');
+                dataContainer.innerHTML = '<ul>' +
+                    response.documents.map(doc => `<li>${JSON.stringify(doc)}</li>`).join('') +
+                    '</ul>';
             } catch (error) {
-                console.error(error);
-                alert("Error saving data: " + error.message);
+                console.error('Error:', error);
             }
-        });
+        }
+
+        fetchData();
     </script>
 </body>
 </html>
