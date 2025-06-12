@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        #status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .error {
+            background-color: #ffdddd;
+            color: #d8000c;
+        }
+        .success {
+            background-color: #ddffdd;
+            color: #4f8a10;
+        }
+        .coordinates {
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>Location Tracker</h1>
+    <p>This page will record your location every 15 seconds.</p>
+    <div id="status">Waiting for location access...</div>
+    
+    <table id="locationTable">
+        <thead>
+            <tr>
+                <th>Time & Coordinates</th>
+                <th>Location Name</th>
+                <th>Distance from Agartala</th>
+                <th>Accuracy</th>
+            </tr>
+        </thead>
+        <tbody id="locationData">
+            <!-- Rows will be added here -->
+        </tbody>
+    </table>
+
+    <script>
+        // Coordinates of Agartala (latitude, longitude)
+        const AGARTALA_COORDS = {
+            latitude: 23.8315,
+            longitude: 91.2868
+        };
+
+        // Function to calculate distance between two coordinates (Haversine formula)
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Earth's radius in km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return (R * c).toFixed(2); // Distance in km with 2 decimal places
+        }
+
+        // Function to get location name using reverse geocoding
+        async function getLocationName(latitude, longitude) {
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`);
+                const data = await response.json();
+                
+                if (data.address) {
+                    // Try to get the most specific name available
+                    return data.address.road ? 
+                        `${data.address.road}, ${data.address.city || data.address.town || data.address.village || data.address.county}` :
+                        data.display_name.split(',')[0];
+                }
+                return "Unknown location";
+            } catch (error) {
+                console.error("Reverse geocoding error:", error);
+                return "Location name unavailable";
+            }
+        }
+
+        // Function to get current location
+        async function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                        const timestamp = new Date().toLocaleTimeString();
+                        const latitude = position.coords.latitude.toFixed(6);
+                        const longitude = position.coords.longitude.toFixed(6);
+                        const accuracy = Math.round(position.coords.accuracy);
+                        
+                        // Calculate distance from Agartala
+                        const distance = calculateDistance(
+                            latitude, longitude, 
+                            AGARTALA_COORDS.latitude, AGARTALA_COORDS.longitude
+                        );
+                        
+                        // Get location name
+                        const locationName = await getLocationName(latitude, longitude);
+                        
+                        // Create new row
+                        const tableBody = document.getElementById('locationData');
+                        const newRow = tableBody.insertRow();
+                        
+                        // Add cells to the row
+                        const timeCoordCell = newRow.insertCell(0);
+                        timeCoordCell.innerHTML = `<div>${timestamp}</div><div class="coordinates">${latitude}, ${longitude}</div>`;
+                        
+                        newRow.insertCell(1).textContent = locationName;
+                        newRow.insertCell(2).textContent = `${distance} km`;
+                        newRow.insertCell(3).textContent = `${accuracy} meters`;
+                        
+                        updateStatus(`Location recorded at ${timestamp}`, "success");
+                        
+                        // Scroll to the new row
+                        newRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    },
+                    showError,
+                    { enableHighAccuracy: true, timeout: 10000 }
+                );
+            } else {
+                updateStatus("Geolocation is not supported by this browser.", "error");
+            }
+        }
+
+        // Function to handle errors
+        function showError(error) {
+            let errorMessage = "Unknown error occurred.";
+            
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMessage = "User denied the request for Geolocation.";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMessage = "Location information is unavailable.";
+                    break;
+                case error.TIMEOUT:
+                    errorMessage = "The request to get user location timed out.";
+                    break;
+            }
+            
+            updateStatus(errorMessage, "error");
+        }
+
+        // Function to update status message
+        function updateStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = type;
+        }
+
+        // Start tracking every 15 seconds
+        window.onload = function() {
+            // Get first location immediately
+            getLocation();
+            
+            // Then get location every 15 seconds
+            setInterval(getLocation, 15000);
+        };
+    </script>
+</body>
+</html>
