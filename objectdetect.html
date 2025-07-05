@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Object Detection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        #video-container {
+            position: relative;
+            margin: 20px 0;
+        }
+        #video {
+            background: #000;
+            width: 100%;
+            max-width: 640px;
+            display: block;
+            margin: 0 auto;
+        }
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: 640px;
+            width: 100%;
+        }
+        button {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin: 10px;
+        }
+        button:hover {
+            background: #3367d6;
+        }
+        #results {
+            margin-top: 20px;
+            text-align: left;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-height: 60px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Real-time Object Detection</h1>
+    
+    <div id="video-container">
+        <video id="video" autoplay playsinline></video>
+        <canvas id="canvas"></canvas>
+    </div>
+    
+    <div>
+        <button id="startButton">Start Detection</button>
+        <button id="stopButton">Stop Detection</button>
+    </div>
+    
+    <div id="results">Detection results will appear here...</div>
+    
+    <!-- Load TensorFlow.js and COCO-SSD model -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+    
+    <script>
+        // DOM elements
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const startButton = document.getElementById('startButton');
+        const stopButton = document.getElementById('stopButton');
+        const resultsDiv = document.getElementById('results');
+        
+        // Variables
+        let model = null;
+        let detecting = false;
+        
+        // Initialize video stream
+        async function setupCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: true,
+                    audio: false
+                });
+                video.srcObject = stream;
+                
+                return new Promise((resolve) => {
+                    video.onloadedmetadata = () => {
+                        video.width = video.videoWidth;
+                        video.height = video.videoHeight;
+                        
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        
+                        resolve(video);
+                    };
+                });
+            } catch (err) {
+                console.error("Error accessing camera:", err);
+                resultsDiv.innerHTML = "Could not access camera. Please ensure you've granted camera permissions.";
+                throw err;
+            }
+        }
+        
+        // Load the COCO-SSD model
+        async function loadModel() {
+            try {
+                model = await cocoSsd.load();
+                console.log("Model loaded");
+                resultsDiv.innerHTML = "Model loaded successfully. Click 'Start Detection' to begin.";
+            } catch (err) {
+                console.error("Failed to load model:", err);
+                resultsDiv.innerHTML = "Failed to load model. Please check your internet connection.";
+                throw err;
+            }
+        }
+        
+        // Detect objects in video frame
+        async function detectObjects() {
+            if (!model || !detecting) return;
+            
+            try {
+                // Perform detection
+                const predictions = await model.detect(video);
+                
+                // Clear canvas
+                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                
+                // Draw video frame to canvas
+                ctx.drawImage(video, 0, 0, video.width, video.height);
+                
+                // Draw bounding boxes and labels
+                predictions.forEach(prediction => {
+                    // Draw bounding box
+                    ctx.strokeStyle = '#00FF00';
+                    ctx.lineWidth = 4;
+                    ctx.strokeRect(
+                        prediction.bbox[0],
+                        prediction.bbox[1],
+                        prediction.bbox[2],
+                        prediction.bbox[3]
+                    );
+                    
+                    // Draw label background
+                    ctx.fillStyle = '#00FF00';
+                    const textWidth = ctx.measureText(prediction.class).width;
+                    const textHeight = parseInt('16px', 10);
+                    ctx.fillRect(
+                        prediction.bbox[0],
+                        prediction.bbox[1] - (textHeight + 2),
+                        textWidth + 4,
+                        textHeight + 2
+                    );
+                    
+                    // Draw text
+                    ctx.fillStyle = '#000000';
+                    ctx.font = '16px Arial';
+                    ctx.fillText(
+                        `${prediction.class} (${Math.round(prediction.score * 100)}%)`,
+                        prediction.bbox[0],
+                        prediction.bbox[1] - 5
+                    );
+                });
+                
+                // Display results
+                if (predictions.length > 0) {
+                    let resultsHTML = '<h3>Detected Objects:</h3><ul>';
+                    predictions.forEach(pred => {
+                        resultsHTML += `<li>${pred.class} (${Math.round(pred.score * 100)}% confidence)</li>`;
+                    });
+                    resultsHTML += '</ul>';
+                    resultsDiv.innerHTML = resultsHTML;
+                } else {
+                    resultsDiv.innerHTML = "No objects detected in this frame.";
+                }
+                
+                // Continue detection loop
+                requestAnimationFrame(detectObjects);
+            } catch (err) {
+                console.error("Detection error:", err);
+                resultsDiv.innerHTML = "Error during detection. See console for details.";
+                detecting = false;
+            }
+        }
+        
+        // Start detection
+        startButton.addEventListener('click', () => {
+            if (!model) {
+                resultsDiv.innerHTML = "Model not loaded yet. Please wait...";
+                return;
+            }
+            
+            if (!detecting) {
+                detecting = true;
+                resultsDiv.innerHTML = "Detection started...";
+                detectObjects();
+            }
+        });
+        
+        // Stop detection
+        stopButton.addEventListener('click', () => {
+            detecting = false;
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            resultsDiv.innerHTML = "Detection stopped.";
+        });
+        
+        // Initialize everything when page loads
+        window.addEventListener('load', async () => {
+            try {
+                resultsDiv.innerHTML = "Setting up camera and loading model...";
+                await setupCamera();
+                await loadModel();
+                startButton.disabled = false;
+                stopButton.disabled = false;
+            } catch (err) {
+                console.error("Initialization error:", err);
+                startButton.disabled = true;
+                stopButton.disabled = true;
+            }
+        });
+    </script>
+</body>
+</html>
