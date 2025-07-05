@@ -1,286 +1,68 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YOLOv8 Object Detection</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            text-align: center;
-        }
-        #video-container {
-            position: relative;
-            margin: 20px 0;
-        }
-        #video {
-            background: #000;
-            width: 100%;
-            max-width: 640px;
-            display: block;
-            margin: 0 auto;
-        }
-        #canvas {
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            max-width: 640px;
-            width: 100%;
-        }
-        button {
-            background: #4285f4;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 4px;
-            margin: 10px;
-        }
-        button:hover {
-            background: #3367d6;
-        }
-        button:disabled {
-            background: #cccccc;
-            cursor: not-allowed;
-        }
-        #results {
-            margin-top: 20px;
-            text-align: left;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            min-height: 60px;
-        }
-        #fps {
-            margin-top: 10px;
-            font-weight: bold;
-        }
-    </style>
-</head>
-<body>
-    <h1>YOLOv8 Object Detection</h1>
-    
-    <div id="video-container">
-        <video id="video" autoplay playsinline></video>
-        <canvas id="canvas"></canvas>
-    </div>
-    
-    <div>
-        <button id="startButton">Start Detection</button>
-        <button id="stopButton" disabled>Stop Detection</button>
-    </div>
-    
-    <div id="fps">FPS: 0</div>
-    <div id="results">Ready to detect objects...</div>
-    
-    <!-- Load TensorFlow.js -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.18.0/dist/tf.min.js"></script>
-    <!-- Load a lightweight YOLO model (not official YOLOv8 but similar architecture) -->
-    
-    <script>
-        // DOM elements
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const startButton = document.getElementById('startButton');
-        const stopButton = document.getElementById('stopButton');
-        const resultsDiv = document.getElementById('results');
-        const fpsDisplay = document.getElementById('fps');
-        
-        // Variables
-        let model = null;
-        let detecting = false;
-        let lastTimestamp = 0;
-        let frameCount = 0;
-        let fps = 0;
-        
-        // Initialize video stream
-        async function setupCamera() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { width: 640, height: 480 },
-                    audio: false
-                });
-                video.srcObject = stream;
-                
-                return new Promise((resolve) => {
-                    video.onloadedmetadata = () => {
-                        video.width = video.videoWidth;
-                        video.height = video.videoHeight;
-                        
-                        canvas.width = video.videoWidth;
-                        canvas.height = video.videoHeight;
-                        
-                        resolve(video);
-                    };
-                });
-            } catch (err) {
-                console.error("Error accessing camera:", err);
-                resultsDiv.innerHTML = "Could not access camera. Please ensure you've granted camera permissions.";
-                throw err;
-            }
-        }
-        
-        // Load a TensorFlow.js-compatible YOLO model
-        async function loadModel() {
-            try {
-                // Note: This is a placeholder - you would need to host and load your own converted YOLOv8 model
-                // model = await tf.loadGraphModel('path/to/your/converted/yolov8/model.json');
-                
-                // For demo purposes, we'll use a simple placeholder
-                resultsDiv.innerHTML = "Loading model... (Note: This demo needs a real converted YOLOv8 model to work properly)";
-                
-                // Simulate model loading delay
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                
-                // In a real implementation, you would uncomment the line above and host your model
-                resultsDiv.innerHTML = "Model loaded (placeholder). For real YOLOv8, you need to convert and host the model.";
-                
-                return {
-                    // Placeholder detect function
-                    detect: async (img) => {
-                        // This is where real detection would happen
-                        return [
-                            // Sample detection data
-                            {
-                                bbox: [100, 100, 200, 200],
-                                class: 'person',
-                                score: 0.95
-                            }
-                        ];
-                    }
-                };
-            } catch (err) {
-                console.error("Failed to load model:", err);
-                resultsDiv.innerHTML = "Failed to load model. See console for details.";
-                throw err;
-            }
-        }
-        
-        // Detect objects in video frame
-        async function detectObjects() {
-            if (!model || !detecting) return;
+from flask import Flask, Response, render_template
+import cv2
+from ultralytics import YOLO
+import threading
+import time
+
+app = Flask(__name__)
+
+# Load YOLOv8 model
+model = YOLO("yolov8n.pt")  # or yolov8s.pt, yolov8m.pt, etc.
+
+# Camera setup (use 0 for default camera)
+cap = cv2.VideoCapture(0)
+if not cap.isOpened():
+    cap = cv2.VideoCapture(1)
+
+# Global variables for frame and lock
+latest_frame = None
+frame_lock = threading.Lock()
+
+def detect_objects():
+    global latest_frame
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
             
-            try {
-                // Calculate FPS
-                const now = performance.now();
-                frameCount++;
-                
-                if (lastTimestamp) {
-                    const delta = now - lastTimestamp;
-                    if (delta >= 1000) {
-                        fps = Math.round((frameCount * 1000) / delta);
-                        fpsDisplay.textContent = `FPS: ${fps}`;
-                        frameCount = 0;
-                        lastTimestamp = now;
-                    }
-                } else {
-                    lastTimestamp = now;
-                }
-                
-                // Perform detection (using placeholder in this demo)
-                const predictions = await model.detect(video);
-                
-                // Clear canvas
-                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                
-                // Draw video frame to canvas
-                ctx.drawImage(video, 0, 0, video.width, video.height);
-                
-                // Draw bounding boxes and labels
-                predictions.forEach(prediction => {
-                    // Draw bounding box
-                    ctx.strokeStyle = '#00FF00';
-                    ctx.lineWidth = 4;
-                    ctx.strokeRect(
-                        prediction.bbox[0],
-                        prediction.bbox[1],
-                        prediction.bbox[2],
-                        prediction.bbox[3]
-                    );
-                    
-                    // Draw label background
-                    ctx.fillStyle = '#00FF00';
-                    const text = `${prediction.class} ${(prediction.score * 100).toFixed(1)}%`;
-                    const textWidth = ctx.measureText(text).width;
-                    const textHeight = 16;
-                    ctx.fillRect(
-                        prediction.bbox[0],
-                        prediction.bbox[1] - (textHeight + 2),
-                        textWidth + 4,
-                        textHeight + 2
-                    );
-                    
-                    // Draw text
-                    ctx.fillStyle = '#000000';
-                    ctx.font = '16px Arial';
-                    ctx.fillText(
-                        text,
-                        prediction.bbox[0],
-                        prediction.bbox[1] - 5
-                    );
-                });
-                
-                // Display results
-                if (predictions.length > 0) {
-                    let resultsHTML = '<h3>Detected Objects:</h3><ul>';
-                    predictions.forEach(pred => {
-                        resultsHTML += `<li>${pred.class} (${(pred.score * 100).toFixed(1)}% confidence)</li>`;
-                    });
-                    resultsHTML += '</ul>';
-                    resultsDiv.innerHTML = resultsHTML;
-                }
-                
-                // Continue detection loop
-                requestAnimationFrame(detectObjects);
-            } catch (err) {
-                console.error("Detection error:", err);
-                resultsDiv.innerHTML = "Error during detection. See console for details.";
-                detecting = false;
-                stopButton.disabled = true;
-                startButton.disabled = false;
-            }
-        }
+        # Run YOLOv8 inference
+        results = model(frame)
         
-        // Start detection
-        startButton.addEventListener('click', async () => {
-            if (!model) {
-                resultsDiv.innerHTML = "Loading model...";
-                model = await loadModel();
-            }
+        # Visualize results
+        annotated_frame = results[0].plot()
+        
+        # Update latest frame
+        with frame_lock:
+            latest_frame = annotated_frame
+        
+        time.sleep(0.03)  # Control frame rate
+
+# Start detection thread
+detection_thread = threading.Thread(target=detect_objects)
+detection_thread.daemon = True
+detection_thread.start()
+
+def generate_frames():
+    while True:
+        with frame_lock:
+            if latest_frame is None:
+                continue
+                
+            # Encode frame as JPEG
+            ret, buffer = cv2.imencode('.jpg', latest_frame)
+            frame = buffer.tobytes()
             
-            detecting = true;
-            startButton.disabled = true;
-            stopButton.disabled = false;
-            resultsDiv.innerHTML = "Detection started...";
-            detectObjects();
-        });
-        
-        // Stop detection
-        stopButton.addEventListener('click', () => {
-            detecting = false;
-            startButton.disabled = false;
-            stopButton.disabled = true;
-            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-            resultsDiv.innerHTML = "Detection stopped.";
-        });
-        
-        // Initialize camera when page loads
-        window.addEventListener('load', async () => {
-            try {
-                await setupCamera();
-                startButton.disabled = false;
-                resultsDiv.innerHTML = "Camera ready. Click 'Start Detection' to begin.";
-            } catch (err) {
-                console.error("Initialization error:", err);
-                startButton.disabled = true;
-            }
-        });
-    </script>
-</body>
-</html>
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/video_feed')
+def video_feed():
+    return Response(generate_frames(),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, threaded=True)
