@@ -3,18 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Data Form</title>
+    <title>Appwrite Database Form</title>
     <script src="https://cdn.jsdelivr.net/npm/appwrite@10.0.0"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 600px;
+            max-width: 500px;
             margin: 0 auto;
             padding: 20px;
-        }
-        h1 {
-            color: #333;
-            text-align: center;
         }
         .form-group {
             margin-bottom: 15px;
@@ -24,16 +20,12 @@
             margin-bottom: 5px;
             font-weight: bold;
         }
-        input[type="text"],
-        textarea {
+        input {
             width: 100%;
             padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
             box-sizing: border-box;
-        }
-        textarea {
-            height: 100px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
         }
         button {
             background-color: #4CAF50;
@@ -56,132 +48,81 @@
         .success {
             background-color: #dff0d8;
             color: #3c763d;
-            display: block;
+            border: 1px solid #d6e9c6;
         }
         .error {
             background-color: #f2dede;
             color: #a94442;
-            display: block;
-        }
-        .error-details {
-            margin-top: 10px;
-            padding: 10px;
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
-            border-radius: 4px;
-            font-family: monospace;
-            font-size: 14px;
-            white-space: pre-wrap;
+            border: 1px solid #ebccd1;
         }
     </style>
 </head>
 <body>
-    <h1>Employee Information Form</h1>
+    <h1>Employee Data Form</h1>
     <form id="employeeForm">
+        <div class="form-group">
+            <label for="employee_id">Employee ID:</label>
+            <input type="text" id="employee_id" name="employee_id" required>
+        </div>
         <div class="form-group">
             <label for="employee_name">Employee Name:</label>
             <input type="text" id="employee_name" name="employee_name" required>
         </div>
-        
-        <div class="form-group">
-            <label for="employee_address">Employee Address:</label>
-            <textarea id="employee_address" name="employee_address" required></textarea>
-        </div>
-        
         <div class="form-group">
             <label for="employee_phone">Employee Phone:</label>
             <input type="text" id="employee_phone" name="employee_phone" required>
         </div>
-        
         <button type="submit">Submit</button>
     </form>
-    
     <div id="message"></div>
-    <div id="errorDetails" class="error-details" style="display:none;"></div>
 
     <script>
         // Initialize Appwrite client
         const client = new Appwrite.Client();
-        
-        // Configure your Appwrite endpoint and project ID
         client
-            .setEndpoint('https://fra.cloud.appwrite.io/v1')
-            .setProject('6841700000079319c666');
+            .setEndpoint('https://fra.cloud.appwrite.io/v1') // Your API Endpoint
+            .setProject('6841700000079319c666'); // Your project ID
+
+        // Initialize Appwrite database
+        const database = new Appwrite.Database(client);
 
         // Handle form submission
         document.getElementById('employeeForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            // Clear previous messages
-            document.getElementById('message').textContent = '';
-            document.getElementById('errorDetails').style.display = 'none';
-            
-            // Get form values
+            const employeeId = document.getElementById('employee_id').value;
             const employeeName = document.getElementById('employee_name').value;
-            const employeeAddress = document.getElementById('employee_address').value;
             const employeePhone = document.getElementById('employee_phone').value;
             
+            const messageElement = document.getElementById('message');
+            
             try {
-                // Create a document in the database
-                const databases = new Appwrite.Databases(client);
-                
-                const response = await databases.createDocument(
+                // Create document in Appwrite database
+                const response = await database.createDocument(
                     '6878debf002cdfe51f07', // Database ID
                     '6878decd0019c1887b04', // Collection ID
-                    'unique()', // Document ID (auto-generated)
+                    'unique()', // Document ID (using unique() to auto-generate)
                     {
+                        employee_id: employeeId,
                         employee_name: employeeName,
-                        employee_address: employeeAddress,
                         employee_phone: employeePhone
-                    },
-                    [
-                        // Add any permissions if needed
-                        // 'read("any")',
-                        // 'write("any")'
-                    ]
+                    }
                 );
                 
                 // Show success message
-                const messageDiv = document.getElementById('message');
-                messageDiv.textContent = 'Employee data submitted successfully!';
-                messageDiv.className = 'success';
+                messageElement.textContent = 'Employee data saved successfully!';
+                messageElement.className = 'success';
+                messageElement.style.display = 'block';
                 
-                // Reset the form
+                // Reset form
                 document.getElementById('employeeForm').reset();
                 
             } catch (error) {
-                console.error('Detailed Error:', error);
-                
                 // Show error message
-                const messageDiv = document.getElementById('message');
-                messageDiv.textContent = 'Error submitting data';
-                messageDiv.className = 'error';
-                
-                // Show technical details
-                const errorDetailsDiv = document.getElementById('errorDetails');
-                errorDetailsDiv.style.display = 'block';
-                
-                // Format error details
-                let errorDetails = `Error Type: ${error.type || 'Unknown'}\n`;
-                errorDetails += `Status Code: ${error.code || 'N/A'}\n`;
-                errorDetails += `Message: ${error.message || 'No detailed message'}\n\n`;
-                
-                if (error.response) {
-                    errorDetails += `Response Details:\n${JSON.stringify(error.response, null, 2)}`;
-                } else {
-                    errorDetails += `Stack Trace:\n${error.stack || 'No stack trace available'}`;
-                }
-                
-                errorDetailsDiv.textContent = errorDetails;
-                
-                // Specific error handling
-                if (error.code === 401) {
-                    messageDiv.textContent += ' - Authentication failed. Check your permissions.';
-                } else if (error.code === 404) {
-                    messageDiv.textContent += ' - Database or Collection not found. Check your IDs.';
-                } else if (error.code === 422) {
-                    messageDiv.textContent += ' - Validation failed. Check your data format.';
-                }
+                messageElement.textContent = 'Error saving employee data: ' + error.message;
+                messageElement.className = 'error';
+                messageElement.style.display = 'block';
+                console.error(error);
             }
         });
     </script>
