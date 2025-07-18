@@ -3,6 +3,7 @@
   const client = new Appwrite.Client()
     .setEndpoint('https://fra.cloud.appwrite.io/v1')  // or your self-hosted endpoint
     .setProject('6841700000079319c666');
+    .setSelfSigned();
 
   const databases = new Appwrite.Databases(client);
 
