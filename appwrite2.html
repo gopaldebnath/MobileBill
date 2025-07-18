@@ -85,7 +85,8 @@
             .setProject('6841700000079319c666'); // Your project ID
 
         // Initialize Appwrite database
-        const database = new Appwrite.Database(client);
+        //const database = new Appwrite.Database(client);
+        const databases = new Appwrite.Databases(client);
 
         // Handle form submission
         document.getElementById('employeeForm').addEventListener('submit', async function(e) {
@@ -99,7 +100,7 @@
             
             try {
                 // Create document in Appwrite database
-                const response = await database.createDocument(
+                const response = await databases.createDocument(
                     '6878debf002cdfe51f07', // Database ID
                     '6878decd0019c1887b04', // Collection ID
                     'unique()', // Document ID (using unique() to auto-generate)
