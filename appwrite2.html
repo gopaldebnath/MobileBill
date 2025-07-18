@@ -58,7 +58,7 @@
     </style>
 </head>
 <body>
-    <h1>Employee Data Form</h1>
+    <h1>Employee Data Form 1</h1>
     <form id="employeeForm">
         <div class="form-group">
             <label for="employee_id">Employee ID:</label>
@@ -100,7 +100,7 @@
             
             try {
                 // Create document in Appwrite database
-                const response = await database.createDocument(
+                const response = await databases.createDocument(
                     '6878debf002cdfe51f07', // Database ID
                     '6878decd0019c1887b04', // Collection ID
                     'unique()', // Document ID (using unique() to auto-generate)
