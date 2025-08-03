@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supabase Data Insert</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; }
+    input, textarea { width: 100%; padding: 8px; box-sizing: border-box; }
+    button { padding: 10px 15px; background: #3b82f6; color: white; border: none; cursor: pointer; }
+    button:hover { background: #2563eb; }
+    .auth-section, .data-section { margin-bottom: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+    .hidden { display: none; }
+    .error { color: red; }
+  </style>
+</head>
+<body>
+  <h1>Supabase Data Insert</h1>
+  
+  <!-- Authentication Section -->
+  <div class="auth-section" id="authSection">
+    <h2>Login</h2>
+    <div class="form-group">
+      <label for="email">Email:</label>
+      <input type="email" id="email" required>
+    </div>
+    <div class="form-group">
+      <label for="password">Password:</label>
+      <input type="password" id="password" required>
+    </div>
+    <button id="loginBtn">Login</button>
+    <button id="signupBtn">Sign Up</button>
+    <p class="error" id="authError"></p>
+  </div>
+  
+  <!-- Data Insert Section (hidden until authenticated) -->
+  <div class="data-section hidden" id="dataSection">
+    <h2>Insert Data</h2>
+    <div class="form-group">
+      <label for="title">Title:</label>
+      <input type="text" id="title" required>
+    </div>
+    <div class="form-group">
+      <label for="description">Description:</label>
+      <textarea id="description" rows="4" required></textarea>
+    </div>
+    <button id="insertBtn">Insert Data</button>
+    <p class="error" id="dataError"></p>
+    <p id="successMessage" class="hidden">Data inserted successfully!</p>
+  </div>
+
+  <script>
+    // Initialize Supabase
+    const supabaseUrl = 'YOUR_SUPABASE_URL';
+    const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    
+    // DOM Elements
+    const authSection = document.getElementById('authSection');
+    const dataSection = document.getElementById('dataSection');
+    const loginBtn = document.getElementById('loginBtn');
+    const signupBtn = document.getElementById('signupBtn');
+    const insertBtn = document.getElementById('insertBtn');
+    const authError = document.getElementById('authError');
+    const dataError = document.getElementById('dataError');
+    const successMessage = document.getElementById('successMessage');
+    
+    // Check if user is already logged in
+    async function checkAuth() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        showDataSection();
+      }
+    }
+    
+    // Show data section after login
+    function showDataSection() {
+      authSection.classList.add('hidden');
+      dataSection.classList.remove('hidden');
+    }
+    
+    // Login function
+    async function login(email, password) {
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+        
+        if (error) throw error;
+        showDataSection();
+      } catch (error) {
+        authError.textContent = error.message;
+      }
+    }
+    
+    // Signup function
+    async function signup(email, password) {
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password
+        });
+        
+        if (error) throw error;
+        authError.textContent = 'Check your email for confirmation!';
+      } catch (error) {
+        authError.textContent = error.message;
+      }
+    }
+    
+    // Insert data function
+    async function insertData(title, description) {
+      try {
+        // Get the current user
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          throw new Error('User not authenticated');
+        }
+        
+        // Insert data into your table (replace 'your_table' with your actual table name)
+        const { data, error } = await supabase
+          .from('your_table')
+          .insert([
+            { 
+              title, 
+              description,
+              user_id: user.id  // Store which user created this record
+            }
+          ]);
+        
+        if (error) throw error;
+        
+        // Show success message
+        successMessage.classList.remove('hidden');
+        setTimeout(() => successMessage.classList.add('hidden'), 3000);
+        
+        // Clear form
+        document.getElementById('title').value = '';
+        document.getElementById('description').value = '';
+      } catch (error) {
+        dataError.textContent = error.message;
+      }
+    }
+    
+    // Event Listeners
+    loginBtn.addEventListener('click', async () => {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      await login(email, password);
+    });
+    
+    signupBtn.addEventListener('click', async () => {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      await signup(email, password);
+    });
+    
+    insertBtn.addEventListener('click', async () => {
+      const title = document.getElementById('title').value;
+      const description = document.getElementById('description').value;
+      await insertData(title, description);
+    });
+    
+    // Check auth status when page loads
+    checkAuth();
+  </script>
+</body>
+</html>
