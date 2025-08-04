@@ -1,55 +1,91 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Supabase Login & CRUD Example</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
         }
-        .login-container, .crud-container {
+        .login-container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 0.5rem;
             border: 1px solid #ddd;
-            padding: 20px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        .crud-container {
-            display: none;
-        }
-        input, button {
-            padding: 8px;
-            margin: 5px 0;
+            border-radius: 4px;
+            box-sizing: border-box;
         }
         button {
-            cursor: pointer;
-            background-color: #4CAF50;
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #007bff;
             color: white;
             border: none;
             border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 1rem;
         }
         button:hover {
-            background-color: #45a049;
+            background-color: #0056b3;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
+        .error-message {
+            color: #dc3545;
+            margin-top: 1rem;
+            text-align: center;
+            font-size: 0.9rem;
         }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .error {
-            color: red;
-            margin-top: 10px;
+        .success-message {
+            color: #28a745;
+            margin-top: 1rem;
+            text-align: center;
+            font-size: 0.9rem;
         }
     </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+        <div id="message" class="error-message"></div>
+    </div>
+
     <script type="module">
         import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
@@ -58,169 +94,44 @@
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZma2FpanFqZG9mZGd2d29iaHp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MzMyMDYsImV4cCI6MjA2ODQwOTIwNn0.IomZz0OPcDJ-nMfBaLlos9BxVuEFJRF5MZmcZQIameA'
         );
 
-        // Global variable to track login status
-        let isLoggedIn = false;
-        let currentUserId = null;
-
-        // Login function
-        window.login = async function() {
-            const idInput = document.getElementById('loginId').value;
-            const nameInput = document.getElementById('loginName').value;
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
             
-            if (!idInput || !nameInput) {
-                document.getElementById('loginError').textContent = 'Please enter both ID and Name';
-                return;
-            }
-
-            const { data, error } = await supabase
-                .from('tblUSERS')
-                .select('*')
-                .eq('id', idInput)
-                .eq('password', nameInput)
-                .single();
-
-            if (error || !data) {
-                document.getElementById('loginError').textContent = 'Login failed: Invalid credentials';
-                console.error('Login error:', error);
-            } else {
-                isLoggedIn = true;
-                currentUserId = data.id;
-                document.getElementById('loginError').textContent = '';
-                document.getElementById('loginContainer').style.display = 'none';
-                document.getElementById('crudContainer').style.display = 'block';
-                document.getElementById('welcomeMessage').textContent = `Welcome, ${data.id}!`;
-                fetchData();
-            }
-        };
-
-        // Logout function
-        window.logout = function() {
-            isLoggedIn = false;
-            currentUserId = null;
-            document.getElementById('loginContainer').style.display = 'block';
-            document.getElementById('crudContainer').style.display = 'none';
-            document.getElementById('loginId').value = '';
-            document.getElementById('loginName').value = '';
-        };
-
-        // CRUD Functions
-        async function fetchData() {
-            const { data, error } = await supabase.from('tblTest').select('*').order('id', { ascending: true });
-            const tableBody = document.getElementById('dataTable');
-            tableBody.innerHTML = '';
-
-            if (data) {
-                data.forEach(row => {
-                    tableBody.innerHTML += `
-                        <tr>
-                            <td>${row.id}</td>
-                            <td><input type="text" value="${row.name}" id="name-${row.id}"/></td>
-                            <td>
-                                <button onclick="updateData(${row.id})">Update</button>
-                                <button onclick="deleteData(${row.id})">Delete</button>
-                            </td>
-                        </tr>`;
-                });
-            }
-            if (error) {
-                console.error('Fetch Error:', error);
-            }
-        }
-
-        window.insertData = async function() {
-            if (!isLoggedIn) {
-                alert("Please login first");
-                return;
-            }
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const messageElement = document.getElementById('message');
             
-            const name = document.getElementById('nameInput').value;
-            if (!name) {
-                alert("Please enter a name");
-                return;
-            }
+            messageElement.textContent = '';
+            messageElement.className = 'error-message';
             
-            const { error } = await supabase.from('tblTest').insert([{ name }]);
-            if (error) {
-                alert('Insert error: ' + error.message);
-            } else {
-                alert('Data inserted!');
-                document.getElementById('nameInput').value = '';
-                fetchData();
-            }
-        }
-
-        window.updateData = async function(id) {
-            if (!isLoggedIn) {
-                alert("Please login first");
-                return;
-            }
-            
-            const name = document.getElementById(`name-${id}`).value;
-            const { error } = await supabase.from('tblTest').update({ name }).eq('id', id);
-            if (error) {
-                alert('Update error: ' + error.message);
-            } else {
-                alert('Data updated!');
-                fetchData();
-            }
-        }
-
-        window.deleteData = async function(id) {
-            if (!isLoggedIn) {
-                alert("Please login first");
-                return;
-            }
-            
-            if (confirm("Are you sure you want to delete this?")) {
-                const { error } = await supabase.from('tblTest').delete().eq('id', id);
+            try {
+                // Query the tblUSERS table for matching credentials
+                const { data, error } = await supabase
+                    .from('tblUSERS')
+                    .select('*')
+                    .eq('id', username)
+                    .eq('password', password);
+                
                 if (error) {
-                    alert('Delete error: ' + error.message);
-                } else {
-                    alert('Data deleted!');
-                    fetchData();
+                    throw error;
                 }
+                
+                if (data && data.length > 0) {
+                    // Successful login
+                    messageElement.textContent = 'Login successful! Redirecting...';
+                    messageElement.className = 'success-message';
+                    
+                    // Here you would typically redirect or set a session
+                    console.log('User logged in:', data[0]);
+                    // window.location.href = '/dashboard.html';
+                } else {
+                    messageElement.textContent = 'Invalid username or password';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                messageElement.textContent = 'An error occurred during login. Please try again.';
             }
-        }
+        });
     </script>
-</head>
-<body>
-    <h1>Supabase Login & CRUD System</h1>
-
-    <!-- Login Container -->
-    <div id="loginContainer" class="login-container">
-        <h2>Login</h2>
-        <p>Enter your credentials from tblTest table</p>
-        <div>
-            <label for="loginId">ID:</label><br>
-            <input type="text" id="loginId" placeholder="Enter your ID"><br>
-            
-            <label for="loginName">Name:</label><br>
-            <input type="text" id="loginName" placeholder="Enter your name"><br><br>
-            
-            <button onclick="login()">Login</button>
-            <div id="loginError" class="error"></div>
-        </div>
-    </div>
-
-    <!-- CRUD Container (shown after login) -->
-    <div id="crudContainer" class="crud-container">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h2 id="welcomeMessage">CRUD Operations</h2>
-            <button onclick="logout()" style="background-color: #f44336;">Logout</button>
-        </div>
-        
-        <div>
-            <input type="text" id="nameInput" placeholder="Enter name">
-            <button onclick="insertData()">Add New</button>
-        </div>
-
-        <h3>Records:</h3>
-        <table>
-            <thead>
-                <tr><th>ID</th><th>Name</th><th>Actions</th></tr>
-            </thead>
-            <tbody id="dataTable"></tbody>
-        </table>
-    </div>
 </body>
 </html>
