@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>August Loan Analytics Dashboard (CSV)</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <style>/* Same CSS from previous file */</style>
+</head>
+<body>
+  <div class="container">
+    <div class="toolbar card">
+      <input id="csvUrl" type="url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vSKZv2oeWp8NIvfF8RX1gmUi710FpEPs-2BAhUaxq4Tr6HvY02XcoyMuO77cmFtre_u81u7dyg0tzJI/pub?gid=670451665&single=true&output=csv" aria-label="CSV URL" />
+      <select id="districtFilter"><option value="">All Districts</option></select>
+      <select id="blockFilter"><option value="">All Blocks</option></select>
+      <select id="metricSelector">
+        <option value="counts">Counts (Submitted/Sanctioned)</option>
+        <option value="amounts">Amounts (₹ Submitted/₹ Sanctioned)</option>
+      </select>
+      <button id="loadBtn" class="btn"><i class="fa-solid fa-cloud-arrow-down"></i> Load CSV</button>
+      <button id="exportBtn" class="btn secondary"><i class="fa-solid fa-file-export"></i> Export View</button>
+    </div>
+    <!-- Same KPI, chart, table HTML structure from previous file -->
+  </div>
+<script>
+// JavaScript code same as before, but CSV URL is pre-filled in the input
+</script>
+</body>
+</html>
