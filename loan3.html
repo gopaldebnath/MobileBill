@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHG Loan Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --dark-color: #34495e;
+            --light-color: #ecf0f1;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--dark-color);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        
+        .data-source {
+            margin-top: 10px;
+            font-size: 14px;
+            color: var(--light-color);
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 20px;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+            color: var(--dark-color);
+        }
+        
+        .card-icon {
+            font-size: 24px;
+            color: var(--primary-color);
+        }
+        
+        .kpi-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .kpi {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .kpi-value {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .kpi-label {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        
+        .shg {
+            color: var(--primary-color);
+        }
+        
+        .individual {
+            color: var(--secondary-color);
+        }
+        
+        .pending {
+            color: var(--warning-color);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        select, button {
+            padding: 10px 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            background-color: white;
+            font-size: 14px;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: var(--dark-color);
+            color: white;
+            font-weight: 500;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        
+        .full-width {
+            grid-column: span 12;
+        }
+        
+        .half-width {
+            grid-column: span 6;
+        }
+        
+        .quarter-width {
+            grid-column: span 3;
+        }
+        
+        .third-width {
+            grid-column: span 4;
+        }
+        
+        .success-rate {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        
+        .success-rate i {
+            margin-right: 5px;
+        }
+        
+        .positive {
+            color: var(--secondary-color);
+        }
+        
+        .negative {
+            color: var(--danger-color);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 18px;
+            color: #7f8c8d;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary-color);
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 1200px) {
+            .kpi-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .half-width {
+                grid-column: span 12;
+            }
+            
+            .third-width {
+                grid-column: span 6;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .kpi-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .third-width {
+                grid-column: span 12;
+            }
+            
+            .filters {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-hand-holding-usd"></i> SHG & Individual Loan Dashboard</h1>
+            <div class="data-source">
+                Data sourced from: <span id="data-source-url">Loading...</span>
+            </div>
+        </header>
+        
+        <div class="filters">
+            <select id="district-filter">
+                <option value="">All Districts</option>
+            </select>
+            <select id="block-filter">
+                <option value="">All Blocks</option>
+            </select>
+            <select id="date-filter">
+                <option value="">All Dates</option>
+            </select>
+            <button id="apply-filters"><i class="fas fa-filter"></i> Apply Filters</button>
+            <button id="reset-filters"><i class="fas fa-sync-alt"></i> Reset</button>
+        </div>
+        
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Loading data...</p>
+        </div>
+        
+        <div id="dashboard" style="display: none;">
+            <div class="dashboard-grid">
+                <div class="card full-width">
+                    <div class="card-header">
+                        <h2 class="card-title">Loan Overview</h2>
+                        <div class="card-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </div>
+                    <div class="kpi-container">
+                        <div class="kpi">
+                            <div class="kpi-label">Pending SHG Loans</div>
+                            <div class="kpi-value pending" id="pending-shg">0</div>
+                        </div>
+                        <div class="kpi">
+                            <div class="kpi-label">Pending Individual Loans</div>
+                            <div class="kpi-value pending" id="pending-individual">0</div>
+                        </div>
+                        <div class="kpi">
+                            <div class="kpi-label">Total SHG Loans Submitted</div>
+                            <div class="kpi-value shg" id="total-shg-submitted">0</div>
+                        </div>
+                        <div class="kpi">
+                            <div class="kpi-label">Total Individual Loans Submitted</div>
+                            <div class="kpi-value individual" id="total-individual-submitted">0</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card half-width">
+                    <div class="card-header">
+                        <h2 class="card-title">SHG Loan Trend</h2>
+                        <div class="card-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="shg-trend-chart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="card half-width">
+                    <div class="card-header">
+                        <h2 class="card-title">Individual Loan Trend</h2>
+                        <div class="card-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="individual-trend-chart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="card half-width">
+                    <div class="card-header">
+                        <h2 class="card-title">Loan Sanction Rate</h2>
+                        <div class="card-icon">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="sanction-rate-chart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="card half-width">
+                    <div class="card-header">
+                        <h2 class="card-title">Loan Amount Distribution</h2>
+                        <div class="card-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="amount-distribution-chart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="card full-width">
+                    <div class="card-header">
+                        <h2 class="card-title">Top Performing Blocks</h2>
+                        <div class="card-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                    </div>
+                    <div class="chart-container" style="height: 400px;">
+                        <canvas id="top-blocks-chart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="card full-width">
+                    <div class="card-header">
+                        <h2 class="card-title">Detailed Loan Data</h2>
+                        <div class="card-icon">
+                            <i class="fas fa-table"></i>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table id="loan-data-table">
+                            <thead>
+                                <tr>
+                                    <th>District</th>
+                                    <th>Block</th>
+                                    <th>Date</th>
+                                    <th>SHG Submitted</th>
+                                    <th>SHG Amount</th>
+                                    <th>SHG Sanctioned</th>
+                                    <th>SHG Sanctioned Amt</th>
+                                    <th>Individual Submitted</th>
+                                    <th>Individual Amount</th>
+                                    <th>Individual Sanctioned</th>
+                                    <th>Individual Sanctioned Amt</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let rawData = [];
+        let processedData = [];
+        let shgTrendChart, individualTrendChart, sanctionRateChart, amountDistributionChart, topBlocksChart;
+        
+        // DOM elements
+        const loadingElement = document.getElementById('loading');
+        const dashboardElement = document.getElementById('dashboard');
+        const dataSourceUrlElement = document.getElementById('data-source-url');
+        const districtFilter = document.getElementById('district-filter');
+        const blockFilter = document.getElementById('block-filter');
+        const dateFilter = document.getElementById('date-filter');
+        const applyFiltersButton = document.getElementById('apply-filters');
+        const resetFiltersButton = document.getElementById('reset-filters');
+        
+        // KPI elements
+        const pendingShgElement = document.getElementById('pending-shg');
+        const pendingIndividualElement = document.getElementById('pending-individual');
+        const totalShgSubmittedElement = document.getElementById('total-shg-submitted');
+        const totalIndividualSubmittedElement = document.getElementById('total-individual-submitted');
+        
+        // Table element
+        const loanDataTable = document.getElementById('loan-data-table').getElementsByTagName('tbody')[0];
+        
+        // CSV URL (replace with your Google Sheets published CSV URL)
+        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_8Z-7vX7Yy5v5Q5Z5Q5Z5Q5Z5Q5Z5Q5Z5Q5Z5Q5Z5Q5Z5Q5Z5Q5Z5Q5Z5Q5Z5Q5Z5Q5Z5Q5Z5Q/pub?output=csv';
+        
+        // Initialize the dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            dataSourceUrlElement.textContent = csvUrl;
+            loadData();
+            
+            // Event listeners
+            applyFiltersButton.addEventListener('click', applyFilters);
+            resetFiltersButton.addEventListener('click', resetFilters);
+        });
+        
+        // Load data from CSV
+        function loadData() {
+            Papa.parse(csvUrl, {
+                download: true,
+                header: true,
+                complete: function(results) {
+                    rawData = results.data;
+                    processData(rawData);
+                    initializeFilters();
+                    updateDashboard();
+                    loadingElement.style.display = 'none';
+                    dashboardElement.style.display = 'block';
+                },
+                error: function(error) {
+                    console.error('Error loading CSV:', error);
+                    loadingElement.innerHTML = '<p style="color: var(--danger-color);">Error loading data. Please check the CSV URL and try again.</p>';
+                }
+            });
+        }
+        
+        // Process the raw CSV data into a more usable format
+        function processData(data) {
+            processedData = [];
+            
+            // Process each row
+            data.forEach(row => {
+                const district = row['District Name'];
+                const block = row['Block Name'];
+                const pendingShg = parseInt(row['No of SHG Loan Pending Till 31st July']) || 0;
+                const pendingIndividual = parseInt(row['No of Individual Loan Pending Till 31st July']) || 0;
+                
+                // Process each day's data (from August 1st to August 31st)
+                for (let day = 1; day <= 31; day++) {
+                    const date = `2023-08-${day.toString().padStart(2, '0')}`;
+                    const dateColumns = getDateColumns(day);
+                    
+                    if (dateColumns) {
+                        const shgSubmitted = parseInt(row[dateColumns[0]]) || 0;
+                        const shgSubmittedAmt = parseInt(row[dateColumns[1]]) || 0;
+                        const shgSanctioned = parseInt(row[dateColumns[2]]) || 0;
+                        const shgSanctionedAmt = parseInt(row[dateColumns[3]]) || 0;
+                        const individualSubmitted = parseInt(row[dateColumns[4]]) || 0;
+                        const individualSubmittedAmt = parseInt(row[dateColumns[5]]) || 0;
+                        const individualSanctioned = parseInt(row[dateColumns[6]]) || 0;
+                        const individualSanctionedAmt = parseInt(row[dateColumns[7]]) || 0;
+                        
+                        // Only add if there's data for this day
+                        if (shgSubmitted > 0 || individualSubmitted > 0) {
+                            processedData.push({
+                                district,
+                                block,
+                                date,
+                                pendingShg,
+                                pendingIndividual,
+                                shgSubmitted,
+                                shgSubmittedAmt,
+                                shgSanctioned,
+                                shgSanctionedAmt,
+                                individualSubmitted,
+                                individualSubmittedAmt,
+                                individualSanctioned,
+                                individualSanctionedAmt
+                            });
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Helper function to get column names for a specific date
+        function getDateColumns(day) {
+            if (day === 1) return ['Data Entered for 1st August_1', 'Data Entered for 1st August_2', 'Data Entered for 1st August_3', 'Data Entered for 1st August_4', 
+                                  'Data Entered for 1st August_5', 'Data Entered for 1st August_6', 'Data Entered for 1st August_7', 'Data Entered for 1st August_8'];
+            if (day === 2) return ['Data Entered for 2nd August_1', 'Data Entered for 2nd August_2', 'Data Entered for 2nd August_3', 'Data Entered for 2nd August_4', 
+                                  'Data Entered for 2nd August_5', 'Data Entered for 2nd August_6', 'Data Entered for 2nd August_7', 'Data Entered for 2nd August_8'];
+            
+            // For days 3-31, the pattern continues in columns 21-252 (8 columns per day)
+            if (day >= 3 && day <= 31) {
+                const startColumn = 21 + (day - 3) * 8;
+                return [
+                    `Column ${startColumn}`,
+                    `Column ${startColumn + 1}`,
+                    `Column ${startColumn + 2}`,
+                    `Column ${startColumn + 3}`,
+                    `Column ${startColumn + 4}`,
+                    `Column ${startColumn + 5}`,
+                    `Column ${startColumn + 6}`,
+                    `Column ${startColumn + 7}`
+                ];
+            }
+            
+            return null;
+        }
+        
+        // Initialize filter dropdowns
+        function initializeFilters() {
+            // Districts
+            const districts = [...new Set(processedData.map(item => item.district))].filter(Boolean);
+            districts.forEach(district => {
+                const option = document.createElement('option');
+                option.value = district;
+                option.textContent = district;
+                districtFilter.appendChild(option);
+            });
+            
+            // Blocks
+            const blocks = [...new Set(processedData.map(item => item.block))].filter(Boolean);
+            blocks.forEach(block => {
+                const option = document.createElement('option');
+                option.value = block;
+                option.textContent = block;
+                blockFilter.appendChild(option);
+            });
+            
+            // Dates
+            const dates = [...new Set(processedData.map(item => item.date))].sort();
+            dates.forEach(date => {
+                const option = document.createElement('option');
+                option.value = date;
+                option.textContent = new Date(date).toLocaleDateString();
+                dateFilter.appendChild(option);
+            });
+        }
+        
+        // Apply filters
+        function applyFilters() {
+            const selectedDistrict = districtFilter.value;
+            const selectedBlock = blockFilter.value;
+            const selectedDate = dateFilter.value;
+            
+            let filteredData = processedData;
+            
+            if (selectedDistrict) {
+                filteredData = filteredData.filter(item => item.district === selectedDistrict);
+                
+                // Update block filter based on selected district
+                blockFilter.innerHTML = '<option value="">All Blocks</option>';
+                const blocksInDistrict = [...new Set(filteredData.map(item => item.block))].filter(Boolean);
+                blocksInDistrict.forEach(block => {
+                    const option = document.createElement('option');
+                    option.value = block;
+                    option.textContent = block;
+                    if (block === selectedBlock) option.selected = true;
+                    blockFilter.appendChild(option);
+                });
+            }
+            
+            if (selectedBlock) {
+                filteredData = filteredData.filter(item => item.block === selectedBlock);
+            }
+            
+            if (selectedDate) {
+                filteredData = filteredData.filter(item => item.date === selectedDate);
+            }
+            
+            updateDashboard(filteredData);
+        }
+        
+        // Reset filters
+        function resetFilters() {
+            districtFilter.value = '';
+            blockFilter.value = '';
+            dateFilter.value = '';
+            
+            // Reset block filter options
+            blockFilter.innerHTML = '<option value="">All Blocks</option>';
+            const blocks = [...new Set(processedData.map(item => item.block))].filter(Boolean);
+            blocks.forEach(block => {
+                const option = document.createElement('option');
+                option.value = block;
+                option.textContent = block;
+                blockFilter.appendChild(option);
+            });
+            
+            updateDashboard(processedData);
+        }
+        
+        // Update the dashboard with filtered data
+        function updateDashboard(data = processedData) {
+            updateKPIs(data);
+            updateCharts(data);
+            updateTable(data);
+        }
+        
+        // Update Key Performance Indicators
+        function updateKPIs(data) {
+            // Pending loans (take the first entry's pending values as they should be the same for all entries)
+            const pendingShg = data.length > 0 ? data[0].pendingShg : 0;
+            const pendingIndividual = data.length > 0 ? data[0].pendingIndividual : 0;
+            
+            // Sum up submitted loans
+            const totalShgSubmitted = data.reduce((sum, item) => sum + item.shgSubmitted, 0);
+            const totalIndividualSubmitted = data.reduce((sum, item) => sum + item.individualSubmitted, 0);
+            
+            // Update DOM
+            pendingShgElement.textContent = pendingShg.toLocaleString();
+            pendingIndividualElement.textContent = pendingIndividual.toLocaleString();
+            totalShgSubmittedElement.textContent = totalShgSubmitted.toLocaleString();
+            totalIndividualSubmittedElement.textContent = totalIndividualSubmitted.toLocaleString();
+        }
+        
+        // Update all charts
+        function updateCharts(data) {
+            updateTrendChart('shg', data);
+            updateTrendChart('individual', data);
+            updateSanctionRateChart(data);
+            updateAmountDistributionChart(data);
+            updateTopBlocksChart(data);
+        }
+        
+        // Update trend chart for SHG or Individual loans
+        function updateTrendChart(loanType, data) {
+            // Group data by date
+            const dateGroups = {};
+            data.forEach(item => {
+                if (!dateGroups[item.date]) {
+                    dateGroups[item.date] = {
+                        submitted: 0,
+                        sanctioned: 0
+                    };
+                }
+                
+                dateGroups[item.date].submitted += item[`${loanType}Submitted`];
+                dateGroups[item.date].sanctioned += item[`${loanType}Sanctioned`];
+            });
+            
+            // Sort dates chronologically
+            const sortedDates = Object.keys(dateGroups).sort();
+            
+            // Prepare chart data
+            const submittedData = sortedDates.map(date => dateGroups[date].submitted);
+            const sanctionedData = sortedDates.map(date => dateGroups[date].sanctioned);
+            
+            const chartId = `${loanType}-trend-chart`;
+            const ctx = document.getElementById(chartId).getContext('2d');
+            
+            // Destroy previous chart if it exists
+            if (loanType === 'shg' && shgTrendChart) {
+                shgTrendChart.destroy();
+            } else if (loanType === 'individual' && individualTrendChart) {
+                individualTrendChart.destroy();
+            }
+            
+            // Create new chart
+            const newChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: sortedDates.map(date => new Date(date).toLocaleDateString()),
+                    datasets: [
+                        {
+                            label: 'Submitted',
+                            data: submittedData,
+                            borderColor: loanType === 'shg' ? 'rgba(52, 152, 219, 1)' : 'rgba(46, 204, 113, 1)',
+                            backgroundColor: loanType === 'shg' ? 'rgba(52, 152, 219, 0.1)' : 'rgba(46, 204, 113, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: true
+                        },
+                        {
+                            label: 'Sanctioned',
+                            data: sanctionedData,
+                            borderColor: loanType === 'shg' ? 'rgba(41, 128, 185, 1)' : 'rgba(39, 174, 96, 1)',
+                            backgroundColor: loanType === 'shg' ? 'rgba(41, 128, 185, 0.1)' : 'rgba(39, 174, 96, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `${loanType === 'shg' ? 'SHG' : 'Individual'} Loan Trends`,
+                            font: {
+                                size: 16
+                            }
+                        },
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Loans'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Store chart reference
+            if (loanType === 'shg') {
+                shgTrendChart = newChart;
+            } else {
+                individualTrendChart = newChart;
+            }
+        }
+        
+        // Update sanction rate chart
+        function updateSanctionRateChart(data) {
+            // Group data by date
+            const dateGroups = {};
+            data.forEach(item => {
+                if (!dateGroups[item.date]) {
+                    dateGroups[item.date] = {
+                        shgSubmitted: 0,
+                        shgSanctioned: 0,
+                        individualSubmitted: 0,
+                        individualSanctioned: 0
+                    };
+                }
+                
+                dateGroups[item.date].shgSubmitted += item.shgSubmitted;
+                dateGroups[item.date].shgSanctioned += item.shgSanctioned;
+                dateGroups[item.date].individualSubmitted += item.individualSubmitted;
+                dateGroups[item.date].individualSanctioned += item.individualSanctioned;
+            });
+            
+            // Sort dates chronologically
+            const sortedDates = Object.keys(dateGroups).sort();
+            
+            // Calculate sanction rates
+            const shgRates = sortedDates.map(date => {
+                const submitted = dateGroups[date].shgSubmitted;
+                const sanctioned = dateGroups[date].shgSanctioned;
+                return submitted > 0 ? (sanctioned / submitted) * 100 : 0;
+            });
+            
+            const individualRates = sortedDates.map(date => {
+                const submitted = dateGroups[date].individualSubmitted;
+                const sanctioned = dateGroups[date].individualSanctioned;
+                return submitted > 0 ? (sanctioned / submitted) * 100 : 0;
+            });
+            
+            const ctx = document.getElementById('sanction-rate-chart').getContext('2d');
+            
+            // Destroy previous chart if it exists
+            if (sanctionRateChart) {
+                sanctionRateChart.destroy();
+            }
+            
+            // Create new chart
+            sanctionRateChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedDates.map(date => new Date(date).toLocaleDateString()),
+                    datasets: [
+                        {
+                            label: 'SHG Sanction Rate',
+                            data: shgRates,
+                            backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                            borderColor: 'rgba(52, 152, 219, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Individual Sanction Rate',
+                            data: individualRates,
+                            backgroundColor: 'rgba(46, 204, 113, 0.7)',
+                            borderColor: 'rgba(46, 204, 113, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Loan Sanction Rates (%)',
+                            font: {
+                                size: 16
+                            }
+                        },
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw.toFixed(2)}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Sanction Rate (%)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Update amount distribution chart
+        function updateAmountDistributionChart(data) {
+            // Calculate totals
+            const shgSubmittedAmt = data.reduce((sum, item) => sum + item.shgSubmittedAmt, 0);
+            const shgSanctionedAmt = data.reduce((sum, item) => sum + item.shgSanctionedAmt, 0);
+            const individualSubmittedAmt = data.reduce((sum, item) => sum + item.individualSubmittedAmt, 0);
+            const individualSanctionedAmt = data.reduce((sum, item) => sum + item.individualSanctionedAmt, 0);
+            
+            const ctx = document.getElementById('amount-distribution-chart').getContext('2d');
+            
+            // Destroy previous chart if it exists
+            if (amountDistributionChart) {
+                amountDistributionChart.destroy();
+            }
+            
+            // Create new chart
+            amountDistributionChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['SHG Submitted', 'SHG Sanctioned', 'Individual Submitted', 'Individual Sanctioned'],
+                    datasets: [{
+                        data: [shgSubmittedAmt, shgSanctionedAmt, individualSubmittedAmt, individualSanctionedAmt],
+                        backgroundColor: [
+                            'rgba(52, 152, 219, 0.7)',
+                            'rgba(41, 128, 185, 0.7)',
+                            'rgba(46, 204, 113, 0.7)',
+                            'rgba(39, 174, 96, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(52, 152, 219, 1)',
+                            'rgba(41, 128, 185, 1)',
+                            'rgba(46, 204, 113, 1)',
+                            'rgba(39, 174, 96, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Loan Amount Distribution',
+                            font: {
+                                size: 16
+                            }
+                        },
+                        legend: {
+                            position: 'right',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    return `${label}: ₹${value.toLocaleString()}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Update top performing blocks chart
+        function updateTopBlocksChart(data) {
+            // Group data by block
+            const blockGroups = {};
+            data.forEach(item => {
+                if (!blockGroups[item.block]) {
+                    blockGroups[item.block] = {
+                        shgSubmitted: 0,
+                        shgSanctioned: 0,
+                        individualSubmitted: 0,
+                        individualSanctioned: 0
+                    };
+                }
+                
+                blockGroups[item.block].shgSubmitted += item.shgSubmitted;
+                blockGroups[item.block].shgSanctioned += item.shgSanctioned;
+                blockGroups[item.block].individualSubmitted += item.individualSubmitted;
+                blockGroups[item.block].individualSanctioned += item.individualSanctioned;
+            });
+            
+            // Convert to array and sort by total loans (SHG + Individual)
+            const blockArray = Object.keys(blockGroups).map(block => {
+                return {
+                    block,
+                    ...blockGroups[block],
+                    totalLoans: blockGroups[block].shgSubmitted + blockGroups[block].individualSubmitted
+                };
+            }).sort((a, b) => b.totalLoans - a.totalLoans);
+            
+            // Take top 10 blocks
+            const topBlocks = blockArray.slice(0, 10);
+            
+            const ctx = document.getElementById('top-blocks-chart').getContext('2d');
+            
+            // Destroy previous chart if it exists
+            if (topBlocksChart) {
+                topBlocksChart.destroy();
+            }
+            
+            // Create new chart
+            topBlocksChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: topBlocks.map(item => item.block),
+                    datasets: [
+                        {
+                            label: 'SHG Loans Submitted',
+                            data: topBlocks.map(item => item.shgSubmitted),
+                            backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                            borderColor: 'rgba(52, 152, 219, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Individual Loans Submitted',
+                            data: topBlocks.map(item => item.individualSubmitted),
+                            backgroundColor: 'rgba(46, 204, 113, 0.7)',
+                            borderColor: 'rgba(46, 204, 113, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Top Performing Blocks by Loan Applications',
+                            font: {
+                                size: 16
+                            }
+                        },
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Loans'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Block'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Update the data table
+        function updateTable(data) {
+            // Clear existing rows
+            loanDataTable.innerHTML = '';
+            
+            // Add new rows
+            data.forEach(item => {
+                const row = loanDataTable.insertRow();
+                
+                // District
+                const districtCell = row.insertCell();
+                districtCell.textContent = item.district;
+                
+                // Block
+                const blockCell = row.insertCell();
+                blockCell.textContent = item.block;
+                
+                // Date
+                const dateCell = row.insertCell();
+                dateCell.textContent = new Date(item.date).toLocaleDateString();
+                
+                // SHG Submitted
+                const shgSubmittedCell = row.insertCell();
+                shgSubmittedCell.textContent = item.shgSubmitted.toLocaleString();
+                
+                // SHG Amount
+                const shgAmountCell = row.insertCell();
+                shgAmountCell.textContent = '₹' + item.shgSubmittedAmt.toLocaleString();
+                
+                // SHG Sanctioned
+                const shgSanctionedCell = row.insertCell();
+                shgSanctionedCell.textContent = item.shgSanctioned.toLocaleString();
+                
+                // SHG Sanctioned Amount
+                const shgSanctionedAmtCell = row.insertCell();
+                shgSanctionedAmtCell.textContent = '₹' + item.shgSanctionedAmt.toLocaleString();
+                
+                // Individual Submitted
+                const individualSubmittedCell = row.insertCell();
+                individualSubmittedCell.textContent = item.individualSubmitted.toLocaleString();
+                
+                // Individual Amount
+                const individualAmountCell = row.insertCell();
+                individualAmountCell.textContent = '₹' + item.individualSubmittedAmt.toLocaleString();
+                
+                // Individual Sanctioned
+                const individualSanctionedCell = row.insertCell();
+                individualSanctionedCell.textContent = item.individualSanctioned.toLocaleString();
+                
+                // Individual Sanctioned Amount
+                const individualSanctionedAmtCell = row.insertCell();
+                individualSanctionedAmtCell.textContent = '₹' + item.individualSanctionedAmt.toLocaleString();
+            });
+        }
+    </script>
+</body>
+</html>
