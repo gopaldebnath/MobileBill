@@ -86,9 +86,6 @@
   .bg-success { background-color: #2ecc71 !important; }
   .bg-warning { background-color: #f39c12 !important; }
   .bg-danger { background-color: #e74c3c !important; }
-  
-  .trend-up { color: #2ecc71; }
-  .trend-down { color: #e74c3c; }
 </style>
 </head>
 <body>
@@ -132,7 +129,7 @@
 <script>
 const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSKZv2oeWp8NIvfF8RX1gmUi710FpEPs-2BAhUaxq4Tr6HvY02XcoyMuO77cmFtre_u81u7dyg0tzJI/pub?gid=670451665&single=true&output=csv";
 
-// District targets - Updated NORTH TRIPURA targets as requested
+// District targets
 const targets = {
   "DHALAI": { loan: 800, amount: 2504 },
   "GOMATI": { loan: 850, amount: 2660.5 },
@@ -186,9 +183,6 @@ fetch(csvUrl)
       blockData[district][block].sanctionedAmt += sanctionedAmt;
     });
 
-    // Debugging: Check what districts were found
-    console.log("Districts found in data:", Object.keys(districtData));
-
     // Render
     const tbody = document.querySelector("#loanTable tbody");
     let totalTargetLoan = 0, totalSubmittedCount = 0, totalSanctionedCount = 0;
@@ -218,7 +212,8 @@ fetch(csvUrl)
       totalSubmittedAmt += d.submittedAmt;
       totalSanctionedAmt += d.sanctionedAmt;
 
-      const achLoan = targetLoan ? (d.submittedCount / targetLoan) * 100 : 0;
+      // Calculate achievement based on Sanctioned vs Target
+      const achLoan = targetLoan ? (d.sanctionedCount / targetLoan) * 100 : 0;
 
       const tr = document.createElement("tr");
       tr.className = "district-row";
@@ -227,7 +222,7 @@ fetch(csvUrl)
         <td>${district}</td>
         <td>${formatInt(targetLoan)}</td>
         <td>${formatAmt(targetAmt)}</td>
-        <td>${formatInt(d.submittedCount)} ${trendIndicator(achLoan)}</td>
+        <td>${formatInt(d.submittedCount)}</td>
         <td>${formatAmt(d.submittedAmt)}</td>
         <td>${formatInt(d.sanctionedCount)}</td>
         <td>${formatAmt(d.sanctionedAmt)}</td>
@@ -244,7 +239,7 @@ fetch(csvUrl)
     });
     
     // Add summary row
-    const totalAchLoan = totalTargetLoan ? (totalSubmittedCount / totalTargetLoan) * 100 : 0;
+    const totalAchLoan = totalTargetLoan ? (totalSanctionedCount / totalTargetLoan) * 100 : 0;
     
     const trSummary = document.createElement("tr");
     trSummary.className = "summary-row";
@@ -275,11 +270,6 @@ function getProgressBarClass(value) {
   if (value >= 80) return "bg-success";
   if (value >= 50) return "bg-warning";
   return "bg-danger";
-}
-
-function trendIndicator(value) {
-  const randomTrend = Math.random() > 0.5 ? "up" : "down";
-  return `<span class="trend-${randomTrend}"><i class="bi bi-arrow-${randomTrend}"></i></span>`;
 }
 
 function formatInt(n) { return (n||0).toLocaleString("en-IN"); }
