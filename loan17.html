@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>District & Block Collapsible Table</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        tr.district-row {
+            background-color: #f2f2f2;
+            cursor: pointer;
+        }
+        tr.block-row {
+            background-color: #fff;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<h2>District & Block Data</h2>
+
+<table id="data-table">
+    <thead>
+        <tr>
+            <th>District</th>
+            <th>Block</th>
+            <th>Data</th>
+        </tr>
+    </thead>
+    <tbody id="table-body">
+        <!-- Content will be inserted here -->
+    </tbody>
+</table>
+
+<script>
+    // Helper to remove spaces for dataset keys
+    function sanitizeKey(name) {
+        return name.replace(/\s+/g, '_');
+    }
+
+    // Sample data
+    const data = {
+        "SOUTH TRIPURA": [
+            { block: "Block A", data: 10 },
+            { block: "Block B", data: 20 }
+        ],
+        "NORTH TRIPURA": [
+            { block: "Block C", data: 15 },
+            { block: "Block D", data: 25 }
+        ],
+        "WEST TRIPURA": [
+            { block: "Block E", data: 12 },
+            { block: "Block F", data: 30 }
+        ]
+    };
+
+    const tableBody = document.getElementById('table-body');
+
+    // Create district rows
+    Object.keys(data).forEach(district => {
+        const tr = document.createElement('tr');
+        tr.classList.add('district-row');
+        tr.dataset.district = sanitizeKey(district);
+        tr.dataset.districtName = district; // original name for display
+        tr.innerHTML = `<td colspan="3"><strong>${district}</strong></td>`;
+        tr.addEventListener('click', () => toggleBlocks(district));
+        tableBody.appendChild(tr);
+    });
+
+    function toggleBlocks(districtName) {
+        const districtKey = sanitizeKey(districtName);
+
+        const existingBlocks = document.querySelectorAll(`tr.block-row[data-parent="${districtKey}"]`);
+
+        if (existingBlocks.length) {
+            // Toggle visibility
+            existingBlocks.forEach(row => {
+                row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+            });
+        } else {
+            // Create block rows
+            data[districtName].forEach(blockData => {
+                const trb = document.createElement('tr');
+                trb.classList.add('block-row');
+                trb.dataset.parent = districtKey;
+                trb.innerHTML = `<td></td><td>${blockData.block}</td><td>${blockData.data}</td>`;
+                tableBody.insertBefore(trb, document.querySelector(`tr.district-row[data-district="${districtKey}"]`).nextSibling);
+            });
+        }
+    }
+</script>
+
+</body>
+</html>
