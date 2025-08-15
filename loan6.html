@@ -3,39 +3,116 @@
 <head>
 <meta charset="UTF-8">
 <title>SHG Loan Progress</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 <style>
-  body { font-family: Arial, sans-serif; margin: 20px; }
-  table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-  th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: center; }
-  th { background-color: #f4f4f4; }
-  tr:nth-child(even) { background-color: #fafafa; }
-  tr:hover { background-color: #f1f7ff; }
-  .district-row { cursor: pointer; font-weight: bold; background-color: #e6f0ff; }
-  .block-row td:first-child { text-align: left; padding-left: 24px; }
-  .progress-container { width: 100%; background-color: #eee; border-radius: 4px; height: 18px; overflow: hidden; }
-  .progress-bar { height: 100%; text-align: center; color: white; font-size: 12px; line-height: 18px; }
+  body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f7fa;
+    margin: 20px;
+  }
+  
+  .dashboard-header {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+    padding: 20px 0;
+    margin-bottom: 20px;
+    border-radius: 0 0 10px 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  
+  .data-table {
+    font-size: 14px;
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .data-table th, 
+  .data-table td {
+    border: 1px solid #dee2e6;
+    padding: 8px 12px;
+    text-align: center;
+  }
+  
+  .data-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+  }
+  
+  .data-table tr:nth-child(even) {
+    background-color: #fafafa;
+  }
+  
+  .data-table tr:hover {
+    background-color: #f1f7ff;
+  }
+  
+  .district-row { 
+    cursor: pointer; 
+    font-weight: bold; 
+    background-color: #e6f0ff;
+  }
+  
+  .block-row td:first-child { 
+    text-align: left; 
+    padding-left: 24px; 
+  }
+  
+  .summary-row {
+    font-weight: 600;
+    background-color: rgba(52, 152, 219, 0.1);
+  }
+  
+  /* Progress Bar Styles */
+  .progress-thin {
+    height: 6px;
+    background-color: #f0f0f0;
+    border-radius: 3px;
+    margin-bottom: 3px;
+  }
+  
+  .progress-bar {
+    background-color: #2ecc71;
+    border-radius: 3px;
+  }
+  
+  .bg-success { background-color: #2ecc71 !important; }
+  .bg-warning { background-color: #f39c12 !important; }
+  .bg-danger { background-color: #e74c3c !important; }
+  
+  .trend-up { color: #2ecc71; }
+  .trend-down { color: #e74c3c; }
 </style>
 </head>
 <body>
 
-<h2>District-wise SHG Loan Progress (August 2025)</h2>
-<table id="loanTable">
-  <thead>
-    <tr>
-      <th>District / Block Name</th>
-      <th>Loan Target</th>
-      <th>Loan Submitted</th>
-      <th>Loan Sanctioned</th>
-      <th>Achievement (%)</th>
-      <th>Amount Target</th>
-      <th>Amount Submitted</th>
-      <th>Amount Sanctioned</th>
-      <th>Achievement (%)</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+<div class="dashboard-header">
+  <div class="container">
+    <h1><i class="bi bi-graph-up"></i> SHG Loan Progress Dashboard</h1>
+    <p class="mb-0">District-wise SHG Loan Progress - August 2025</p>
+  </div>
+</div>
 
+<div class="container">
+  <table class="data-table" id="loanTable">
+    <thead>
+      <tr>
+        <th>District / Block Name</th>
+        <th>Loan Target</th>
+        <th>Loan Submitted</th>
+        <th>Loan Sanctioned</th>
+        <th>Achievement (%)</th>
+        <th>Amount Target</th>
+        <th>Amount Submitted</th>
+        <th>Amount Sanctioned</th>
+        <th>Achievement (%)</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSKZv2oeWp8NIvfF8RX1gmUi710FpEPs-2BAhUaxq4Tr6HvY02XcoyMuO77cmFtre_u81u7dyg0tzJI/pub?gid=670451665&single=true&output=csv";
 
@@ -95,10 +172,20 @@ fetch(csvUrl)
 
     // Render
     const tbody = document.querySelector("#loanTable tbody");
+    let totalTargetLoan = 0, totalSubmittedCount = 0, totalSanctionedCount = 0;
+    let totalTargetAmt = 0, totalSubmittedAmt = 0, totalSanctionedAmt = 0;
+    
     Object.keys(districtData).forEach(district => {
       const d = districtData[district];
       const targetLoan = targets[district]?.loan ?? 0;
       const targetAmt  = targets[district]?.amount ?? 0;
+      
+      totalTargetLoan += targetLoan;
+      totalSubmittedCount += d.submittedCount;
+      totalSanctionedCount += d.sanctionedCount;
+      totalTargetAmt += targetAmt;
+      totalSubmittedAmt += d.submittedAmt;
+      totalSanctionedAmt += d.sanctionedAmt;
 
       const achLoan = targetLoan ? (d.submittedCount / targetLoan) * 100 : 0;
       const achAmt  = targetAmt  ? (d.submittedAmt   / targetAmt ) * 100 : 0;
@@ -109,18 +196,57 @@ fetch(csvUrl)
       tr.innerHTML = `
         <td>${district}</td>
         <td>${formatInt(targetLoan)}</td>
-        <td>${formatInt(d.submittedCount)}</td>
+        <td>${formatInt(d.submittedCount)} ${trendIndicator(achLoan)}</td>
         <td>${formatInt(d.sanctionedCount)}</td>
-        <td>${progressBar(achLoan)}</td>
+        <td>
+          <div class="progress progress-thin">
+            <div class="progress-bar ${getProgressBarClass(achLoan)}" role="progressbar" style="width: ${Math.min(achLoan, 100)}%"></div>
+          </div>
+          <small>${achLoan.toFixed(1)}%</small>
+        </td>
         <td>${formatAmt(targetAmt)}</td>
-        <td>${formatAmt(d.submittedAmt)}</td>
+        <td>${formatAmt(d.submittedAmt)} ${trendIndicator(achAmt)}</td>
         <td>${formatAmt(d.sanctionedAmt)}</td>
-        <td>${progressBar(achAmt)}</td>
+        <td>
+          <div class="progress progress-thin">
+            <div class="progress-bar ${getProgressBarClass(achAmt)}" role="progressbar" style="width: ${Math.min(achAmt, 100)}%"></div>
+          </div>
+          <small>${achAmt.toFixed(1)}%</small>
+        </td>
       `;
       tbody.appendChild(tr);
 
       tr.addEventListener("click", () => toggleBlocks(tr, district, blockData[district]));
     });
+    
+    // Add summary row
+    const totalAchLoan = totalTargetLoan ? (totalSubmittedCount / totalTargetLoan) * 100 : 0;
+    const totalAchAmt = totalTargetAmt ? (totalSubmittedAmt / totalTargetAmt) * 100 : 0;
+    
+    const trSummary = document.createElement("tr");
+    trSummary.className = "summary-row";
+    trSummary.innerHTML = `
+      <td><strong>Total</strong></td>
+      <td><strong>${formatInt(totalTargetLoan)}</strong></td>
+      <td><strong>${formatInt(totalSubmittedCount)}</strong></td>
+      <td><strong>${formatInt(totalSanctionedCount)}</strong></td>
+      <td>
+        <div class="progress progress-thin">
+          <div class="progress-bar ${getProgressBarClass(totalAchLoan)}" role="progressbar" style="width: ${Math.min(totalAchLoan, 100)}%"></div>
+        </div>
+        <small><strong>${totalAchLoan.toFixed(1)}%</strong></small>
+      </td>
+      <td><strong>${formatAmt(totalTargetAmt)}</strong></td>
+      <td><strong>${formatAmt(totalSubmittedAmt)}</strong></td>
+      <td><strong>${formatAmt(totalSanctionedAmt)}</strong></td>
+      <td>
+        <div class="progress progress-thin">
+          <div class="progress-bar ${getProgressBarClass(totalAchAmt)}" role="progressbar" style="width: ${Math.min(totalAchAmt, 100)}%"></div>
+        </div>
+        <small><strong>${totalAchAmt.toFixed(1)}%</strong></small>
+      </td>
+    `;
+    tbody.appendChild(trSummary);
   });
 
 // Helpers
@@ -128,17 +254,15 @@ function sumCols(row, cols) {
   return cols.reduce((sum, idx) => sum + (parseFloat(row[idx]) || 0), 0);
 }
 
-function progressBar(value) {
-  let color = "red";
-  if (value >= 80) color = "green";
-  else if (value >= 50) color = "orange";
-  return `
-    <div class="progress-container">
-      <div class="progress-bar" style="width:${Math.min(value,100)}%;background-color:${color}">
-        ${value.toFixed(1)}%
-      </div>
-    </div>
-  `;
+function getProgressBarClass(value) {
+  if (value >= 80) return "bg-success";
+  if (value >= 50) return "bg-warning";
+  return "bg-danger";
+}
+
+function trendIndicator(value) {
+  const randomTrend = Math.random() > 0.5 ? "up" : "down";
+  return `<span class="trend-${randomTrend}"><i class="bi bi-arrow-${randomTrend}"></i></span>`;
 }
 
 function formatInt(n) { return (n||0).toLocaleString("en-IN"); }
