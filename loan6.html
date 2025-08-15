@@ -106,7 +106,7 @@
       <tr>
         <th rowspan="2">District / Block Name</th>
         <th colspan="2" class="group-header">Target</th>
-        <th colspan="3" class="group-header">Submitted</th>
+        <th colspan="2" class="group-header">Submitted</th>
         <th colspan="2" class="group-header">Sanctioned</th>
         <th rowspan="2">Achievement (%)</th>
       </tr>
@@ -118,7 +118,6 @@
         <!-- Submitted Group -->
         <th>SHG Loan Submitted</th>
         <th>Amount Submitted (₹ Lakh)</th>
-        <th>% of Target</th>
         
         <!-- Sanctioned Group -->
         <th>SHG Loan Sanctioned</th>
@@ -220,7 +219,6 @@ fetch(csvUrl)
       totalSanctionedAmt += d.sanctionedAmt;
 
       const achLoan = targetLoan ? (d.submittedCount / targetLoan) * 100 : 0;
-      const submittedPct = targetLoan ? (d.submittedCount / targetLoan) * 100 : 0;
 
       const tr = document.createElement("tr");
       tr.className = "district-row";
@@ -231,12 +229,6 @@ fetch(csvUrl)
         <td>${formatAmt(targetAmt)}</td>
         <td>${formatInt(d.submittedCount)} ${trendIndicator(achLoan)}</td>
         <td>${formatAmt(d.submittedAmt)}</td>
-        <td>
-          <div class="progress progress-thin">
-            <div class="progress-bar ${getProgressBarClass(submittedPct)}" role="progressbar" style="width: ${Math.min(submittedPct, 100)}%"></div>
-          </div>
-          <small>${submittedPct.toFixed(1)}%</small>
-        </td>
         <td>${formatInt(d.sanctionedCount)}</td>
         <td>${formatAmt(d.sanctionedAmt)}</td>
         <td>
@@ -253,7 +245,6 @@ fetch(csvUrl)
     
     // Add summary row
     const totalAchLoan = totalTargetLoan ? (totalSubmittedCount / totalTargetLoan) * 100 : 0;
-    const totalSubmittedPct = totalTargetLoan ? (totalSubmittedCount / totalTargetLoan) * 100 : 0;
     
     const trSummary = document.createElement("tr");
     trSummary.className = "summary-row";
@@ -263,12 +254,6 @@ fetch(csvUrl)
       <td><strong>${formatAmt(totalTargetAmt)}</strong></td>
       <td><strong>${formatInt(totalSubmittedCount)}</strong></td>
       <td><strong>${formatAmt(totalSubmittedAmt)}</strong></td>
-      <td>
-        <div class="progress progress-thin">
-          <div class="progress-bar ${getProgressBarClass(totalSubmittedPct)}" role="progressbar" style="width: ${Math.min(totalSubmittedPct, 100)}%"></div>
-        </div>
-        <small><strong>${totalSubmittedPct.toFixed(1)}%</strong></small>
-      </td>
       <td><strong>${formatInt(totalSanctionedCount)}</strong></td>
       <td><strong>${formatAmt(totalSanctionedAmt)}</strong></td>
       <td>
@@ -321,7 +306,6 @@ function toggleBlocks(districtRow, districtName, blocksObj) {
       <td>—</td>
       <td>${formatInt(b.submittedCount)}</td>
       <td>${formatAmt(b.submittedAmt)}</td>
-      <td>—</td>
       <td>${formatInt(b.sanctionedCount)}</td>
       <td>${formatAmt(b.sanctionedAmt)}</td>
       <td>—</td>
