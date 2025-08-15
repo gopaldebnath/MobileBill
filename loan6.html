@@ -90,9 +90,7 @@
   .recent-submission {
     font-size: 0.8em;
     color: #27ae60;
-    font-weight: bold;
     display: block;
-    margin-top: 2px;
   }
 </style>
 </head>
@@ -149,16 +147,64 @@ const targets = {
   "WEST TRIPURA": { loan: 840, amount: 2629.2 }
 };
 
-// Column indexes for SHG loan count & amount (submitted & sanctioned)
-// Assuming the last 2 columns (indices 244-247) represent the last 2 days
-const colSubmittedCount = [4, 12, 20, 28, 36, 44, 52, 60, 68, 76, 84, 92, 100, 108, 116, 124, 132, 140, 148, 156, 164, 172, 180, 188, 196, 204, 212, 220, 228, 236, 244];
-const colSubmittedAmt   = [5, 13, 21, 29, 37, 45, 53, 61, 69, 77, 85, 93, 101, 109, 117, 125, 133, 141, 149, 157, 165, 173, 181, 189, 197, 205, 213, 221, 229, 237, 245];
-const colSanctionedCount= [6, 14, 22, 30, 38, 46, 54, 62, 70, 78, 86, 94, 102, 110, 118, 126, 134, 142, 150, 158, 166, 174, 182, 190, 198, 206, 214, 222, 230, 238, 246];
-const colSanctionedAmt  = [7, 15, 23, 31, 39, 47, 55, 63, 71, 79, 87, 95, 103, 111, 119, 127, 135, 143, 151, 159, 167, 175, 183, 191, 199, 207, 215, 223, 231, 239, 247];
+// Function to get column indices for last 2 days based on current date
+function getLast2DaysColumns() {
+  const today = new Date();
+  const currentDay = today.getDate();
+  const currentMonth = today.getMonth() + 1; // Months are 0-indexed
+  const currentYear = today.getFullYear();
+  
+  // Since we're working with August 2025 data
+  const reportMonth = 8;
+  const reportYear = 2025;
+  
+  // Calculate the last 2 days (adjusting for month boundaries if needed)
+  let day1, day2;
+  
+  if (reportYear === currentYear && reportMonth === currentMonth) {
+    // If we're in the same month as the report, use current day
+    day1 = currentDay;
+    day2 = currentDay - 1;
+  } else {
+    // Otherwise use the last day of the month
+    const lastDay = new Date(reportYear, reportMonth, 0).getDate();
+    day1 = lastDay;
+    day2 = lastDay - 1;
+  }
+  
+  // Ensure we don't go below day 1
+  if (day2 < 1) day2 = 1;
+  
+  console.log(`Getting data for days ${day1} and ${day2} of ${reportMonth}/${reportYear}`);
+  
+  // Calculate column offsets for these days (each day has 8 columns starting from column 4)
+  const day1Offset = (day1 - 1) * 8;
+  const day2Offset = (day2 - 1) * 8;
+  
+  return [
+    4 + day1Offset, // SHG Loan Submitted day1
+    4 + day2Offset  // SHG Loan Submitted day2
+  ];
+}
 
-// Get the last 2 days columns (assuming they are the last 2 in each category)
-const last2DaysSubmittedCount = colSubmittedCount.slice(-2);
-const last2DaysSubmittedAmt = colSubmittedAmt.slice(-2);
+// Get the column indices for the last 2 days
+const last2DaysCols = getLast2DaysColumns();
+
+// Column indexes for SHG loan count & amount (submitted & sanctioned)
+// We'll dynamically build these based on the pattern (every 8 columns starting from 4)
+const colSubmittedCount = [];
+const colSubmittedAmt = [];
+const colSanctionedCount = [];
+const colSanctionedAmt = [];
+
+// Build column arrays for all days (31 days in August)
+for (let day = 1; day <= 31; day++) {
+  const dayOffset = (day - 1) * 8;
+  colSubmittedCount.push(4 + dayOffset);    // SHG Loan Submitted
+  colSubmittedAmt.push(5 + dayOffset);     // SHG Loan Amt Submitted
+  colSanctionedCount.push(6 + dayOffset);  // SHG Loan Sanctioned
+  colSanctionedAmt.push(7 + dayOffset);    // SHG Loan Amt Sanctioned
+}
 
 fetch(csvUrl)
   .then(res => res.text())
@@ -178,9 +224,9 @@ fetch(csvUrl)
       const sanctionedCount= sumCols(row, colSanctionedCount);
       const sanctionedAmt  = sumCols(row, colSanctionedAmt);
       
-      // Calculate last 2 days submissions
-      const last2DaysCount = sumCols(row, last2DaysSubmittedCount);
-      const last2DaysAmt = sumCols(row, last2DaysSubmittedAmt);
+      // Calculate last 2 days submissions using the dynamically determined columns
+      const last2DaysCount = sumCols(row, last2DaysCols);
+      const last2DaysAmt = sumCols(row, last2DaysCols.map(col => col + 1)); // Amount columns are +1 from count columns
 
       if (!districtData[district]) {
         districtData[district] = { 
@@ -257,7 +303,7 @@ fetch(csvUrl)
         <td>${formatAmt(targetAmt)}</td>
         <td>
           ${formatInt(d.submittedCount)}
-          ${d.last2DaysCount > 0 ? `<span class="recent-submission">+${formatInt(d.last2DaysCount)} in last 2 days</span>` : ''}
+          ${d.last2DaysCount > 0 ? `<span class="recent-submission">(${formatInt(d.last2DaysCount)} in last 2 days)</span>` : ''}
         </td>
         <td>${formatAmt(d.submittedAmt)}</td>
         <td>${formatInt(d.sanctionedCount)}</td>
@@ -285,7 +331,7 @@ fetch(csvUrl)
       <td><strong>${formatAmt(totalTargetAmt)}</strong></td>
       <td>
         <strong>${formatInt(totalSubmittedCount)}</strong>
-        ${totalLast2DaysCount > 0 ? `<span class="recent-submission">+${formatInt(totalLast2DaysCount)} in last 2 days</span>` : ''}
+        ${totalLast2DaysCount > 0 ? `<span class="recent-submission">(${formatInt(totalLast2DaysCount)} in last 2 days)</span>` : ''}
       </td>
       <td><strong>${formatAmt(totalSubmittedAmt)}</strong></td>
       <td><strong>${formatInt(totalSanctionedCount)}</strong></td>
