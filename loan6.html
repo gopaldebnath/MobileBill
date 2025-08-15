@@ -86,6 +86,14 @@
   .bg-success { background-color: #2ecc71 !important; }
   .bg-warning { background-color: #f39c12 !important; }
   .bg-danger { background-color: #e74c3c !important; }
+  
+  .recent-submission {
+    font-size: 0.8em;
+    color: #27ae60;
+    font-weight: bold;
+    display: block;
+    margin-top: 2px;
+  }
 </style>
 </head>
 <body>
@@ -142,10 +150,15 @@ const targets = {
 };
 
 // Column indexes for SHG loan count & amount (submitted & sanctioned)
+// Assuming the last 2 columns (indices 244-247) represent the last 2 days
 const colSubmittedCount = [4, 12, 20, 28, 36, 44, 52, 60, 68, 76, 84, 92, 100, 108, 116, 124, 132, 140, 148, 156, 164, 172, 180, 188, 196, 204, 212, 220, 228, 236, 244];
 const colSubmittedAmt   = [5, 13, 21, 29, 37, 45, 53, 61, 69, 77, 85, 93, 101, 109, 117, 125, 133, 141, 149, 157, 165, 173, 181, 189, 197, 205, 213, 221, 229, 237, 245];
 const colSanctionedCount= [6, 14, 22, 30, 38, 46, 54, 62, 70, 78, 86, 94, 102, 110, 118, 126, 134, 142, 150, 158, 166, 174, 182, 190, 198, 206, 214, 222, 230, 238, 246];
 const colSanctionedAmt  = [7, 15, 23, 31, 39, 47, 55, 63, 71, 79, 87, 95, 103, 111, 119, 127, 135, 143, 151, 159, 167, 175, 183, 191, 199, 207, 215, 223, 231, 239, 247];
+
+// Get the last 2 days columns (assuming they are the last 2 in each category)
+const last2DaysSubmittedCount = colSubmittedCount.slice(-2);
+const last2DaysSubmittedAmt = colSubmittedAmt.slice(-2);
 
 fetch(csvUrl)
   .then(res => res.text())
@@ -164,18 +177,36 @@ fetch(csvUrl)
       const submittedAmt   = sumCols(row, colSubmittedAmt);
       const sanctionedCount= sumCols(row, colSanctionedCount);
       const sanctionedAmt  = sumCols(row, colSanctionedAmt);
+      
+      // Calculate last 2 days submissions
+      const last2DaysCount = sumCols(row, last2DaysSubmittedCount);
+      const last2DaysAmt = sumCols(row, last2DaysSubmittedAmt);
 
       if (!districtData[district]) {
-        districtData[district] = { submittedCount:0, submittedAmt:0, sanctionedCount:0, sanctionedAmt:0 };
+        districtData[district] = { 
+          submittedCount: 0, 
+          submittedAmt: 0, 
+          sanctionedCount: 0, 
+          sanctionedAmt: 0,
+          last2DaysCount: 0,
+          last2DaysAmt: 0
+        };
         blockData[district] = {};
       }
       districtData[district].submittedCount += submittedCount;
       districtData[district].submittedAmt += submittedAmt;
       districtData[district].sanctionedCount += sanctionedCount;
       districtData[district].sanctionedAmt += sanctionedAmt;
+      districtData[district].last2DaysCount += last2DaysCount;
+      districtData[district].last2DaysAmt += last2DaysAmt;
 
       if (!blockData[district][block]) {
-        blockData[district][block] = { submittedCount:0, submittedAmt:0, sanctionedCount:0, sanctionedAmt:0 };
+        blockData[district][block] = { 
+          submittedCount: 0, 
+          submittedAmt: 0, 
+          sanctionedCount: 0, 
+          sanctionedAmt: 0 
+        };
       }
       blockData[district][block].submittedCount += submittedCount;
       blockData[district][block].submittedAmt += submittedAmt;
@@ -187,6 +218,7 @@ fetch(csvUrl)
     const tbody = document.querySelector("#loanTable tbody");
     let totalTargetLoan = 0, totalSubmittedCount = 0, totalSanctionedCount = 0;
     let totalTargetAmt = 0, totalSubmittedAmt = 0, totalSanctionedAmt = 0;
+    let totalLast2DaysCount = 0;
     
     // Render districts in specific order
     const districtOrder = [
@@ -211,6 +243,7 @@ fetch(csvUrl)
       totalTargetAmt += targetAmt;
       totalSubmittedAmt += d.submittedAmt;
       totalSanctionedAmt += d.sanctionedAmt;
+      totalLast2DaysCount += d.last2DaysCount;
 
       // Calculate achievement based on Sanctioned vs Target
       const achLoan = targetLoan ? (d.sanctionedCount / targetLoan) * 100 : 0;
@@ -222,7 +255,10 @@ fetch(csvUrl)
         <td>${district}</td>
         <td>${formatInt(targetLoan)}</td>
         <td>${formatAmt(targetAmt)}</td>
-        <td>${formatInt(d.submittedCount)}</td>
+        <td>
+          ${formatInt(d.submittedCount)}
+          ${d.last2DaysCount > 0 ? `<span class="recent-submission">+${formatInt(d.last2DaysCount)} in last 2 days</span>` : ''}
+        </td>
         <td>${formatAmt(d.submittedAmt)}</td>
         <td>${formatInt(d.sanctionedCount)}</td>
         <td>${formatAmt(d.sanctionedAmt)}</td>
@@ -247,7 +283,10 @@ fetch(csvUrl)
       <td><strong>Total</strong></td>
       <td><strong>${formatInt(totalTargetLoan)}</strong></td>
       <td><strong>${formatAmt(totalTargetAmt)}</strong></td>
-      <td><strong>${formatInt(totalSubmittedCount)}</strong></td>
+      <td>
+        <strong>${formatInt(totalSubmittedCount)}</strong>
+        ${totalLast2DaysCount > 0 ? `<span class="recent-submission">+${formatInt(totalLast2DaysCount)} in last 2 days</span>` : ''}
+      </td>
       <td><strong>${formatAmt(totalSubmittedAmt)}</strong></td>
       <td><strong>${formatInt(totalSanctionedCount)}</strong></td>
       <td><strong>${formatAmt(totalSanctionedAmt)}</strong></td>
