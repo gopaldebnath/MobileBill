@@ -37,6 +37,13 @@
   .data-table th {
     background-color: #f8f9fa;
     font-weight: 600;
+    position: relative;
+  }
+  
+  .group-header {
+    background-color: #e9ecef !important;
+    font-weight: 700;
+    text-align: center !important;
   }
   
   .data-table tr:nth-child(even) {
@@ -97,15 +104,25 @@
   <table class="data-table" id="loanTable">
     <thead>
       <tr>
-        <th>District / Block Name</th>
-        <th>Loan Target</th>
-        <th>Loan Submitted</th>
-        <th>Loan Sanctioned</th>
-        <th>Achievement (%)</th>
-        <th>Amount Target</th>
-        <th>Amount Submitted</th>
-        <th>Amount Sanctioned</th>
-        <th>Achievement (%)</th>
+        <th rowspan="2">District / Block Name</th>
+        <th colspan="2" class="group-header">Target</th>
+        <th colspan="3" class="group-header">Submitted</th>
+        <th colspan="2" class="group-header">Sanctioned</th>
+        <th rowspan="2">Achievement (%)</th>
+      </tr>
+      <tr>
+        <!-- Target Group -->
+        <th>SHG Loan Target</th>
+        <th>Amount Target (₹ Lakh)</th>
+        
+        <!-- Submitted Group -->
+        <th>SHG Loan Submitted</th>
+        <th>Amount Submitted (₹ Lakh)</th>
+        <th>% of Target</th>
+        
+        <!-- Sanctioned Group -->
+        <th>SHG Loan Sanctioned</th>
+        <th>Amount Sanctioned (₹ Lakh)</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -121,7 +138,7 @@ const targets = {
   "DHALAI": { loan: 800, amount: 2504 },
   "GOMATI": { loan: 850, amount: 2660.5 },
   "KHOWAI": { loan: 500, amount: 1565 },
-  "NORTH TRIPURA": { loan: 510, amount: 1596.3 },  // Updated targets here
+  "NORTH TRIPURA": { loan: 510, amount: 1596.3 },
   "SEPAHIJALA": { loan: 600, amount: 1878 },
   "SOUTH TRIPURA": { loan: 750, amount: 2347.5 },
   "UNAKOTI": { loan: 400, amount: 1252 },
@@ -170,12 +187,27 @@ fetch(csvUrl)
       blockData[district][block].sanctionedAmt += sanctionedAmt;
     });
 
+    // Debugging: Check what districts were found
+    console.log("Districts found in data:", Object.keys(districtData));
+
     // Render
     const tbody = document.querySelector("#loanTable tbody");
     let totalTargetLoan = 0, totalSubmittedCount = 0, totalSanctionedCount = 0;
     let totalTargetAmt = 0, totalSubmittedAmt = 0, totalSanctionedAmt = 0;
     
-    Object.keys(districtData).forEach(district => {
+    // Render districts in specific order
+    const districtOrder = [
+      "DHALAI", "GOMATI", "KHOWAI", 
+      "SOUTH TRIPURA", "NORTH TRIPURA",
+      "SEPAHIJALA", "UNAKOTI", "WEST TRIPURA"
+    ];
+    
+    districtOrder.forEach(district => {
+      if (!districtData[district]) {
+        console.warn(`District ${district} not found in data`);
+        return;
+      }
+      
       const d = districtData[district];
       const targetLoan = targets[district]?.loan ?? 0;
       const targetAmt  = targets[district]?.amount ?? 0;
@@ -188,7 +220,7 @@ fetch(csvUrl)
       totalSanctionedAmt += d.sanctionedAmt;
 
       const achLoan = targetLoan ? (d.submittedCount / targetLoan) * 100 : 0;
-      const achAmt  = targetAmt  ? (d.submittedAmt   / targetAmt ) * 100 : 0;
+      const submittedPct = targetLoan ? (d.submittedCount / targetLoan) * 100 : 0;
 
       const tr = document.createElement("tr");
       tr.className = "district-row";
@@ -196,22 +228,22 @@ fetch(csvUrl)
       tr.innerHTML = `
         <td>${district}</td>
         <td>${formatInt(targetLoan)}</td>
+        <td>${formatAmt(targetAmt)}</td>
         <td>${formatInt(d.submittedCount)} ${trendIndicator(achLoan)}</td>
+        <td>${formatAmt(d.submittedAmt)}</td>
+        <td>
+          <div class="progress progress-thin">
+            <div class="progress-bar ${getProgressBarClass(submittedPct)}" role="progressbar" style="width: ${Math.min(submittedPct, 100)}%"></div>
+          </div>
+          <small>${submittedPct.toFixed(1)}%</small>
+        </td>
         <td>${formatInt(d.sanctionedCount)}</td>
+        <td>${formatAmt(d.sanctionedAmt)}</td>
         <td>
           <div class="progress progress-thin">
             <div class="progress-bar ${getProgressBarClass(achLoan)}" role="progressbar" style="width: ${Math.min(achLoan, 100)}%"></div>
           </div>
           <small>${achLoan.toFixed(1)}%</small>
-        </td>
-        <td>${formatAmt(targetAmt)}</td>
-        <td>${formatAmt(d.submittedAmt)} ${trendIndicator(achAmt)}</td>
-        <td>${formatAmt(d.sanctionedAmt)}</td>
-        <td>
-          <div class="progress progress-thin">
-            <div class="progress-bar ${getProgressBarClass(achAmt)}" role="progressbar" style="width: ${Math.min(achAmt, 100)}%"></div>
-          </div>
-          <small>${achAmt.toFixed(1)}%</small>
         </td>
       `;
       tbody.appendChild(tr);
@@ -221,29 +253,29 @@ fetch(csvUrl)
     
     // Add summary row
     const totalAchLoan = totalTargetLoan ? (totalSubmittedCount / totalTargetLoan) * 100 : 0;
-    const totalAchAmt = totalTargetAmt ? (totalSubmittedAmt / totalTargetAmt) * 100 : 0;
+    const totalSubmittedPct = totalTargetLoan ? (totalSubmittedCount / totalTargetLoan) * 100 : 0;
     
     const trSummary = document.createElement("tr");
     trSummary.className = "summary-row";
     trSummary.innerHTML = `
       <td><strong>Total</strong></td>
       <td><strong>${formatInt(totalTargetLoan)}</strong></td>
+      <td><strong>${formatAmt(totalTargetAmt)}</strong></td>
       <td><strong>${formatInt(totalSubmittedCount)}</strong></td>
+      <td><strong>${formatAmt(totalSubmittedAmt)}</strong></td>
+      <td>
+        <div class="progress progress-thin">
+          <div class="progress-bar ${getProgressBarClass(totalSubmittedPct)}" role="progressbar" style="width: ${Math.min(totalSubmittedPct, 100)}%"></div>
+        </div>
+        <small><strong>${totalSubmittedPct.toFixed(1)}%</strong></small>
+      </td>
       <td><strong>${formatInt(totalSanctionedCount)}</strong></td>
+      <td><strong>${formatAmt(totalSanctionedAmt)}</strong></td>
       <td>
         <div class="progress progress-thin">
           <div class="progress-bar ${getProgressBarClass(totalAchLoan)}" role="progressbar" style="width: ${Math.min(totalAchLoan, 100)}%"></div>
         </div>
         <small><strong>${totalAchLoan.toFixed(1)}%</strong></small>
-      </td>
-      <td><strong>${formatAmt(totalTargetAmt)}</strong></td>
-      <td><strong>${formatAmt(totalSubmittedAmt)}</strong></td>
-      <td><strong>${formatAmt(totalSanctionedAmt)}</strong></td>
-      <td>
-        <div class="progress progress-thin">
-          <div class="progress-bar ${getProgressBarClass(totalAchAmt)}" role="progressbar" style="width: ${Math.min(totalAchAmt, 100)}%"></div>
-        </div>
-        <small><strong>${totalAchAmt.toFixed(1)}%</strong></small>
       </td>
     `;
     tbody.appendChild(trSummary);
@@ -286,11 +318,11 @@ function toggleBlocks(districtRow, districtName, blocksObj) {
     trb.innerHTML = `
       <td>${block}</td>
       <td>—</td>
+      <td>—</td>
       <td>${formatInt(b.submittedCount)}</td>
-      <td>${formatInt(b.sanctionedCount)}</td>
-      <td>—</td>
-      <td>—</td>
       <td>${formatAmt(b.submittedAmt)}</td>
+      <td>—</td>
+      <td>${formatInt(b.sanctionedCount)}</td>
       <td>${formatAmt(b.sanctionedAmt)}</td>
       <td>—</td>
     `;
@@ -328,11 +360,3 @@ function parseCSV(text) {
 
 </body>
 </html>
-
-
-still not target data for NORTH TRIPURA , it is showing 0.
-update the NORTH TRIPURA target SHG Loan target .
-NORTH TRIPURA row is after SOUTH TRIPURA.
-replace target data 0 with provided 
-SHG Loan Target for NORTH TRIPURA to 510
-The SHG Loan Amount Target for NORTH TRIPUAR to 1596.3
