@@ -4,68 +4,36 @@
 <meta charset="UTF-8">
 <title>SHG Loan Progress</title>
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
-    }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 15px;
-    }
-    th, td {
-        border: 1px solid #ccc;
-        padding: 6px 8px;
-        text-align: center;
-    }
-    th {
-        background-color: #f4f4f4;
-    }
-    tr:nth-child(even) {
-        background-color: #fafafa;
-    }
-    tr:hover {
-        background-color: #f1f7ff;
-    }
-    .clickable {
-        cursor: pointer;
-        font-weight: bold;
-        background-color: #e6f0ff;
-    }
-    .progress-container {
-        width: 100%;
-        background-color: #eee;
-        border-radius: 4px;
-        height: 18px;
-        overflow: hidden;
-    }
-    .progress-bar {
-        height: 100%;
-        text-align: center;
-        color: white;
-        font-size: 12px;
-        line-height: 18px;
-    }
+  body { font-family: Arial, sans-serif; margin: 20px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+  th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: center; }
+  th { background-color: #f4f4f4; }
+  tr:nth-child(even) { background-color: #fafafa; }
+  tr:hover { background-color: #f1f7ff; }
+  .district-row { cursor: pointer; font-weight: bold; background-color: #e6f0ff; }
+  .block-row td:first-child { text-align: left; padding-left: 24px; }
+  .progress-container { width: 100%; background-color: #eee; border-radius: 4px; height: 18px; overflow: hidden; }
+  .progress-bar { height: 100%; text-align: center; color: white; font-size: 12px; line-height: 18px; }
 </style>
 </head>
 <body>
 
 <h2>District-wise SHG Loan Progress (August 2025)</h2>
 <table id="loanTable">
-    <thead>
-        <tr>
-            <th>District / Block Name</th>
-            <th>Loan Target</th>
-            <th>Loan Submitted</th>
-            <th>Loan Sanctioned</th>
-            <th>Achievement (%)</th>
-            <th>Amount Target</th>
-            <th>Amount Submitted</th>
-            <th>Amount Sanctioned</th>
-            <th>Achievement (%)</th>
-        </tr>
-    </thead>
-    <tbody></tbody>
+  <thead>
+    <tr>
+      <th>District / Block Name</th>
+      <th>Loan Target</th>
+      <th>Loan Submitted</th>
+      <th>Loan Sanctioned</th>
+      <th>Achievement (%)</th>
+      <th>Amount Target</th>
+      <th>Amount Submitted</th>
+      <th>Amount Sanctioned</th>
+      <th>Achievement (%)</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
 </table>
 
 <script>
@@ -73,14 +41,14 @@ const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSKZv2oeWp8NIvfF
 
 // District targets
 const targets = {
-    "DHALAI": { loan: 800, amount: 2504 },
-    "GOMATI": { loan: 850, amount: 2660.5 },
-    "KHOWAI": { loan: 500, amount: 1565 },
-    "NORTH TRIPURA": { loan: 510, amount: 1596.3 },
-    "SEPAHIJALA": { loan: 600, amount: 1878 },
-    "SOUTH TRIPURA": { loan: 750, amount: 2347.5 },
-    "UNAKOTI": { loan: 400, amount: 1252 },
-    "WEST TRIPURA": { loan: 840, amount: 2629.2 }
+  "DHALAI": { loan: 800, amount: 2504 },
+  "GOMATI": { loan: 850, amount: 2660.5 },
+  "KHOWAI": { loan: 500, amount: 1565 },
+  "NORTH TRIPURA": { loan: 510, amount: 1596.3 },
+  "SEPAHIJALA": { loan: 600, amount: 1878 },
+  "SOUTH TRIPURA": { loan: 750, amount: 2347.5 },
+  "UNAKOTI": { loan: 400, amount: 1252 },
+  "WEST TRIPURA": { loan: 840, amount: 2629.2 }
 };
 
 // Column indexes for SHG loan count & amount (submitted & sanctioned)
@@ -90,106 +58,147 @@ const colSanctionedCount= [6, 14, 22, 30, 38, 46, 54, 62, 70, 78, 86, 94, 102, 1
 const colSanctionedAmt  = [7, 15, 23, 31, 39, 47, 55, 63, 71, 79, 87, 95, 103, 111, 119, 127, 135, 143, 151, 159, 167, 175, 183, 191, 199, 207, 215, 223, 231, 239, 247];
 
 fetch(csvUrl)
-.then(res => res.text())
-.then(data => {
-    const rows = data.split("\n").map(r => r.split(","));
+  .then(res => res.text())
+  .then(text => {
+    const rows = parseCSV(text);
     const districtData = {};
     const blockData = {};
 
+    // Skip header row
     rows.slice(1).forEach(row => {
-        const district = row[0]?.trim().toUpperCase();
-        const block = row[1]?.trim();
-        if (!district) return;
+      const district = (row[0] || "").trim().toUpperCase();
+      const block = (row[1] || "").trim() || "—";
+      if (!district) return;
 
-        const submittedCount = sumCols(row, colSubmittedCount);
-        const submittedAmt   = sumCols(row, colSubmittedAmt);
-        const sanctionedCount= sumCols(row, colSanctionedCount);
-        const sanctionedAmt  = sumCols(row, colSanctionedAmt);
+      const submittedCount = sumCols(row, colSubmittedCount);
+      const submittedAmt   = sumCols(row, colSubmittedAmt);
+      const sanctionedCount= sumCols(row, colSanctionedCount);
+      const sanctionedAmt  = sumCols(row, colSanctionedAmt);
 
-        if (!districtData[district]) {
-            districtData[district] = { submittedCount:0, submittedAmt:0, sanctionedCount:0, sanctionedAmt:0 };
-            blockData[district] = {};
-        }
-        districtData[district].submittedCount += submittedCount;
-        districtData[district].submittedAmt += submittedAmt;
-        districtData[district].sanctionedCount += sanctionedCount;
-        districtData[district].sanctionedAmt += sanctionedAmt;
+      if (!districtData[district]) {
+        districtData[district] = { submittedCount:0, submittedAmt:0, sanctionedCount:0, sanctionedAmt:0 };
+        blockData[district] = {};
+      }
+      districtData[district].submittedCount += submittedCount;
+      districtData[district].submittedAmt += submittedAmt;
+      districtData[district].sanctionedCount += sanctionedCount;
+      districtData[district].sanctionedAmt += sanctionedAmt;
 
-        if (!blockData[district][block]) {
-            blockData[district][block] = { submittedCount:0, submittedAmt:0, sanctionedCount:0, sanctionedAmt:0 };
-        }
-        blockData[district][block].submittedCount += submittedCount;
-        blockData[district][block].submittedAmt += submittedAmt;
-        blockData[district][block].sanctionedCount += sanctionedCount;
-        blockData[district][block].sanctionedAmt += sanctionedAmt;
+      if (!blockData[district][block]) {
+        blockData[district][block] = { submittedCount:0, submittedAmt:0, sanctionedCount:0, sanctionedAmt:0 };
+      }
+      blockData[district][block].submittedCount += submittedCount;
+      blockData[district][block].submittedAmt += submittedAmt;
+      blockData[district][block].sanctionedCount += sanctionedCount;
+      blockData[district][block].sanctionedAmt += sanctionedAmt;
     });
 
+    // Render
     const tbody = document.querySelector("#loanTable tbody");
     Object.keys(districtData).forEach(district => {
-        const d = districtData[district];
-        const targetLoan = targets[district]?.loan || 0;
-        const targetAmt = targets[district]?.amount || 0;
+      const d = districtData[district];
+      const targetLoan = targets[district]?.loan ?? 0;
+      const targetAmt  = targets[district]?.amount ?? 0;
 
-        const achLoan = targetLoan ? (d.submittedCount / targetLoan) * 100 : 0;
-        const achAmt  = targetAmt ? (d.submittedAmt / targetAmt) * 100 : 0;
+      const achLoan = targetLoan ? (d.submittedCount / targetLoan) * 100 : 0;
+      const achAmt  = targetAmt  ? (d.submittedAmt   / targetAmt ) * 100 : 0;
 
-        const tr = document.createElement("tr");
-        tr.classList.add("clickable");
-        tr.innerHTML = `
-            <td>${district}</td>
-            <td>${targetLoan}</td>
-            <td>${d.submittedCount}</td>
-            <td>${d.sanctionedCount}</td>
-            <td>${progressBar(achLoan)}</td>
-            <td>${targetAmt.toFixed(1)}</td>
-            <td>${d.submittedAmt.toFixed(1)}</td>
-            <td>${d.sanctionedAmt.toFixed(1)}</td>
-            <td>${progressBar(achAmt)}</td>
-        `;
-        tbody.appendChild(tr);
+      const tr = document.createElement("tr");
+      tr.className = "district-row";
+      tr.dataset.district = district;
+      tr.innerHTML = `
+        <td>${district}</td>
+        <td>${formatInt(targetLoan)}</td>
+        <td>${formatInt(d.submittedCount)}</td>
+        <td>${formatInt(d.sanctionedCount)}</td>
+        <td>${progressBar(achLoan)}</td>
+        <td>${formatAmt(targetAmt)}</td>
+        <td>${formatAmt(d.submittedAmt)}</td>
+        <td>${formatAmt(d.sanctionedAmt)}</td>
+        <td>${progressBar(achAmt)}</td>
+      `;
+      tbody.appendChild(tr);
 
-        tr.addEventListener("click", () => {
-            const alreadyShown = document.querySelectorAll(`.block-${district}`).length > 0;
-            if (alreadyShown) {
-                document.querySelectorAll(`.block-${district}`).forEach(el => el.remove());
-                return;
-            }
-            Object.keys(blockData[district]).forEach(block => {
-                const b = blockData[district][block];
-                const trb = document.createElement("tr");
-                trb.classList.add(`block-${district}`);
-                trb.innerHTML = `
-                    <td style="padding-left:20px">${block}</td>
-                    <td>-</td>
-                    <td>${b.submittedCount}</td>
-                    <td>${b.sanctionedCount}</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>${b.submittedAmt.toFixed(1)}</td>
-                    <td>${b.sanctionedAmt.toFixed(1)}</td>
-                    <td>-</td>
-                `;
-                tr.insertAdjacentElement("afterend", trb);
-            });
-        });
+      tr.addEventListener("click", () => toggleBlocks(tr, district, blockData[district]));
     });
-});
+  });
 
+// Helpers
 function sumCols(row, cols) {
-    return cols.reduce((sum, idx) => sum + (parseFloat(row[idx]) || 0), 0);
+  return cols.reduce((sum, idx) => sum + (parseFloat(row[idx]) || 0), 0);
 }
 
 function progressBar(value) {
-    let color = "red";
-    if (value >= 80) color = "green";
-    else if (value >= 50) color = "orange";
-    return `
-        <div class="progress-container">
-            <div class="progress-bar" style="width:${Math.min(value,100)}%;background-color:${color}">
-                ${value.toFixed(1)}%
-            </div>
-        </div>
+  let color = "red";
+  if (value >= 80) color = "green";
+  else if (value >= 50) color = "orange";
+  return `
+    <div class="progress-container">
+      <div class="progress-bar" style="width:${Math.min(value,100)}%;background-color:${color}">
+        ${value.toFixed(1)}%
+      </div>
+    </div>
+  `;
+}
+
+function formatInt(n) { return (n||0).toLocaleString("en-IN"); }
+function formatAmt(n) { return (n||0).toLocaleString("en-IN", { maximumFractionDigits: 1 }); }
+
+// Expand/Collapse block rows using data attributes (no spaces-in-class issue)
+function toggleBlocks(districtRow, districtName, blocksObj) {
+  const existing = document.querySelectorAll(`tr.block-row[data-parent="${districtName}"]`);
+  if (existing.length) {
+    existing.forEach(el => el.remove());
+    return;
+  }
+
+  // Insert rows in-order after the district row
+  let last = districtRow;
+  Object.keys(blocksObj).forEach(block => {
+    const b = blocksObj[block];
+    const trb = document.createElement("tr");
+    trb.className = "block-row";
+    trb.dataset.parent = districtName;
+    trb.innerHTML = `
+      <td>${block}</td>
+      <td>—</td>
+      <td>${formatInt(b.submittedCount)}</td>
+      <td>${formatInt(b.sanctionedCount)}</td>
+      <td>—</td>
+      <td>—</td>
+      <td>${formatAmt(b.submittedAmt)}</td>
+      <td>${formatAmt(b.sanctionedAmt)}</td>
+      <td>—</td>
     `;
+    last.insertAdjacentElement("afterend", trb);
+    last = trb;
+  });
+}
+
+/* Simple CSV parser that handles quoted commas */
+function parseCSV(text) {
+  const rows = [];
+  let row = [];
+  let cur = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === '"') {
+      if (inQuotes && text[i+1] === '"') { cur += '"'; i++; }
+      else { inQuotes = !inQuotes; }
+    } else if (c === ',' && !inQuotes) {
+      row.push(cur); cur = "";
+    } else if ((c === '\n' || c === '\r') && !inQuotes) {
+      if (cur.length || row.length) { row.push(cur); rows.push(row); row = []; cur = ""; }
+      // Handle CRLF: skip the next \n if current is \r
+      if (c === '\r' && text[i+1] === '\n') i++;
+    } else {
+      cur += c;
+    }
+  }
+  if (cur.length || row.length) { row.push(cur); rows.push(row); }
+  return rows;
 }
 </script>
 
