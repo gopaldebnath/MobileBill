@@ -19,30 +19,26 @@
     margin-bottom: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
     position: relative;
   }
   
-  .logo-container {
+  .header-logos {
+    position: absolute;
+    top: 20px;
+    width: 100%;
     display: flex;
-    align-items: center;
-    gap: 20px;
-    margin-bottom: 15px;
+    justify-content: space-between;
+    padding: 0 30px;
+    box-sizing: border-box;
   }
   
-  .logo-img {
+  .header-logo {
     width: 80px;
     height: 80px;
     border-radius: 50%;
     object-fit: cover;
     border: 3px solid white;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  }
-  
-  .header-content {
-    text-align: center;
   }
   
   .summary-cards {
@@ -350,51 +346,64 @@
   }
   
   /* Button styles */
-  .time-period-buttons {
+  .table-controls {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .action-buttons {
     display: flex;
     gap: 10px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
   }
   
-  .time-period-btn {
-    flex: 1;
-    min-width: 150px;
-    padding: 8px 12px;
-    font-weight: 500;
-    border-radius: 6px;
-    transition: all 0.2s;
-  }
-  
-  .toggle-all-btn {
-    background-color: #6c757d;
+  .btn-action {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
     color: white;
     border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
+    border-radius: 8px;
+    padding: 8px 15px;
     font-weight: 500;
-    margin-bottom: 20px;
-    transition: all 0.2s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
   }
   
-  .toggle-all-btn:hover {
-    background-color: #5a6268;
+  .btn-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    color: white;
+  }
+  
+  .btn-expand {
+    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+  }
+  
+  .btn-collapse {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+  }
+  
+  .btn-download {
+    background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
   }
 </style>
 </head>
 <body>
 
 <div class="dashboard-header">
-  <div class="container">
-    <div class="logo-container">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Tripura_Emblem.png/330px-Tripura_Emblem.png" class="logo-img" alt="Tripura Government Logo">
-      <div class="header-content">
-        <h1><i class="bi bi-graph-up"></i> "SAMRIDDHI" CAMPAIGN - DASHBOARD</h1>
-        <p class="mb-0">(Mahilader Arthik Khomotayoner Jonyo Ek Ononyo Podokhyep)</br>
-        (1st August to 31st August, 2025)</p>
-      </div>
-      <img src="https://pbs.twimg.com/profile_images/1524416655140753408/yXqxucvR_400x400.jpg" class="logo-img" alt="SHG Logo">
-    </div>
+  <div class="header-logos">
+    <img src="https://pbs.twimg.com/profile_images/1524416655140753408/yXqxucvR_400x400.jpg" class="header-logo" alt="Logo 1">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Tripura_Emblem.png/330px-Tripura_Emblem.png" class="header-logo" alt="Tripura Emblem">
+  </div>
+  <div class="container"><center>    <h1><i class="bi bi-graph-up"></i>
+       "SAMRIDDHI" CAMPAIGN - DASHBOARD</h1>
+    <p class="mb-0">(Mahilader Arthik Khomotayoner Jonyo Ek Ononyo Podokhyep)</br>
+(1st August to 31st August, 2025)</p>
+    </center>
   </div>
 </div>
 
@@ -479,22 +488,20 @@
     </div>
   </div>
 
-  <button id="toggleAllBtn" class="toggle-all-btn">
-    <i class="bi bi-arrows-expand"></i> Expand/Collapse All Districts
-  </button>
-  
-  <div class="time-period-buttons">
-    <button class="btn btn-primary time-period-btn" data-days="5">
-      <i class="bi bi-calendar-week"></i> Progress in Last 5 Days
-    </button>
-    <button class="btn btn-primary time-period-btn" data-days="7">
-      <i class="bi bi-calendar-week"></i> Progress in Last 7 Days
-    </button>
-    <button class="btn btn-primary time-period-btn" data-days="10">
-      <i class="bi bi-calendar-week"></i> Progress in Last 10 Days
-    </button>
-    <button class="btn btn-primary time-period-btn" data-days="15">
-      <i class="bi bi-calendar-week"></i> Progress in Last 15 Days
+  <div class="table-controls">
+    <div class="action-buttons">
+      <button class="btn-action btn-download" id="downloadExcel">
+        <i class="bi bi-file-earmark-excel"></i> Download Excel
+      </button>
+      <button class="btn-action btn-download" id="downloadPdf">
+        <i class="bi bi-file-earmark-pdf"></i> Download PDF
+      </button>
+      <button class="btn-action btn-download" id="downloadReport">
+        <i class="bi bi-file-earmark-text"></i> Download Report
+      </button>
+    </div>
+    <button class="btn-action btn-expand" id="toggleAll">
+      <i class="bi bi-arrows-angle-expand"></i> Expand/Collapse All
     </button>
   </div>
 
@@ -567,10 +574,7 @@ const targets = {
   }
 };
 
-let allData = {}; // Store all data for time period filtering
-let currentViewDays = 2; // Default to showing last 2 days
-
-function getLastNDaysColumns(days = 2) {
+function getLast2DaysColumns() {
   const today = new Date();
   const currentDay = today.getDate();
   const currentMonth = today.getMonth() + 1;
@@ -579,201 +583,52 @@ function getLastNDaysColumns(days = 2) {
   const reportMonth = 8;
   const reportYear = 2025;
   
-  let dayOffsets = [];
+  let day1, day2;
   
   if (reportYear === currentYear && reportMonth === currentMonth) {
-    // Campaign is ongoing - get data up to current day
-    const startDay = Math.max(1, currentDay - days + 1);
-    for (let day = startDay; day <= currentDay; day++) {
-      dayOffsets.push((day - 1) * 8);
-    }
-  } else if (reportYear < currentYear || (reportYear === currentYear && reportMonth < currentMonth)) {
-    // Campaign is in past - get all days
-    const lastDay = new Date(reportYear, reportMonth, 0).getDate();
-    const startDay = Math.max(1, lastDay - days + 1);
-    for (let day = startDay; day <= lastDay; day++) {
-      dayOffsets.push((day - 1) * 8);
-    }
+    day1 = currentDay;
+    day2 = currentDay - 1;
   } else {
-    // Campaign is in future - shouldn't happen
-    console.warn("Campaign appears to be in the future");
-    dayOffsets.push(0); // Just get first day
+    const lastDay = new Date(reportYear, reportMonth, 0).getDate();
+    day1 = lastDay;
+    day2 = lastDay - 1;
   }
   
-  console.log(`Getting data for days: ${dayOffsets.map(d => (d/8)+1).join(', ')} of ${reportMonth}/${reportYear}`);
+  if (day2 < 1) day2 = 1;
+  
+  console.log(`Getting data for days ${day1} and ${day2} of ${reportMonth}/${reportYear}`);
+  
+  const day1Offset = (day1 - 1) * 8;
+  const day2Offset = (day2 - 1) * 8;
   
   return {
-    shgSubmitted: dayOffsets.map(offset => 4 + offset),
-    shgSubmittedAmt: dayOffsets.map(offset => 5 + offset),
-    shgSanctioned: dayOffsets.map(offset => 6 + offset),
-    shgSanctionedAmt: dayOffsets.map(offset => 7 + offset),
-    individualSubmitted: dayOffsets.map(offset => 8 + offset),
-    individualSubmittedAmt: dayOffsets.map(offset => 9 + offset),
-    individualSanctioned: dayOffsets.map(offset => 10 + offset),
-    individualSanctionedAmt: dayOffsets.map(offset => 11 + offset)
+    shgSubmitted: [4 + day1Offset, 4 + day2Offset],
+    individualSubmitted: [8 + day1Offset, 8 + day2Offset]
   };
 }
 
-function updateTableForTimePeriod(days) {
-  currentViewDays = days;
-  const timePeriodCols = getLastNDaysColumns(days);
+const last2DaysCols = getLast2DaysColumns();
+
+const shgSubmittedCount = [];
+const shgSubmittedAmt = [];
+const shgSanctionedCount = [];
+const shgSanctionedAmt = [];
+const individualSubmittedCount = [];
+const individualSubmittedAmt = [];
+const individualSanctionedCount = [];
+const individualSanctionedAmt = [];
+
+for (let day = 1; day <= 31; day++) {
+  const dayOffset = (day - 1) * 8;
+  shgSubmittedCount.push(4 + dayOffset);
+  shgSubmittedAmt.push(5 + dayOffset);
+  shgSanctionedCount.push(6 + dayOffset);
+  shgSanctionedAmt.push(7 + dayOffset);
   
-  // Update district rows
-  document.querySelectorAll("#loanTable tbody tr.district-row").forEach(row => {
-    const district = row.dataset.district;
-    if (!allData[district]) return;
-    
-    const d = allData[district];
-    
-    // Calculate SHG values for this time period
-    const shgSubmittedCount = sumCols(d.row, timePeriodCols.shgSubmitted);
-    const shgSubmittedAmt = sumCols(d.row, timePeriodCols.shgSubmittedAmt);
-    const shgSanctionedCount = sumCols(d.row, timePeriodCols.shgSanctioned);
-    const shgSanctionedAmt = sumCols(d.row, timePeriodCols.shgSanctionedAmt);
-    
-    // Calculate Individual values for this time period
-    const individualSubmittedCount = sumCols(d.row, timePeriodCols.individualSubmitted);
-    const individualSubmittedAmt = sumCols(d.row, timePeriodCols.individualSubmittedAmt);
-    const individualSanctionedCount = sumCols(d.row, timePeriodCols.individualSanctioned);
-    const individualSanctionedAmt = sumCols(d.row, timePeriodCols.individualSanctionedAmt);
-    
-    // Update SHG cells
-    const shgTarget = targets[district]?.shg.loan ?? 0;
-    const shgAch = shgTarget ? (shgSanctionedCount / shgTarget) * 100 : 0;
-    
-    row.cells[2].innerHTML = `
-      ${formatInt(shgSubmittedCount)}
-      ${shgSubmittedCount > 0 ? `<span class="recent-submission">(${formatInt(shgSubmittedCount)} in last ${days} days)</span>` : ''}
-    `;
-    row.cells[3].textContent = `₹${formatAmt(shgSubmittedAmt)}`;
-    row.cells[4].textContent = formatInt(shgSanctionedCount);
-    row.cells[5].textContent = `₹${formatAmt(shgSanctionedAmt)}`;
-    row.cells[6].innerHTML = `
-      <div class="progress-container">
-        <div class="progress progress-thin">
-          <div class="progress-bar ${getProgressBarClass(shgAch)}" role="progressbar" style="width: ${Math.min(shgAch, 100)}%"></div>
-        </div>
-        <div class="text-center mt-1"><small>${Math.round(shgAch)}%</small></div>
-      </div>
-    `;
-    
-    // Update Individual cells
-    const individualTarget = targets[district]?.individual.loan ?? 0;
-    const individualAch = individualTarget ? (individualSanctionedCount / individualTarget) * 100 : 0;
-    
-    row.cells[9].innerHTML = `
-      ${formatInt(individualSubmittedCount)}
-      ${individualSubmittedCount > 0 ? `<span class="recent-submission">(${formatInt(individualSubmittedCount)} in last ${days} days)</span>` : ''}
-    `;
-    row.cells[10].textContent = `₹${formatAmt(individualSubmittedAmt)}`;
-    row.cells[11].textContent = formatInt(individualSanctionedCount);
-    row.cells[12].textContent = `₹${formatAmt(individualSanctionedAmt)}`;
-    row.cells[13].innerHTML = `
-      <div class="progress-container">
-        <div class="progress progress-thin">
-          <div class="progress-bar ${getProgressBarClass(individualAch)}" role="progressbar" style="width: ${Math.min(individualAch, 100)}%"></div>
-        </div>
-        <div class="text-center mt-1"><small>${Math.round(individualAch)}%</small></div>
-      </div>
-    `;
-  });
-  
-  // Update block rows if they're visible
-  document.querySelectorAll("#loanTable tbody tr.block-row").forEach(row => {
-    const parentDistrict = row.dataset.parent;
-    const block = row.cells[0].textContent.trim();
-    
-    if (!allData[parentDistrict]?.blocks[block]) return;
-    
-    const b = allData[parentDistrict].blocks[block];
-    const timePeriodCols = getLastNDaysColumns(days);
-    
-    // Calculate SHG values for this time period
-    const shgSubmittedCount = sumCols(b.row, timePeriodCols.shgSubmitted);
-    const shgSubmittedAmt = sumCols(b.row, timePeriodCols.shgSubmittedAmt);
-    const shgSanctionedCount = sumCols(b.row, timePeriodCols.shgSanctioned);
-    const shgSanctionedAmt = sumCols(b.row, timePeriodCols.shgSanctionedAmt);
-    
-    // Calculate Individual values for this time period
-    const individualSubmittedCount = sumCols(b.row, timePeriodCols.individualSubmitted);
-    const individualSubmittedAmt = sumCols(b.row, timePeriodCols.individualSubmittedAmt);
-    const individualSanctionedCount = sumCols(b.row, timePeriodCols.individualSanctioned);
-    const individualSanctionedAmt = sumCols(b.row, timePeriodCols.individualSanctionedAmt);
-    
-    // Update SHG cells
-    row.cells[2].textContent = formatInt(shgSubmittedCount);
-    row.cells[3].textContent = `₹${formatAmt(shgSubmittedAmt)}`;
-    row.cells[4].textContent = formatInt(shgSanctionedCount);
-    row.cells[5].textContent = `₹${formatAmt(shgSanctionedAmt)}`;
-    
-    // Update Individual cells
-    row.cells[9].textContent = formatInt(individualSubmittedCount);
-    row.cells[10].textContent = `₹${formatAmt(individualSubmittedAmt)}`;
-    row.cells[11].textContent = formatInt(individualSanctionedCount);
-    row.cells[12].textContent = `₹${formatAmt(individualSanctionedAmt)}`;
-  });
-  
-  // Update summary row
-  const summaryRow = document.querySelector("#loanTable tbody tr.summary-row");
-  if (summaryRow) {
-    // Calculate totals for the current time period
-    let shgTotalSubmitted = 0, shgTotalSanctioned = 0, shgTotalAmtSubmitted = 0, shgTotalAmtSanctioned = 0;
-    let individualTotalSubmitted = 0, individualTotalSanctioned = 0, individualTotalAmtSubmitted = 0, individualTotalAmtSanctioned = 0;
-    
-    Object.keys(allData).forEach(district => {
-      const d = allData[district];
-      
-      shgTotalSubmitted += sumCols(d.row, timePeriodCols.shgSubmitted);
-      shgTotalSanctioned += sumCols(d.row, timePeriodCols.shgSanctioned);
-      shgTotalAmtSubmitted += sumCols(d.row, timePeriodCols.shgSubmittedAmt);
-      shgTotalAmtSanctioned += sumCols(d.row, timePeriodCols.shgSanctionedAmt);
-      
-      individualTotalSubmitted += sumCols(d.row, timePeriodCols.individualSubmitted);
-      individualTotalSanctioned += sumCols(d.row, timePeriodCols.individualSanctioned);
-      individualTotalAmtSubmitted += sumCols(d.row, timePeriodCols.individualSubmittedAmt);
-      individualTotalAmtSanctioned += sumCols(d.row, timePeriodCols.individualSanctionedAmt);
-    });
-    
-    const shgTotalTarget = Object.values(targets).reduce((sum, t) => sum + (t?.shg.loan || 0), 0);
-    const individualTotalTarget = Object.values(targets).reduce((sum, t) => sum + (t?.individual.loan || 0), 0);
-    
-    const shgAchievement = shgTotalTarget ? (shgTotalSanctioned / shgTotalTarget) * 100 : 0;
-    const individualAchievement = individualTotalTarget ? (individualTotalSanctioned / individualTotalTarget) * 100 : 0;
-    
-    // Update SHG cells in summary row
-    summaryRow.cells[2].innerHTML = `
-      <strong>${formatInt(shgTotalSubmitted)}</strong>
-      ${shgTotalSubmitted > 0 ? `<span class="recent-submission">(${formatInt(shgTotalSubmitted)} in last ${days} days)</span>` : ''}
-    `;
-    summaryRow.cells[3].innerHTML = `<strong>₹${formatAmt(shgTotalAmtSubmitted)}</strong>`;
-    summaryRow.cells[4].innerHTML = `<strong>${formatInt(shgTotalSanctioned)}</strong>`;
-    summaryRow.cells[5].innerHTML = `<strong>₹${formatAmt(shgTotalAmtSanctioned)}</strong>`;
-    summaryRow.cells[6].innerHTML = `
-      <div class="progress-container">
-        <div class="progress progress-thin">
-          <div class="progress-bar ${getProgressBarClass(shgAchievement)}" role="progressbar" style="width: ${Math.min(shgAchievement, 100)}%"></div>
-        </div>
-        <div class="text-center mt-1"><small><strong>${Math.round(shgAchievement)}%</strong></small></div>
-      </div>
-    `;
-    
-    // Update Individual cells in summary row
-    summaryRow.cells[9].innerHTML = `
-      <strong>${formatInt(individualTotalSubmitted)}</strong>
-      ${individualTotalSubmitted > 0 ? `<span class="recent-submission">(${formatInt(individualTotalSubmitted)} in last ${days} days)</span>` : ''}
-    `;
-    summaryRow.cells[10].innerHTML = `<strong>₹${formatAmt(individualTotalAmtSubmitted)}</strong>`;
-    summaryRow.cells[11].innerHTML = `<strong>${formatInt(individualTotalSanctioned)}</strong>`;
-    summaryRow.cells[12].innerHTML = `<strong>₹${formatAmt(individualTotalAmtSanctioned)}</strong>`;
-    summaryRow.cells[13].innerHTML = `
-      <div class="progress-container">
-        <div class="progress progress-thin">
-          <div class="progress-bar ${getProgressBarClass(individualAchievement)}" role="progressbar" style="width: ${Math.min(individualAchievement, 100)}%"></div>
-        </div>
-        <div class="text-center mt-1"><small><strong>${Math.round(individualAchievement)}%</strong></small></div>
-      </div>
-    `;
-  }
+  individualSubmittedCount.push(8 + dayOffset);
+  individualSubmittedAmt.push(9 + dayOffset);
+  individualSanctionedCount.push(10 + dayOffset);
+  individualSanctionedAmt.push(11 + dayOffset);
 }
 
 // Function to animate numbers counting up
@@ -811,23 +666,29 @@ fetch(csvUrl)
   .then(res => res.text())
   .then(text => {
     const rows = parseCSV(text);
-    allData = {}; // Reset all data
-    
-    const districtOrder = [
-      "DHALAI", "GOMATI", "KHOWAI", 
-      "SOUTH TRIPURA", "NORTH TRIPURA",
-      "SEPAHIJALA", "UNAKOTI", "WEST TRIPURA"
-    ];
+    const districtData = {};
+    const blockData = {};
 
     rows.slice(1).forEach(row => {
       const district = (row[0] || "").trim().toUpperCase();
       const block = (row[1] || "").trim() || "—";
       if (!district) return;
 
-      if (!allData[district]) {
-        allData[district] = { 
-          row: row,
-          blocks: {},
+      const shgSubmittedCountTotal = sumCols(row, shgSubmittedCount);
+      const shgSubmittedAmtTotal = sumCols(row, shgSubmittedAmt);
+      const shgSanctionedCountTotal = sumCols(row, shgSanctionedCount);
+      const shgSanctionedAmtTotal = sumCols(row, shgSanctionedAmt);
+      
+      const individualSubmittedCountTotal = sumCols(row, individualSubmittedCount);
+      const individualSubmittedAmtTotal = sumCols(row, individualSubmittedAmt);
+      const individualSanctionedCountTotal = sumCols(row, individualSanctionedCount);
+      const individualSanctionedAmtTotal = sumCols(row, individualSanctionedAmt);
+      
+      const shgLast2DaysCount = sumCols(row, last2DaysCols.shgSubmitted);
+      const individualLast2DaysCount = sumCols(row, last2DaysCols.individualSubmitted);
+
+      if (!districtData[district]) {
+        districtData[district] = { 
           shg: {
             submittedCount: 0,
             submittedAmt: 0,
@@ -843,48 +704,64 @@ fetch(csvUrl)
             last2DaysCount: 0
           }
         };
+        blockData[district] = {};
       }
       
-      if (block !== "—" && !allData[district].blocks[block]) {
-        allData[district].blocks[block] = { row: row };
+      districtData[district].shg.submittedCount += shgSubmittedCountTotal;
+      districtData[district].shg.submittedAmt += shgSubmittedAmtTotal;
+      districtData[district].shg.sanctionedCount += shgSanctionedCountTotal;
+      districtData[district].shg.sanctionedAmt += shgSanctionedAmtTotal;
+      districtData[district].shg.last2DaysCount += shgLast2DaysCount;
+      
+      districtData[district].individual.submittedCount += individualSubmittedCountTotal;
+      districtData[district].individual.submittedAmt += individualSubmittedAmtTotal;
+      districtData[district].individual.sanctionedCount += individualSanctionedCountTotal;
+      districtData[district].individual.sanctionedAmt += individualSanctionedAmtTotal;
+      districtData[district].individual.last2DaysCount += individualLast2DaysCount;
+
+      if (!blockData[district][block]) {
+        blockData[district][block] = { 
+          shg: {
+            submittedCount: 0,
+            submittedAmt: 0,
+            sanctionedCount: 0,
+            sanctionedAmt: 0
+          },
+          individual: {
+            submittedCount: 0,
+            submittedAmt: 0,
+            sanctionedCount: 0,
+            sanctionedAmt: 0
+          }
+        };
       }
+      
+      blockData[district][block].shg.submittedCount += shgSubmittedCountTotal;
+      blockData[district][block].shg.submittedAmt += shgSubmittedAmtTotal;
+      blockData[district][block].shg.sanctionedCount += shgSanctionedCountTotal;
+      blockData[district][block].shg.sanctionedAmt += shgSanctionedAmtTotal;
+      
+      blockData[district][block].individual.submittedCount += individualSubmittedCountTotal;
+      blockData[district][block].individual.submittedAmt += individualSubmittedAmtTotal;
+      blockData[district][block].individual.sanctionedCount += individualSanctionedCountTotal;
+      blockData[district][block].individual.sanctionedAmt += individualSanctionedAmtTotal;
     });
 
     let shgTotalTarget = 0, shgTotalSubmitted = 0, shgTotalSanctioned = 0, shgTotalAmtSubmitted = 0, shgTotalAmtSanctioned = 0;
     let individualTotalTarget = 0, individualTotalSubmitted = 0, individualTotalSanctioned = 0, individualTotalAmtSubmitted = 0, individualTotalAmtSanctioned = 0;
     
-    Object.keys(allData).forEach(district => {
-      const d = allData[district];
-      
-      // Calculate all-time totals
-      const timePeriodCols = getLastNDaysColumns(31); // Get all days in August
-      
-      d.shg.submittedCount = sumCols(d.row, timePeriodCols.shgSubmitted);
-      d.shg.submittedAmt = sumCols(d.row, timePeriodCols.shgSubmittedAmt);
-      d.shg.sanctionedCount = sumCols(d.row, timePeriodCols.shgSanctioned);
-      d.shg.sanctionedAmt = sumCols(d.row, timePeriodCols.shgSanctionedAmt);
-      
-      d.individual.submittedCount = sumCols(d.row, timePeriodCols.individualSubmitted);
-      d.individual.submittedAmt = sumCols(d.row, timePeriodCols.individualSubmittedAmt);
-      d.individual.sanctionedCount = sumCols(d.row, timePeriodCols.individualSanctioned);
-      d.individual.sanctionedAmt = sumCols(d.row, timePeriodCols.individualSanctionedAmt);
-      
-      // Calculate last 2 days for recent submission indicator
-      const last2DaysCols = getLastNDaysColumns(2);
-      d.shg.last2DaysCount = sumCols(d.row, last2DaysCols.shgSubmitted);
-      d.individual.last2DaysCount = sumCols(d.row, last2DaysCols.individualSubmitted);
-      
+    Object.keys(districtData).forEach(district => {
       shgTotalTarget += targets[district]?.shg.loan || 0;
-      shgTotalSubmitted += d.shg.submittedCount;
-      shgTotalSanctioned += d.shg.sanctionedCount;
-      shgTotalAmtSubmitted += d.shg.submittedAmt;
-      shgTotalAmtSanctioned += d.shg.sanctionedAmt;
+      shgTotalSubmitted += districtData[district].shg.submittedCount;
+      shgTotalSanctioned += districtData[district].shg.sanctionedCount;
+      shgTotalAmtSubmitted += districtData[district].shg.submittedAmt;
+      shgTotalAmtSanctioned += districtData[district].shg.sanctionedAmt;
       
       individualTotalTarget += targets[district]?.individual.loan || 0;
-      individualTotalSubmitted += d.individual.submittedCount;
-      individualTotalSanctioned += d.individual.sanctionedCount;
-      individualTotalAmtSubmitted += d.individual.submittedAmt;
-      individualTotalAmtSanctioned += d.individual.sanctionedAmt;
+      individualTotalSubmitted += districtData[district].individual.submittedCount;
+      individualTotalSanctioned += districtData[district].individual.sanctionedCount;
+      individualTotalAmtSubmitted += districtData[district].individual.submittedAmt;
+      individualTotalAmtSanctioned += districtData[district].individual.sanctionedAmt;
     });
     
     const shgAchievement = shgTotalTarget ? (shgTotalSanctioned / shgTotalTarget) * 100 : 0;
@@ -913,15 +790,20 @@ fetch(csvUrl)
     animateProgressCircle('individual-progress-circle', individualAchievement);
 
     const tbody = document.querySelector("#loanTable tbody");
-    tbody.innerHTML = ''; // Clear existing rows
+    
+    const districtOrder = [
+      "DHALAI", "GOMATI", "KHOWAI", 
+      "SOUTH TRIPURA", "NORTH TRIPURA",
+      "SEPAHIJALA", "UNAKOTI", "WEST TRIPURA"
+    ];
     
     districtOrder.forEach(district => {
-      if (!allData[district]) {
+      if (!districtData[district]) {
         console.warn(`District ${district} not found in data`);
         return;
       }
       
-      const d = allData[district];
+      const d = districtData[district];
       const shgTarget = targets[district]?.shg.loan ?? 0;
       const shgTargetAmt = targets[district]?.shg.amount ?? 0;
       const individualTarget = targets[district]?.individual.loan ?? 0;
@@ -974,7 +856,7 @@ fetch(csvUrl)
       `;
       tbody.appendChild(tr);
 
-      tr.addEventListener("click", () => toggleBlocks(tr, district, allData[district].blocks));
+      tr.addEventListener("click", () => toggleBlocks(tr, district, blockData[district]));
     });
     
     const trSummary = document.createElement("tr");
@@ -986,7 +868,7 @@ fetch(csvUrl)
       <td class="amount-cell"><strong>₹${formatAmt(shgTotalTarget * 3.13)}</strong></td>
       <td>
         <strong>${formatInt(shgTotalSubmitted)}</strong>
-        ${allData[districtOrder[0]].shg.last2DaysCount > 0 ? `<span class="recent-submission">(${formatInt(allData[districtOrder[0]].shg.last2DaysCount * districtOrder.length)} in last 2 days)</span>` : ''}
+        ${districtData[districtOrder[0]].shg.last2DaysCount > 0 ? `<span class="recent-submission">(${formatInt(districtData[districtOrder[0]].shg.last2DaysCount * districtOrder.length)} in last 2 days)</span>` : ''}
       </td>
       <td class="amount-cell"><strong>₹${formatAmt(shgTotalAmtSubmitted)}</strong></td>
       <td><strong>${formatInt(shgTotalSanctioned)}</strong></td>
@@ -1004,7 +886,7 @@ fetch(csvUrl)
       <td class="amount-cell"><strong>₹${formatAmt(individualTotalTarget * 2)}</strong></td>
       <td>
         <strong>${formatInt(individualTotalSubmitted)}</strong>
-        ${allData[districtOrder[0]].individual.last2DaysCount > 0 ? `<span class="recent-submission">(${formatInt(allData[districtOrder[0]].individual.last2DaysCount * districtOrder.length)} in last 2 days)</span>` : ''}
+        ${districtData[districtOrder[0]].individual.last2DaysCount > 0 ? `<span class="recent-submission">(${formatInt(districtData[districtOrder[0]].individual.last2DaysCount * districtOrder.length)} in last 2 days)</span>` : ''}
       </td>
       <td class="amount-cell"><strong>₹${formatAmt(individualTotalAmtSubmitted)}</strong></td>
       <td><strong>${formatInt(individualTotalSanctioned)}</strong></td>
@@ -1020,41 +902,11 @@ fetch(csvUrl)
     `;
     tbody.appendChild(trSummary);
     
-    // Set up time period buttons
-    document.querySelectorAll('.time-period-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const days = parseInt(btn.dataset.days);
-        updateTableForTimePeriod(days);
-        
-        // Update active button styling
-        document.querySelectorAll('.time-period-btn').forEach(b => {
-          b.classList.remove('btn-primary');
-          b.classList.add('btn-outline-primary');
-        });
-        btn.classList.remove('btn-outline-primary');
-        btn.classList.add('btn-primary');
-      });
-    });
-    
-    // Set up toggle all button
-    document.getElementById('toggleAllBtn').addEventListener('click', () => {
-      const isExpanded = document.querySelectorAll('tr.block-row').length > 0;
-      
-      if (isExpanded) {
-        // Collapse all
-        document.querySelectorAll('tr.block-row').forEach(el => el.remove());
-        document.getElementById('toggleAllBtn').innerHTML = '<i class="bi bi-arrows-expand"></i> Expand All Districts';
-      } else {
-        // Expand all
-        document.querySelectorAll('tr.district-row').forEach(row => {
-          const district = row.dataset.district;
-          if (allData[district]) {
-            toggleBlocks(row, district, allData[district].blocks, true);
-          }
-        });
-        document.getElementById('toggleAllBtn').innerHTML = '<i class="bi bi-arrows-collapse"></i> Collapse All Districts';
-      }
-    });
+    // Add event listeners for the new buttons
+    document.getElementById('toggleAll').addEventListener('click', toggleAllBlocks);
+    document.getElementById('downloadExcel').addEventListener('click', () => alert('Excel download functionality will be implemented here'));
+    document.getElementById('downloadPdf').addEventListener('click', () => alert('PDF download functionality will be implemented here'));
+    document.getElementById('downloadReport').addEventListener('click', () => alert('Report download functionality will be implemented here'));
   })
   .catch(error => {
     console.error("Error loading data:", error);
@@ -1091,35 +943,16 @@ function getProgressBarClass(value) {
 function formatInt(n) { return (n||0).toLocaleString("en-IN"); }
 function formatAmt(n) { return (n||0).toLocaleString("en-IN", { maximumFractionDigits: 1 }); }
 
-function toggleBlocks(districtRow, districtName, blocksObj, forceExpand = false) {
+function toggleBlocks(districtRow, districtName, blocksObj) {
   const existing = document.querySelectorAll(`tr.block-row[data-parent="${districtName}"]`);
-  
-  if (existing.length > 0 && !forceExpand) {
-    // Collapse
+  if (existing.length) {
     existing.forEach(el => el.remove());
     return;
-  }
-  
-  if (existing.length > 0 && forceExpand) {
-    return; // Already expanded
   }
 
   let last = districtRow;
   Object.keys(blocksObj).forEach(block => {
     const b = blocksObj[block];
-    const timePeriodCols = getLastNDaysColumns(currentViewDays);
-    
-    // Calculate values for current time period
-    const shgSubmittedCount = sumCols(b.row, timePeriodCols.shgSubmitted);
-    const shgSubmittedAmt = sumCols(b.row, timePeriodCols.shgSubmittedAmt);
-    const shgSanctionedCount = sumCols(b.row, timePeriodCols.shgSanctioned);
-    const shgSanctionedAmt = sumCols(b.row, timePeriodCols.shgSanctionedAmt);
-    
-    const individualSubmittedCount = sumCols(b.row, timePeriodCols.individualSubmitted);
-    const individualSubmittedAmt = sumCols(b.row, timePeriodCols.individualSubmittedAmt);
-    const individualSanctionedCount = sumCols(b.row, timePeriodCols.individualSanctioned);
-    const individualSanctionedAmt = sumCols(b.row, timePeriodCols.individualSanctionedAmt);
-
     const trb = document.createElement("tr");
     trb.className = "block-row";
     trb.dataset.parent = districtName;
@@ -1128,23 +961,50 @@ function toggleBlocks(districtRow, districtName, blocksObj, forceExpand = false)
       
       <td>—</td>
       <td>—</td>
-      <td>${formatInt(shgSubmittedCount)}</td>
-      <td class="amount-cell">₹${formatAmt(shgSubmittedAmt)}</td>
-      <td>${formatInt(shgSanctionedCount)}</td>
-      <td class="amount-cell">₹${formatAmt(shgSanctionedAmt)}</td>
+      <td>${formatInt(b.shg.submittedCount)}</td>
+      <td class="amount-cell">₹${formatAmt(b.shg.submittedAmt)}</td>
+      <td>${formatInt(b.shg.sanctionedCount)}</td>
+      <td class="amount-cell">₹${formatAmt(b.shg.sanctionedAmt)}</td>
       <td>—</td>
       
       <td>—</td>
       <td>—</td>
-      <td>${formatInt(individualSubmittedCount)}</td>
-      <td class="amount-cell">₹${formatAmt(individualSubmittedAmt)}</td>
-      <td>${formatInt(individualSanctionedCount)}</td>
-      <td class="amount-cell">₹${formatAmt(individualSanctionedAmt)}</td>
+      <td>${formatInt(b.individual.submittedCount)}</td>
+      <td class="amount-cell">₹${formatAmt(b.individual.submittedAmt)}</td>
+      <td>${formatInt(b.individual.sanctionedCount)}</td>
+      <td class="amount-cell">₹${formatAmt(b.individual.sanctionedAmt)}</td>
       <td>—</td>
     `;
     last.insertAdjacentElement("afterend", trb);
     last = trb;
   });
+}
+
+function toggleAllBlocks() {
+  const button = document.getElementById('toggleAll');
+  const isExpanded = button.textContent.includes('Collapse');
+  
+  if (isExpanded) {
+    // Collapse all
+    document.querySelectorAll('.district-row').forEach(row => {
+      const districtName = row.dataset.district;
+      const existing = document.querySelectorAll(`tr.block-row[data-parent="${districtName}"]`);
+      if (existing.length) {
+        existing.forEach(el => el.remove());
+      }
+    });
+    button.innerHTML = '<i class="bi bi-arrows-angle-expand"></i> Expand All';
+  } else {
+    // Expand all
+    document.querySelectorAll('.district-row').forEach(row => {
+      const districtName = row.dataset.district;
+      const existing = document.querySelectorAll(`tr.block-row[data-parent="${districtName}"]`);
+      if (!existing.length) {
+        row.click(); // Trigger the click to expand
+      }
+    });
+    button.innerHTML = '<i class="bi bi-arrows-angle-contract"></i> Collapse All';
+  }
 }
 
 function parseCSV(text) {
