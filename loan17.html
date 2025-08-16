@@ -261,20 +261,24 @@
     border-radius: 3px;
   }
 
+  /* Updated progress container styles */
   .progress-container {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
   }
 
   .progress-container .progress {
-    flex-grow: 1;
+    width: 100%;
   }
 
-  .progress-container small {
-    min-width: 40px;
-    text-align: right;
-    font-size: 0.95em;
+  .text-center {
+    text-align: center;
+  }
+
+  .mt-1 {
+    margin-top: 4px;
   }
 
   /* Loading animations */
@@ -741,7 +745,7 @@ fetch(csvUrl)
             <div class="progress progress-thin">
               <div class="progress-bar ${getProgressBarClass(shgAch)}" role="progressbar" style="width: ${Math.min(shgAch, 100)}%"></div>
             </div>
-            <small>${Math.round(shgAch)}%</small>
+            <div class="text-center mt-1"><small>${Math.round(shgAch)}%</small></div>
           </div>
         </td>
         
@@ -759,7 +763,7 @@ fetch(csvUrl)
             <div class="progress progress-thin">
               <div class="progress-bar ${getProgressBarClass(individualAch)}" role="progressbar" style="width: ${Math.min(individualAch, 100)}%"></div>
             </div>
-            <small>${Math.round(individualAch)}%</small>
+            <div class="text-center mt-1"><small>${Math.round(individualAch)}%</small></div>
           </div>
         </td>
       `;
@@ -787,7 +791,7 @@ fetch(csvUrl)
           <div class="progress progress-thin">
             <div class="progress-bar ${getProgressBarClass(shgAchievement)}" role="progressbar" style="width: ${Math.min(shgAchievement, 100)}%"></div>
           </div>
-          <small><strong>${Math.round(shgAchievement)}%</strong></small>
+          <div class="text-center mt-1"><small><strong>${Math.round(shgAchievement)}%</strong></small></div>
         </div>
       </td>
       
@@ -805,7 +809,7 @@ fetch(csvUrl)
           <div class="progress progress-thin">
             <div class="progress-bar ${getProgressBarClass(individualAchievement)}" role="progressbar" style="width: ${Math.min(individualAchievement, 100)}%"></div>
           </div>
-          <small><strong>${Math.round(individualAchievement)}%</strong></small>
+          <div class="text-center mt-1"><small><strong>${Math.round(individualAchievement)}%</strong></small></div>
         </div>
       </td>
     `;
