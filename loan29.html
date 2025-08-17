@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SHG Loan Progress Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+  <style>
+    :root {
+      --primary-blue: #1e3c72;
+      --secondary-blue: #2a5298;
+      --shg-blue: #3498db;
+      --individual-red: #e74c3c;
+      --success: #27ae60;
+      --warning: #f39c12;
+      --danger: #e74c3c;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f7fa;
+      margin: 0;
+      padding: 20px;
+      color: #34495e;
+    }
+    
+    .dashboard-header {
+      background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+      color: white;
+      padding: 25px 0;
+      margin-bottom: 25px;
+      border-radius: 12px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .header-logos {
+      position: absolute;
+      top: 20px;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 30px;
+      box-sizing: border-box;
+      z-index: 2;
+    }
+    
+    .header-logo {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      transition: transform 0.3s;
+    }
+    
+    .header-logo:hover {
+      transform: scale(1.05);
+    }
+    
+    .header-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+    
+    .header-content h1 {
+      font-weight: 700;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      margin-bottom: 10px;
+    }
+    
+    .header-content p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      margin-bottom: 0;
+    }
+    
+    .summary-cards {
+      display: flex;
+      gap: 25px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    .summary-card {
+      flex: 1;
+      min-width: 320px;
+      max-width: 500px;
+      background: white;
+      border-radius: 15px;
+      padding: 0;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+      position: relative;
+      overflow: hidden;
+      border: none;
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
+    
+    .summary-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+    }
+    
+    .card-header {
+      padding: 18px 25px;
+      color: white;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .shg-card .card-header {
+      background: linear-gradient(135deg, var(--shg-blue) 0%, #2c3e50 100%);
+    }
+    
+    .individual-card .card-header {
+      background: linear-gradient(135deg, var(--individual-red) 0%, #c0392b 100%);
+    }
+    
+    .card-body {
+      padding: 20px;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    
+    .progress-circle-container {
+      flex: 0 0 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-right: 25px;
+    }
+    
+    .progress-circle {
+      width: 100px;
+      height: 100px;
+      position: relative;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+    
+    .stat-item {
+      background: rgba(240, 240, 240, 0.6);
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+      transition: transform 0.3s;
+    }
+    
+    .stat-item:hover {
+      transform: translateY(-3px);
+      background: rgba(240, 240, 240, 0.8);
+    }
+    
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+    
+    .shg-card .stat-value {
+      color: var(--shg-blue);
+    }
+    
+    .individual-card .stat-value {
+      color: var(--individual-red);
+    }
+    
+    .chart-container {
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 25px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+      height: 280px;
+    }
+    
+    .chart-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #2c3e50;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .data-table {
+      font-size: 16px;
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    
+    .data-table th, .data-table td {
+      border: 1px solid #e0e0e0;
+      padding: 14px 16px;
+      text-align: center;
+    }
+    
+    .data-table th {
+      background-color: #f8f9fa;
+      font-weight: 600;
+      color: #2c3e50;
+      font-size: 0.95em;
+    }
+    
+    .group-header {
+      background-color: #e9ecef !important;
+      font-weight: 700;
+      text-align: center !important;
+      font-size: 1.05em;
+    }
+    
+    .data-table tr:nth-child(even) {
+      background-color: #fafafa;
+    }
+    
+    .data-table tr:hover {
+      background-color: #f1f7ff;
+    }
+    
+    .district-row {
+      cursor: pointer;
+      font-weight: bold;
+      background-color: #e6f0ff;
+      font-size: 1.1em;
+    }
+    
+    .block-row td:first-child {
+      text-align: left;
+      padding-left: 45px !important;
+      font-size: 0.95em;
+    }
+    
+    .summary-row {
+      font-weight: 600;
+      background-color: rgba(52, 152, 219, 0.1);
+      font-size: 1.1em;
+    }
+    
+    .amount-cell {
+      font-size: 0.95em;
+      color: #7f8c8d;
+    }
+    
+    .btn-expand {
+      background: linear-gradient(135deg, var(--success) 0%, #2ecc71 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-weight: 500;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      margin-top: 10px;
+    }
+    
+    .btn-expand:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+      color: white;
+    }
+    
+    .info-icon {
+      color: var(--shg-blue);
+      cursor: pointer;
+      margin-left: 8px;
+      font-size: 18px;
+      transition: all 0.3s;
+    }
+    
+    .info-icon:hover {
+      color: var(--secondary-blue);
+      transform: scale(1.2);
+    }
+    
+    .modal-content {
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      border: none;
+    }
+    
+    .modal-header {
+      background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+      color: white;
+      padding: 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .modal-title {
+      font-weight: 700;
+      font-size: 1.4rem;
+    }
+    
+    .modal-body {
+      padding: 25px;
+    }
+    
+    .block-detail-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 15px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    
+    .block-detail-table th {
+      background-color: var(--shg-blue);
+      color: white;
+      padding: 12px;
+      text-align: center;
+      font-weight: 600;
+    }
+    
+    .block-detail-table td {
+      padding: 10px 12px;
+      border: 1px solid #e0e0e0;
+      text-align: center;
+    }
+    
+    .block-detail-table tr:nth-child(even) {
+      background-color: #f8f9fa;
+    }
+    
+    .detail-chart-container {
+      height: 350px;
+      margin-top: 25px;
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+    
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .chart-title-section {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+    
+    .chart-legend {
+      display: flex;
+      gap: 20px;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+    }
+    
+    .legend-color {
+      width: 15px;
+      height: 15px;
+      border-radius: 3px;
+    }
+    
+    .progress-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .progress-thin {
+      height: 8px;
+      margin-bottom: 5px;
+      border-radius: 4px;
+      background: #e9ecef;
+    }
+    
+    .progress-thin .progress-bar {
+      border-radius: 4px;
+    }
+    
+    .floating-pattern {
+      position: absolute;
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+      z-index: 0;
+    }
+    
+    .pattern-1 {
+      top: -50px;
+      right: -50px;
+    }
+    
+    .pattern-2 {
+      bottom: -50px;
+      left: -50px;
+    }
+    
+    .footer-note {
+      text-align: center;
+      margin-top: 30px;
+      color: #7f8c8d;
+      font-size: 0.9rem;
+      padding: 15px;
+    }
+    
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+    
+    .floating {
+      animation: float 3s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-header">
+    <div class="header-logos">
+      <img src="https://upload.wikimedia.org/wikipedia/en/thumb/4/41/Flag_of_India.svg/1200px-Flag_of_India.svg.png" class="header-logo floating" alt="India Flag">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Tripura_Emblem.png/330px-Tripura_Emblem.png" class="header-logo floating" alt="Tripura Emblem">
+    </div>
+    <div class="header-content">
+      <h1><i class="bi bi-graph-up"></i> "SAMRIDDHI" CAMPAIGN - DASHBOARD</h1>
+      <p class="mb-0">(Mahilader Arthik Khomotayoner Jonyo Ek Ononyo Podokhyep)</p>
+      <p class="mb-0">1st August to 31st August, 2025</p>
+    </div>
+    <div class="floating-pattern pattern-1"></div>
+    <div class="floating-pattern pattern-2"></div>
+  </div>
+
+  <div class="container">
+    <div class="summary-cards">
+      <div class="summary-card shg-card">
+        <div class="card-header">
+          <h4><i class="bi bi-people-fill"></i> SHG Loan Summary</h4>
+        </div>
+        <div class="card-body">
+          <div class="progress-circle-container">
+            <div class="progress-circle">
+              <svg viewBox="0 0 36 36">
+                <circle class="progress-circle-bg" cx="18" cy="18" r="14" stroke-dasharray="87.96" stroke-dashoffset="0"></circle>
+                <circle class="progress-circle-fill" cx="18" cy="18" r="14" stroke-dasharray="87.96" stroke-dashoffset="0" id="shg-progress-circle"></circle>
+              </svg>
+              <div class="progress-value" id="shg-achievement-value">78%</div>
+            </div>
+          </div>
+          <div class="stats-container">
+            <div class="stats-grid">
+              <div class="stat-item">
+                <div class="stat-value" id="shg-target-value">5,250</div>
+                <div class="stat-label">Target</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value" id="shg-submitted-value">4,892</div>
+                <div class="stat-label">Submitted</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value" id="shg-sanctioned-value">4,095</div>
+                <div class="stat-label">Sanctioned</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value" id="shg-approval-value">84%</div>
+                <div class="stat-label">Approval Rate</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="summary-card individual-card">
+        <div class="card-header">
+          <h4><i class="bi bi-person-fill"></i> Individual Loan Summary</h4>
+        </div>
+        <div class="card-body">
+          <div class="progress-circle-container">
+            <div class="progress-circle">
+              <svg viewBox="0 0 36 36">
+                <circle class="progress-circle-bg" cx="18" cy="18" r="14" stroke-dasharray="87.96" stroke-dashoffset="0"></circle>
+                <circle class="progress-circle-fill" cx="18" cy="18" r="14" stroke-dasharray="87.96" stroke-dashoffset="0" id="individual-progress-circle"></circle>
+              </svg>
+              <div class="progress-value" id="individual-achievement-value">65%</div>
+            </div>
+          </div>
+          <div class="stats-container">
+            <div class="stats-grid">
+              <div class="stat-item">
+                <div class="stat-value" id="individual-target-value">850</div>
+                <div class="stat-label">Target</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value" id="individual-submitted-value">720</div>
+                <div class="stat-label">Submitted</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value" id="individual-sanctioned-value">552</div>
+                <div class="stat-label">Sanctioned</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value" id="individual-approval-value">77%</div>
+                <div class="stat-label">Approval Rate</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row">
+      <div class="col-md-6">
+        <div class="chart-container">
+          <div class="chart-title">
+            <i class="bi bi-people-fill" style="color: #3498db;"></i> SHG Loan - Daily Progress
+          </div>
+          <canvas id="shgLoanChart"></canvas>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="chart-container">
+          <div class="chart-title">
+            <i class="bi bi-person-fill" style="color: #e74c3c;"></i> Individual Loan - Daily Progress
+          </div>
+          <canvas id="individualLoanChart"></canvas>
+        </div>
+      </div>
+    </div>
+    
+    <button class="btn-expand" id="toggleAll">
+      <i class="bi bi-arrows-angle-expand"></i> Expand/Collapse All Districts
+    </button>
+    
+    <div class="table-responsive">
+      <table class="data-table" id="loanTable">
+        <thead>
+          <tr>
+            <th rowspan="2">District / Block Name</th>
+            <th colspan="7" class="group-header">SHG Loan</th>
+            <th colspan="7" class="group-header">Individual Loan</th>
+          </tr>
+          <tr>
+            <th>Target</th>
+            <th>Target Amount (₹ Lakh)</th>
+            <th>Submitted</th>
+            <th>Submitted Amount (₹ Lakh)</th>
+            <th>Sanctioned</th>
+            <th>Sanctioned Amount (₹ Lakh)</th>
+            <th>Achievement (%)</th>
+            <th>Target</th>
+            <th>Target Amount (₹ Lakh)</th>
+            <th>Submitted</th>
+            <th>Submitted Amount (₹ Lakh)</th>
+            <th>Sanctioned</th>
+            <th>Sanctioned Amount (₹ Lakh)</th>
+            <th>Achievement (%)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="district-row">
+            <td>DHALAI</td>
+            <td>800</td>
+            <td class="amount-cell">₹2,504</td>
+            <td>725</td>
+            <td class="amount-cell">₹2,268</td>
+            <td>640</td>
+            <td class="amount-cell">₹2,003</td>
+            <td>
+              <div class="progress-container">
+                <div class="progress progress-thin">
+                  <div class="progress-bar bg-success" role="progressbar" style="width: 80%"></div>
+                </div>
+                <div class="text-center mt-1"><small>80%</small></div>
+              </div>
+            </td>
+            <td>135</td>
+            <td class="amount-cell">₹270</td>
+            <td>112</td>
+            <td class="amount-cell">₹224</td>
+            <td>95</td>
+            <td class="amount-cell">₹190</td>
+            <td>
+              <div class="progress-container">
+                <div class="progress progress-thin">
+                  <div class="progress-bar bg-warning" role="progressbar" style="width: 70%"></div>
+                </div>
+                <div class="text-center mt-1"><small>70%</small></div>
+              </div>
+            </td>
+          </tr>
+          <tr class="block-row">
+            <td>
+              AMBASSA 
+              <i class="bi bi-info-circle info-icon" data-bs-toggle="modal" data-bs-target="#blockDetailsModal"></i>
+            </td>
+            <td>105</td>
+            <td class="amount-cell">₹328.65</td>
+            <td>95</td>
+            <td class="amount-cell">₹297.35</td>
+            <td>85</td>
+            <td class="amount-cell">₹266.05</td>
+            <td>
+              <div class="progress-container">
+                <div class="progress progress-thin">
+                  <div class="progress-bar bg-success" role="progressbar" style="width: 81%"></div>
+                </div>
+                <div class="text-center mt-1"><small>81%</small></div>
+              </div>
+            </td>
+            <td>25</td>
+            <td class="amount-cell">₹50</td>
+            <td>22</td>
+            <td class="amount-cell">₹44</td>
+            <td>18</td>
+            <td class="amount-cell">₹36</td>
+            <td>
+              <div class="progress-container">
+                <div class="progress progress-thin">
+                  <div class="progress-bar bg-success" role="progressbar" style="width: 72%"></div>
+                </div>
+                <div class="text-center mt-1"><small>72%</small></div>
+              </div>
+            </td>
+          </tr>
+          <tr class="block-row">
+            <td>
+              CHAWMANU 
+              <i class="bi bi-info-circle info-icon" data-bs-toggle="modal" data-bs-target="#blockDetailsModal"></i>
+            </td>
+            <td>75</td>
+            <td class="amount-cell">₹234.75</td>
+            <td>68</td>
+            <td class="amount-cell">₹212.90</td>
+            <td>58</td>
+            <td class="amount-cell">₹181.55</td>
+            <td>
+              <div class="progress-container">
+                <div class="progress progress-thin">
+                  <div class="progress-bar bg-warning" role="progressbar" style="width: 77%"></div>
+                </div>
+                <div class="text-center mt-1"><small>77%</small></div>
+              </div>
+            </td>
+            <td>14</td>
+            <td class="amount-cell">₹28</td>
+            <td>12</td>
+            <td class="amount-cell">₹24</td>
+            <td>10</td>
+            <td class="amount-cell">₹20</td>
+            <td>
+              <div class="progress-container">
+                <div class="progress progress-thin">
+                  <div class="progress-bar bg-warning" role="progressbar" style="width: 71%"></div>
+                </div>
+                <div class="text-center mt-1"><small>71%</small></div>
+              </div>
+            </td>
+          </tr>
+          <tr class="district-row">
+            <td>GOMATI</td>
+            <td>850</td>
+            <td class="amount-cell">₹2,660.50</td>
+            <td>810</td>
+            <td class="amount-cell">₹2,535.30</td>
+            <td>695</td>
+            <td class="amount-cell">₹2,175.25</td>
+            <td>
+              <div class="progress-container">
+                <div class="progress progress-thin">
+                  <div class="progress-bar bg-success" role="progressbar" style="width: 82%"></div>
+                </div>
+                <div class="text-center mt-1"><small>82%</small></div>
+              </div>
+            </td>
+            <td>135</td>
+            <td class="amount-cell">₹270</td>
+            <td>125</td>
+            <td class="amount-cell">₹250</td>
+            <td>105</td>
+            <td class="amount-cell">₹210</td>
+            <td>
+              <div class="progress-container">
+                <div class="progress progress-thin">
+                  <div class="progress-bar bg-success" role="progressbar" style="width: 78%"></div>
+                </div>
+                <div class="text-center mt-1"><small>78%</small></div>
+              </div>
+            </td>
+          </tr>
+          <tr class="summary-row">
+            <td><strong>Total</strong></td>
+            <td><strong>5,250</strong></td>
+            <td class="amount-cell"><strong>₹16,430.50</strong></td>
+            <td><strong>4,892</strong></td>
+            <td class="amount-cell"><strong>₹15,312.40</strong></td>
+            <td><strong>4,095</strong></td>
+            <td class="amount-cell"><strong>₹12,817.25</strong></td>
+            <td>
+              <div class="progress-container">
+                <div class="progress progress-thin">
+                  <div class="progress-bar bg-success" role="progressbar" style="width: 78%"></div>
+                </div>
+                <div class="text-center mt-1"><small><strong>78%</strong></small></div>
+              </div>
+            </td>
+            <td><strong>850</strong></td>
+            <td class="amount-cell"><strong>₹1,700</strong></td>
+            <td><strong>720</strong></td>
+            <td class="amount-cell"><strong>₹1,440</strong></td>
+            <td><strong>552</strong></td>
+            <td class="amount-cell"><strong>₹1,104</strong></td>
+            <td>
+              <div class="progress-container">
+                <div class="progress progress-thin">
+                  <div class="progress-bar bg-warning" role="progressbar" style="width: 65%"></div>
+                </div>
+                <div class="text-center mt-1"><small><strong>65%</strong></small></div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="footer-note">
+      <p>Data updated: 17 August 2025 14:30 IST | Source: Tripura Rural Livelihood Mission</p>
+    </div>
+  </div>
+
+  <!-- Block Details Modal -->
+  <div class="modal fade" id="blockDetailsModal" tabindex="-1" aria-labelledby="blockDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="blockDetailsModalLabel">AMBASSA Block Progress Details (DHALAI District)</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="detail-chart-container">
+            <div class="chart-header">
+              <div class="chart-title-section">
+                <i class="bi bi-graph-up"></i> SHG & Individual Loan Progress
+              </div>
+              <div class="chart-legend">
+                <div class="legend-item">
+                  <div class="legend-color" style="background: #3498db;"></div>
+                  <span>SHG Submitted</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-color" style="background: #1e3c72;"></div>
+                  <span>SHG Sanctioned</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-color" style="background: #e74c3c;"></div>
+                  <span>Individual Submitted</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-color" style="background: #c0392b;"></div>
+                  <span>Individual Sanctioned</span>
+                </div>
+              </div>
+            </div>
+            <canvas id="combinedProgressChart"></canvas>
+          </div>
+          
+          <h5 class="mt-4"><i class="bi bi-calendar-date"></i> Day-wise Progress</h5>
+          <div class="table-responsive">
+            <table class="block-detail-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>SHG Submitted</th>
+                  <th>SHG Sanctioned</th>
+                  <th>SHG Approval %</th>
+                  <th>Individual Submitted</th>
+                  <th>Individual Sanctioned</th>
+                  <th>Individual Approval %</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>01 Aug</td>
+                  <td>8</td>
+                  <td>6</td>
+                  <td>
+                    <div class="progress-container">
+                      <div class="progress progress-thin">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 75%"></div>
+                      </div>
+                      <div class="text-center mt-1"><small>75%</small></div>
+                    </div>
+                  </td>
+                  <td>2</td>
+                  <td>1</td>
+                  <td>
+                    <div class="progress-container">
+                      <div class="progress progress-thin">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: 50%"></div>
+                      </div>
+                      <div class="text-center mt-1"><small>50%</small></div>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>02 Aug</td>
+                  <td>12</td>
+                  <td>9</td>
+                  <td>
+                    <div class="progress-container">
+                      <div class="progress progress-thin">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 75%"></div>
+                      </div>
+                      <div class="text-center mt-1"><small>75%</small></div>
+                    </div>
+                  </td>
+                  <td>3</td>
+                  <td>2</td>
+                  <td>
+                    <div class="progress-container">
+                      <div class="progress progress-thin">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: 67%"></div>
+                      </div>
+                      <div class="text-center mt-1"><small>67%</small></div>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>03 Aug</td>
+                  <td>15</td>
+                  <td>12</td>
+                  <td>
+                    <div class="progress-container">
+                      <div class="progress progress-thin">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 80%"></div>
+                      </div>
+                      <div class="text-center mt-1"><small>80%</small></div>
+                    </div>
+                  </td>
+                  <td>4</td>
+                  <td>3</td>
+                  <td>
+                    <div class="progress-container">
+                      <div class="progress progress-thin">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 75%"></div>
+                      </div>
+                      <div class="text-center mt-1"><small>75%</small></div>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>04 Aug</td>
+                  <td>10</td>
+                  <td>8</td>
+                  <td>
+                    <div class="progress-container">
+                      <div class="progress progress-thin">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 80%"></div>
+                      </div>
+                      <div class="text-center mt-1"><small>80%</small></div>
+                    </div>
+                  </td>
+                  <td>3</td>
+                  <td>2</td>
+                  <td>
+                    <div class="progress-container">
+                      <div class="progress progress-thin">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: 67%"></div>
+                      </div>
+                      <div class="text-center mt-1"><small>67%</small></div>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>05 Aug</td>
+                  <td>14</td>
+                  <td>11</td>
+                  <td>
+                    <div class="progress-container">
+                      <div class="progress progress-thin">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: 79%"></div>
+                      </div>
+                      <div class="text-center mt-1"><small>79%</small></div>
+                    </div>
+                  </td>
+                  <td>5</td>
+                  <td>4</td>
+                  <td>
+                    <div class="progress-container">
+                      <div class="progress progress-thin">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 80%"></div>
+                      </div>
+                      <div class="text-center mt-1"><small>80%</small></div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary">Export Data</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Initialize charts after page load
+    document.addEventListener('DOMContentLoaded', function() {
+      // Main dashboard charts
+      const shgCtx = document.getElementById('shgLoanChart').getContext('2d');
+      const individualCtx = document.getElementById('individualLoanChart').getContext('2d');
+      const combinedCtx = document.getElementById('combinedProgressChart').getContext('2d');
+      
+      // Dates for August
+      const dates = Array.from({length: 17}, (_, i) => ${i+1} Aug);
+      
+      // SHG Loan Chart
+      new Chart(shgCtx, {
+        type: 'line',
+        data: {
+          labels: dates,
+          datasets: [
+            {
+              label: 'Submitted',
+              data: [45, 85, 120, 155, 190, 230, 280, 325, 380, 420, 470, 520, 580, 630, 680, 720, 760],
+              borderColor: '#3498db',
+              backgroundColor: 'rgba(52, 152, 219, 0.1)',
+              borderWidth: 3,
+              pointRadius: 4,
+              pointBackgroundColor: '#fff',
+              pointBorderWidth: 2,
+              tension: 0.3,
+              fill: true
+            },
+            {
+              label: 'Sanctioned',
+              data: [30, 65, 95, 125, 160, 195, 235, 280, 320, 360, 400, 440, 490, 530, 570, 610, 640],
+              borderColor: '#1e3c72',
+              backgroundColor: 'rgba(30, 60, 114, 0.1)',
+              borderWidth: 3,
+              pointRadius: 4,
+              pointBackgroundColor: '#fff',
+              pointBorderWidth: 2,
+              tension: 0.3,
+              fill: true
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: {
+            duration: 2000,
+            easing: 'easeOutQuart'
+          },
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                boxWidth: 12,
+                padding: 20,
+                usePointStyle: true,
+                pointStyle: 'circle'
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: 12,
+              callbacks: {
+                label: function(context) {
+                  return ${context.dataset.label}: ${context.raw};
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: {
+                drawBorder: false,
+                color: 'rgba(0, 0, 0, 0.05)'
+              },
+              ticks: {
+                callback: function(value) {
+                  return value;
+                }
+              },
+              title: {
+                display: true,
+                text: 'Number of Loans',
+                padding: {top: 10, bottom: 10}
+              }
+            },
+            x: {
+              grid: {
+                display: false,
+                drawBorder: false
+              },
+              title: {
+                display: true,
+                text: 'Day of August 2025',
+                padding: {top: 10}
+              }
+            }
+          }
+        }
+      });
+      
+      // Individual Loan Chart
+      new Chart(individualCtx, {
+        type: 'line',
+        data: {
+          labels: dates,
+          datasets: [
+            {
+              label: 'Submitted',
+              data: [15, 28, 42, 55, 68, 80, 95, 110, 125, 140, 160, 180, 200, 225, 250, 280, 305],
+              borderColor: '#e74c3c',
+              backgroundColor: 'rgba(231, 76, 60, 0.1)',
+              borderWidth: 3,
+              pointRadius: 4,
+              pointBackgroundColor: '#fff',
+              pointBorderWidth: 2,
+              tension: 0.3,
+              fill: true
+            },
+            {
+              label: 'Sanctioned',
+              data: [10, 20, 30, 40, 50, 60, 75, 85, 100, 115, 130, 145, 160, 175, 195, 220, 240],
+              borderColor: '#c0392b',
+              backgroundColor: 'rgba(192, 57, 43, 0.1)',
+              borderWidth: 3,
+              pointRadius: 4,
+              pointBackgroundColor: '#fff',
+              pointBorderWidth: 2,
+              tension: 0.3,
+              fill: true
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: {
+            duration: 2000,
+            easing: 'easeOutQuart'
+          },
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                boxWidth: 12,
+                padding: 20,
+                usePointStyle: true,
+                pointStyle: 'circle'
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: 12,
+              callbacks: {
+                label: function(context) {
+                  return ${context.dataset.label}: ${context.raw};
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: {
+                drawBorder: false,
+                color: 'rgba(0, 0, 0, 0.05)'
+              },
+              ticks: {
+                callback: function(value) {
+                  return value;
+                }
+              },
+              title: {
+                display: true,
+                text: 'Number of Loans',
+                padding: {top: 10, bottom: 10}
+              }
+            },
+            x: {
+              grid: {
+                display: false,
+                drawBorder: false
+              },
+              title: {
+                display: true,
+                text: 'Day of August 2025',
+                padding: {top: 10}
+              }
+            }
+          }
+        }
+      });
+      
+      // Combined Progress Chart for Modal
+      new Chart(combinedCtx, {
+        type: 'line',
+        data: {
+          labels: dates,
+          datasets: [
+            {
+              label: 'SHG Submitted',
+              data: [8, 20, 35, 50, 65, 80, 95, 110, 125, 140, 155, 170, 185, 200, 215, 230, 245],
+              borderColor: '#3498db',
+              backgroundColor: 'rgba(52, 152, 219, 0.1)',
+              borderWidth: 3,
+              pointRadius: 4,
+              pointBackgroundColor: '#fff',
+              pointBorderWidth: 2,
+              tension: 0.3,
+              fill: false
+            },
+            {
+              label: 'SHG Sanctioned',
+              data: [6, 16, 28, 40, 52, 65, 80, 95, 110, 125, 140, 155, 170, 185, 200, 215, 230],
+              borderColor: '#1e3c72',
+              backgroundColor: 'rgba(30, 60, 114, 0.1)',
+              borderWidth: 3,
+              pointRadius: 4,
+              pointBackgroundColor: '#fff',
+              pointBorderWidth: 2,
+              tension: 0.3,
+              fill: false
+            },
+            {
+              label: 'Individual Submitted',
+              data: [2, 5, 9, 14, 18, 23, 28, 34, 40, 47, 54, 62, 70, 78, 87, 96, 105],
+              borderColor: '#e74c3c',
+              backgroundColor: 'rgba(231, 76, 60, 0.1)',
+              borderWidth: 3,
+              pointRadius: 4,
+              pointBackgroundColor: '#fff',
+              pointBorderWidth: 2,
+              tension: 0.3,
+              fill: false
+            },
+            {
+              label: 'Individual Sanctioned',
+              data: [1, 3, 6, 9, 12, 16, 20, 25, 30, 36, 42, 49, 56, 64, 72, 81, 90],
+              borderColor: '#c0392b',
+              backgroundColor: 'rgba(192, 57, 43, 0.1)',
+              borderWidth: 3,
+              pointRadius: 4,
+              pointBackgroundColor: '#fff',
+              pointBorderWidth: 2,
+              tension: 0.3,
+              fill: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: {
+            duration: 2000,
+            easing: 'easeOutQuart'
+          },
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                boxWidth: 12,
+                padding: 15,
+                usePointStyle: true,
+                pointStyle: 'circle'
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.85)',
+              padding: 15,
+              callbacks: {
+                label: function(context) {
+                  return ${context.dataset.label}: ${context.raw};
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: {
+                drawBorder: false,
+                color: 'rgba(0, 0, 0, 0.05)'
+              },
+              ticks: {
+                callback: function(value) {
+                  return value;
+                }
+              },
+              title: {
+                display: true,
+                text: 'Number of Loans',
+                padding: {top: 10, bottom: 10}
+              }
+            },
+            x: {
+              grid: {
+                drawBorder: false,
+                color: 'rgba(0, 0, 0, 0.05)'
+              },
+              title: {
+                display: true,
+                text: 'Day of August 2025',
+                padding: {top: 10}
+              }
+            }
+          },
+          interaction: {
+            mode: 'index',
+            intersect: false
+          }
+        }
+      });
+      
+      // Animate progress circles
+      function animateProgressCircle(id, percentage) {
+        const circle = document.getElementById(id);
+        const radius = 14;
+        const circumference = 2 * Math.PI * radius;
+        const offset = circumference - (percentage / 100) * circumference;
+        
+        circle.style.strokeDasharray = circumference;
+        circle.style.strokeDashoffset = circumference;
+        
+        setTimeout(() => {
+          circle.style.strokeDashoffset = offset;
+        }, 300);
+      }
+      
+      // Animate the progress circles
+      animateProgressCircle('shg-progress-circle', 78);
+      animateProgressCircle('individual-progress-circle', 65);
+    });
+  </script>
+</body>
+</html>
