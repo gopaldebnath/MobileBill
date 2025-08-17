@@ -551,7 +551,6 @@ body {
       <div class="modal-body">
         <div class="detail-chart-container">
           <canvas id="blockDetailChart"></canvas>
-          <div class="achievement-line"></div>
         </div>
         
         <h5 class="mt-4"><i class="bi bi-calendar-date"></i> Day-wise Progress</h5>
@@ -563,11 +562,9 @@ body {
                 <th>SHG Target</th>
                 <th>SHG Submitted</th>
                 <th>SHG Sanctioned</th>
-                <th>SHG Achievement (%)</th>
                 <th>Individual Target</th>
                 <th>Individual Submitted</th>
                 <th>Individual Sanctioned</th>
-                <th>Individual Achievement (%)</th>
               </tr>
             </thead>
             <tbody id="blockDetailBody"></tbody>
@@ -737,105 +734,75 @@ function showBlockDetails(district, block) {
   
   // Simulate data loading
   const tbody = document.getElementById('blockDetailBody');
-  tbody.innerHTML = '<tr><td colspan="9" class="text-center">Loading data...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="7" class="text-center">Loading data...</td></tr>';
   
   modal.show();
   
-  // Find the block data in the CSV rows
-  fetch(csvUrl)
-    .then(res => res.text())
-    .then(text => {
-      const rows = parseCSV(text);
-      const blockRow = rows.find(row => 
-        (row[0] || "").trim().toUpperCase() === district.toUpperCase() && 
-        (row[1] || "").trim() === block
-      );
-      
-      if (!blockRow) {
-        tbody.innerHTML = '<tr><td colspan="9" class="text-center">No data found for this block</td></tr>';
-        return;
-      }
-      
-      const shgTarget = blockTargets[block]?.shg.loan || 0;
-      const indTarget = blockTargets[block]?.individual.loan || 0;
-      
-      // Generate daily data from the CSV row
-      const shgSubmittedData = [];
-      const shgSanctionedData = [];
-      const indSubmittedData = [];
-      const indSanctionedData = [];
-      const shgAchievementData = [];
-      const indAchievementData = [];
-      const labels = [];
-      
-      tbody.innerHTML = '';
-      for (let day = 1; day <= daysToShow; day++) {
-        const date = `${day} Aug`;
-        labels.push(date);
-        
-        const dayOffset = (day - 1) * 8;
-        const shgSubmitted = parseFloat(blockRow[4 + dayOffset]) || 0;
-        const shgSanctioned = parseFloat(blockRow[6 + dayOffset]) || 0;
-        const indSubmitted = parseFloat(blockRow[8 + dayOffset]) || 0;
-        const indSanctioned = parseFloat(blockRow[10 + dayOffset]) || 0;
-        
-        shgSubmittedData.push(shgSubmitted);
-        shgSanctionedData.push(shgSanctioned);
-        indSubmittedData.push(indSubmitted);
-        indSanctionedData.push(indSanctioned);
-        
-        // Calculate achievement percentages
-        const shgAchievement = shgTarget ? (shgSanctioned / shgTarget) * 100 : 0;
-        const indAchievement = indTarget ? (indSanctioned / indTarget) * 100 : 0;
-        
-        shgAchievementData.push(shgAchievement);
-        indAchievementData.push(indAchievement);
-        
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${date}</td>
-          <td>${formatInt(shgTarget)}</td>
-          <td>${formatInt(shgSubmitted)}</td>
-          <td>${formatInt(shgSanctioned)}</td>
-          <td>
-            <div class="progress-container">
-              <div class="progress progress-thin">
-                <div class="progress-bar ${getProgressBarClass(shgAchievement)}" role="progressbar" style="width: ${Math.min(shgAchievement, 100)}%"></div>
-              </div>
-              <div class="text-center mt-1"><small>${Math.round(shgAchievement)}%</small></div>
-            </div>
-          </td>
-          <td>${formatInt(indTarget)}</td>
-          <td>${formatInt(indSubmitted)}</td>
-          <td>${formatInt(indSanctioned)}</td>
-          <td>
-            <div class="progress-container">
-              <div class="progress progress-thin">
-                <div class="progress-bar ${getProgressBarClass(indAchievement)}" role="progressbar" style="width: ${Math.min(indAchievement, 100)}%"></div>
-              </div>
-              <div class="text-center mt-1"><small>${Math.round(indAchievement)}%</small></div>
-            </div>
-          </td>
-        `;
-        tbody.appendChild(row);
-      }
-      
-      // Create merged chart for the block details
-      createBlockDetailChart('blockDetailChart', 
-        shgSubmittedData, shgSanctionedData, shgAchievementData,
-        indSubmittedData, indSanctionedData, indAchievementData,
-        shgTarget, indTarget, labels);
-    })
-    .catch(error => {
-      console.error("Error loading block details:", error);
-      tbody.innerHTML = '<tr><td colspan="9" class="text-center">Error loading data</td></tr>';
-    });
+  // Find the row for this block in the CSV data
+  const blockRow = window.csvData.find(row => 
+    row[0].trim().toUpperCase() === district && 
+    row[1].trim().toUpperCase() === block.toUpperCase()
+  );
+  
+  if (!blockRow) {
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center">No data found for this block</td></tr>';
+    return;
+  }
+  
+  // Get block targets
+  const shgTarget = blockTargets[block]?.shg.loan || 0;
+  const indTarget = blockTargets[block]?.individual.loan || 0;
+  
+  // Prepare data for the chart
+  const shgSubmittedData = [];
+  const shgSanctionedData = [];
+  const indSubmittedData = [];
+  const indSanctionedData = [];
+  const labels = [];
+  
+  tbody.innerHTML = '';
+  
+  // Process each day's data
+  dayColumns.slice(0, daysToShow).forEach((day, index) => {
+    const date = `${day.date.split('-')[0]} Aug`;
+    labels.push(date);
+    
+    // Get day-wise data from CSV
+    const shgSubmitted = parseFloat(blockRow[day.shgSubmittedCount]) || 0;
+    const shgSanctioned = parseFloat(blockRow[day.shgSanctionedCount]) || 0;
+    const indSubmitted = parseFloat(blockRow[day.individualSubmittedCount]) || 0;
+    const indSanctioned = parseFloat(blockRow[day.individualSanctionedCount]) || 0;
+    
+    shgSubmittedData.push(shgSubmitted);
+    shgSanctionedData.push(shgSanctioned);
+    indSubmittedData.push(indSubmitted);
+    indSanctionedData.push(indSanctioned);
+    
+    // Add row to table
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${date}</td>
+      <td>${formatInt(shgTarget)}</td>
+      <td>${formatInt(shgSubmitted)}</td>
+      <td>${formatInt(shgSanctioned)}</td>
+      <td>${formatInt(indTarget)}</td>
+      <td>${formatInt(indSubmitted)}</td>
+      <td>${formatInt(indSanctioned)}</td>
+    `;
+    tbody.appendChild(row);
+  });
+  
+  // Create line chart for the block details
+  createBlockDetailChart('blockDetailChart', 
+    shgSubmittedData, shgSanctionedData,
+    indSubmittedData, indSanctionedData,
+    shgTarget, indTarget, labels);
 }
 
-// Function to create merged block detail chart
+// Function to create block detail chart with line graphs
 function createBlockDetailChart(canvasId, 
-  shgSubmittedData, shgSanctionedData, shgAchievementData,
-  indSubmittedData, indSanctionedData, indAchievementData,
+  shgSubmittedData, shgSanctionedData,
+  indSubmittedData, indSanctionedData,
   shgTarget, indTarget, labels) {
   
   const ctx = document.getElementById(canvasId).getContext('2d');
@@ -846,73 +813,49 @@ function createBlockDetailChart(canvasId,
   }
   
   window[`${canvasId}Chart`] = new Chart(ctx, {
-    type: 'bar',
+    type: 'line',
     data: {
       labels: labels,
       datasets: [
         {
           label: 'SHG Submitted',
           data: shgSubmittedData,
-          backgroundColor: 'rgba(52, 152, 219, 0.7)',
-          borderColor: 'rgba(52, 152, 219, 1)',
-          borderWidth: 1,
-          borderRadius: 4,
-          borderSkipped: false,
-          yAxisID: 'y'
+          borderColor: '#3498db',
+          backgroundColor: 'rgba(52, 152, 219, 0.1)',
+          borderWidth: 2,
+          pointRadius: 3,
+          tension: 0.3,
+          fill: true
         },
         {
           label: 'SHG Sanctioned',
           data: shgSanctionedData,
-          backgroundColor: 'rgba(26, 82, 118, 0.9)',
-          borderColor: 'rgba(26, 82, 118, 1)',
-          borderWidth: 1,
-          borderRadius: 4,
-          borderSkipped: false,
-          yAxisID: 'y'
-        },
-        {
-          label: 'SHG Achievement %',
-          data: shgAchievementData,
-          borderColor: '#2ecc71',
-          backgroundColor: 'transparent',
+          borderColor: '#2c3e50',
+          backgroundColor: 'rgba(44, 62, 80, 0.1)',
           borderWidth: 2,
           pointRadius: 3,
-          borderDash: [5, 5],
-          type: 'line',
           tension: 0.3,
-          yAxisID: 'y1'
+          fill: true
         },
         {
           label: 'Individual Submitted',
           data: indSubmittedData,
-          backgroundColor: 'rgba(231, 76, 60, 0.7)',
-          borderColor: 'rgba(231, 76, 60, 1)',
-          borderWidth: 1,
-          borderRadius: 4,
-          borderSkipped: false,
-          yAxisID: 'y'
+          borderColor: '#e74c3c',
+          backgroundColor: 'rgba(231, 76, 60, 0.1)',
+          borderWidth: 2,
+          pointRadius: 3,
+          tension: 0.3,
+          fill: true
         },
         {
           label: 'Individual Sanctioned',
           data: indSanctionedData,
-          backgroundColor: 'rgba(150, 40, 27, 0.9)',
-          borderColor: 'rgba(150, 40, 27, 1)',
-          borderWidth: 1,
-          borderRadius: 4,
-          borderSkipped: false,
-          yAxisID: 'y'
-        },
-        {
-          label: 'Individual Achievement %',
-          data: indAchievementData,
-          borderColor: '#f39c12',
-          backgroundColor: 'transparent',
+          borderColor: '#c0392b',
+          backgroundColor: 'rgba(192, 57, 43, 0.1)',
           borderWidth: 2,
           pointRadius: 3,
-          borderDash: [5, 5],
-          type: 'line',
           tension: 0.3,
-          yAxisID: 'y1'
+          fill: true
         }
       ]
     },
@@ -938,20 +881,14 @@ function createBlockDetailChart(canvasId,
           padding: 12,
           callbacks: {
             label: function(context) {
-              let label = context.dataset.label || '';
-              if (label.includes('Achievement')) {
-                return `${label}: ${context.raw.toFixed(1)}%`;
-              }
-              return `${label}: ${formatInt(context.raw)}`;
+              return `${context.dataset.label}: ${formatInt(context.raw)}`;
             }
           }
         }
       },
       scales: {
         y: {
-          type: 'linear',
-          display: true,
-          position: 'left',
+          beginAtZero: true,
           title: {
             display: true,
             text: 'Number of Loans',
@@ -964,27 +901,6 @@ function createBlockDetailChart(canvasId,
           ticks: {
             callback: function(value) {
               return formatInt(value);
-            }
-          }
-        },
-        y1: {
-          type: 'linear',
-          display: true,
-          position: 'right',
-          min: 0,
-          max: 100,
-          title: {
-            display: true,
-            text: 'Achievement %',
-            padding: {top: 10, bottom: 10}
-          },
-          grid: {
-            drawOnChartArea: false,
-            drawBorder: false
-          },
-          ticks: {
-            callback: function(value) {
-              return `${value}%`;
             }
           }
         },
@@ -1007,7 +923,8 @@ function createBlockDetailChart(canvasId,
 fetch(csvUrl)
   .then(res => res.text())
   .then(text => {
-    const rows = parseCSV(text);
+    window.csvData = parseCSV(text); // Store CSV data globally for block details
+    const rows = window.csvData;
     const districtData = {};
     const blockData = {};
     
