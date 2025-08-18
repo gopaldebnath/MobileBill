@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>State Government Meeting Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a3a6c, #2c5282);
+            color: #333;
+            line-height: 1.6;
+            padding: 10px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            position: relative;
+        }
+        
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .govt-logo {
+            width: 60px;
+            height: 60px;
+            background: #1a3a6c;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+        
+        .govt-logo i {
+            color: white;
+            font-size: 28px;
+        }
+        
+        h1 {
+            color: #1a3a6c;
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+        
+        .dates {
+            color: #2c5282;
+            font-weight: 500;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+        
+        .welcome {
+            background: #e6f2ff;
+            padding: 12px;
+            border-radius: 10px;
+            margin-top: 10px;
+            font-size: 0.95rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            color: #1a3a6c;
+        }
+        
+        .card-header i {
+            background: #e6f2ff;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 18px;
+        }
+        
+        h2 {
+            font-size: 1.3rem;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 30px 1fr;
+            gap: 12px;
+        }
+        
+        .info-item {
+            display: contents;
+        }
+        
+        .info-item i {
+            color: #2c5282;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 3px;
+        }
+        
+        .info-text {
+            margin-bottom: 10px;
+        }
+        
+        .info-text strong {
+            display: block;
+            color: #1a3a6c;
+            font-size: 0.95rem;
+        }
+        
+        .info-text span {
+            font-size: 0.95rem;
+        }
+        
+        .schedule-item {
+            display: flex;
+            padding: 12px 0;
+            border-bottom: 1px dashed #eee;
+        }
+        
+        .schedule-item:last-child {
+            border-bottom: none;
+        }
+        
+        .time {
+            min-width: 85px;
+            font-weight: 600;
+            color: #1a3a6c;
+        }
+        
+        .event {
+            flex: 1;
+        }
+        
+        .event-title {
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+        
+        .event-location {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .map-container {
+            height: 200px;
+            background: #e6f2ff;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2c5282;
+            font-weight: 500;
+        }
+        
+        .contact-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .contact-btn {
+            background: #1a3a6c;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .contact-btn i {
+            margin-right: 8px;
+        }
+        
+        .contact-btn:hover {
+            background: #2c5282;
+            transform: translateY(-2px);
+        }
+        
+        .footer {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+            padding: 20px 0;
+        }
+        
+        .badge {
+            background: #ff6b6b;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .emergency {
+            background: #ff6b6b;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        @media (max-width: 400px) {
+            .contact-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-container">
+                <div class="govt-logo">
+                    <i class="fas fa-landmark"></i>
+                </div>
+                <div>
+                    <h1>State Development Conference</h1>
+                    <div class="dates">August 24-26, 2023</div>
+                </div>
+            </div>
+            <div class="welcome">
+                Welcome to Springfield! This page contains all essential information for your stay during the conference.
+            </div>
+        </header>
+        
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-calendar-alt"></i>
+                <h2>Program Schedule</h2>
+            </div>
+            
+            <div class="schedule-item">
+                <div class="time">9:00 AM</div>
+                <div class="event">
+                    <div class="event-title">Registration & Breakfast</div>
+                    <div class="event-location">Grand Ballroom Foyer</div>
+                </div>
+            </div>
+            
+            <div class="schedule-item">
+                <div class="time">10:30 AM</div>
+                <div class="event">
+                    <div class="event-title">Opening Keynote</div>
+                    <div class="event-location">Grand Ballroom</div>
+                </div>
+            </div>
+            
+            <div class="schedule-item">
+                <div class="time">12:30 PM</div>
+                <div class="event">
+                    <div class="event-title">Lunch</div>
+                    <div class="event-location">Riverside Restaurant</div>
+                </div>
+            </div>
+            
+            <div class="schedule-item">
+                <div class="time">2:00 PM</div>
+                <div class="event">
+                    <div class="event-title">Workshop Sessions</div>
+                    <div class="event-location">Various Conference Rooms</div>
+                </div>
+            </div>
+            
+            <div class="schedule-item">
+                <div class="time">7:00 PM</div>
+                <div class="event">
+                    <div class="event-title">Welcome Dinner <span class="badge">RSVP</span></div>
+                    <div class="event-location">Grand Ballroom</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-hotel"></i>
+                <h2>Hotel Information</h2>
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-item">
+                    <i class="fas fa-hotel"></i>
+                    <div class="info-text">
+                        <strong>Hotel Name</strong>
+                        <span>Grand Springfield Hotel</span>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <div class="info-text">
+                        <strong>Address</strong>
+                        <span>123 Government Square, Springfield</span>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <i class="fas fa-door-open"></i>
+                    <div class="info-text">
+                        <strong>Your Room</strong>
+                        <span>Executive Suite #1204</span>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <i class="fas fa-phone"></i>
+                    <div class="info-text">
+                        <strong>Main Reception</strong>
+                        <span>(555) 123-4567</span>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <i class="fas fa-phone-alt"></i>
+                    <div class="info-text">
+                        <strong>Hotel Intercom</strong>
+                        <span>Ext. 0 from your room</span>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <i class="fas fa-utensils"></i>
+                    <div class="info-text">
+                        <strong>Dining Reception</strong>
+                        <span>(555) 123-4580</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="map-container">
+                <i class="fas fa-map-marked-alt"></i>
+                <span> Hotel Location Map</span>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-user-tie"></i>
+                <h2>Liaison Officer</h2>
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-item">
+                    <i class="fas fa-user"></i>
+                    <div class="info-text">
+                        <strong>Name</strong>
+                        <span>Sarah Johnson</span>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <i class="fas fa-phone"></i>
+                    <div class="info-text">
+                        <strong>Phone Number</strong>
+                        <span>(555) 234-5678</span>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <i class="fas fa-envelope"></i>
+                    <div class="info-text">
+                        <strong>Email</strong>
+                        <span>s.johnson@state.gov</span>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <i class="fas fa-clock"></i>
+                    <div class="info-text">
+                        <strong>Available</strong>
+                        <span>7:00 AM - 9:00 PM daily</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="contact-buttons">
+                <button class="contact-btn">
+                    <i class="fas fa-phone"></i> Call Now
+                </button>
+                <button class="contact-btn">
+                    <i class="fas fa-comment-alt"></i> Send Message
+                </button>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-map-marked"></i>
+                <h2>Tour & Visit Plan</h2>
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-item">
+                    <i class="fas fa-bus"></i>
+                    <div class="info-text">
+                        <strong>City Tour</strong>
+                        <span>Aug 25, 3:00 PM - State Capitol & Historic District</span>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <i class="fas fa-industry"></i>
+                    <div class="info-text">
+                        <strong>Industrial Park Visit</strong>
+                        <span>Aug 26, 10:00 AM - GreenTech Innovation Center</span>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <i class="fas fa-tree"></i>
+                    <div class="info-text">
+                        <strong>Nature Excursion</strong>
+                        <span>Aug 26, 4:00 PM - Springfield National Park</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="emergency">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong> EMERGENCY CONTACT: </strong> (555) 789-0123
+            </div>
+        </div>
+        
+        <div class="footer">
+            State Government Conference Services &copy; 2023
+        </div>
+    </div>
+
+    <script>
+        // Simple JavaScript for interactivity
+        document.querySelectorAll('.contact-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const action = this.textContent.trim();
+                alert(`Action: ${action}\nThis feature would initiate the requested action in a real application.`);
+            });
+        });
+    </script>
+</body>
+</html>
