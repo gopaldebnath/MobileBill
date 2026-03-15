@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+    <style>
+        :root {
+            --bg: #0f0f13;
+            --surface: #18181f;
+            --surface2: #1e1e27;
+            --border: #2a2a36;
+            --border-active: #4f6ef7;
+            --accent: #4f6ef7;
+            --accent2: #7c5cf7;
+            --text: #e8e8f0;
+            --text-muted: #6b6b80;
+            --text-dim: #9090a8;
+            --success: #22c55e;
+            --radius: 14px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+        }
+
+        /* ─── INPUT AREA ─────────────────────────────────── */
+        .input-wrap {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 36px 20px 48px;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 1.05rem;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 32px;
+        }
+
+        /* — Telecom selector — */
+        .section-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .telecom-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+
+        .tc-btn {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 8px;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+        .tc-btn:hover { border-color: #3a3a50; background: var(--surface2); }
+        .tc-btn.active {
+            border-color: var(--accent);
+            background: rgba(79,110,247,0.08);
+            box-shadow: 0 0 0 3px rgba(79,110,247,0.15);
+        }
+        .tc-btn img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .tc-btn.bsnl-btn img { object-position: -9px -5px; }
+        .tc-name {
+            font-size: 0.72rem;
+            font-weight: 500;
+            color: var(--text-dim);
+        }
+        .tc-btn.active .tc-name { color: var(--accent); }
+
+        /* — Card panel — */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 22px;
+            margin-bottom: 14px;
+        }
+
+        /* — Field — */
+        .field { margin-bottom: 18px; }
+        .field:last-child { margin-bottom: 0; }
+        .field label {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .input-box {
+            display: flex;
+            align-items: center;
+            background: var(--bg);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: border-color 0.15s;
+        }
+        .input-box:focus-within { border-color: var(--accent); }
+
+        .input-prefix {
+            padding: 0 14px;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            background: transparent;
+            border-right: 1px solid var(--border);
+            height: 48px;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-box input, .input-box select {
+            flex: 1;
+            height: 48px;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-family: 'DM Mono', monospace;
+            font-size: 1rem;
+            padding: 0 14px;
+        }
+        .input-box select option { background: #1e1e27; }
+
+        .date-time-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+        .date-time-row .input-box { border-radius: 10px; }
+
+        /* — Bank selector — */
+        .bank-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 0;
+        }
+        .bank-btn {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 12px 6px;
+            background: var(--bg);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+        .bank-btn:hover { border-color: #3a3a50; }
+        .bank-btn.active {
+            border-color: var(--accent);
+            background: rgba(79,110,247,0.08);
+        }
+        .bank-btn img { width: 36px; height: 36px; object-fit: contain; border-radius: 4px; }
+        .bank-name { font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+        .bank-btn.active .bank-name { color: var(--accent); }
+
+        /* — Generate button — */
+        .btn-generate {
+            width: 100%;
+            height: 54px;
+            border: none;
+            border-radius: var(--radius);
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: white;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: opacity 0.2s, transform 0.15s;
+        }
+        .btn-generate:hover { opacity: 0.88; transform: translateY(-1px); }
+        .btn-generate:active { transform: translateY(0); }
+        .btn-generate::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%);
+            animation: shimmer 2.4s ease-in-out infinite;
+        }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* ─── OUTPUT AREA (unchanged styles) ───────────────── */
+        .brandLogo { height: 80px; width: 80px; border-radius: 50%; box-sizing: border-box; }
+        .brandLogo2 { height: 80px; width: 80px; border-radius: 50%; border: solid 5px blue; box-sizing: border-box; }
+        .brandLogo3 { height: 50px; width: 50px; border-radius: 50%; box-sizing: border-box; }
+        .bsnl { border: solid 1px black; height: 80px; width: 80px; border-radius: 50%; object-fit: cover; object-position: -15px -8px; transform: scale(1); box-sizing: border-box; }
+        .bsnl2 { border: solid 5px blue; height: 80px; width: 80px; border-radius: 50%; object-fit: cover; object-position: -15px -8px; transform: scale(1); box-sizing: border-box; }
+        .bankLogo { height: 80px; width: 80px; border-radius: 3px; }
+        .container { display: flex; justify-content: center; }
+        .box { width: 130px; height: 80px; margin: 10px; border: solid 1px #828282; text-align: center; border-radius: 3px; }
+        .box2 { width: 130px; height: 80px; margin: 10px; border: solid 1px blue; background-color: #828282; text-align: center; border-radius: 3px; box-sizing: border-box; }
+
+        /* output area wrapper on white bg */
+        .output-area {
+            background: #ffffff;
+            color: #000;
+            max-width: 480px;
+            margin: 0 auto;
+            padding-bottom: 40px;
+        }
+        .output-area * { font-family: 'Roboto', 'DM Sans', sans-serif; }
+
+        /* divider */
+        .section-divider {
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            border-radius: 2px;
+            margin: 0 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════ INPUT AREA ═══════════════ -->
+<div class="input-wrap">
+    <div class="page-title">Recharge Bill Generator</div>
+
+    <!-- Telecom -->
+    <div class="section-label">Select Telecom</div>
+    <div class="telecom-row">
+        <div class="tc-btn" id="tc_airtel" onclick="f_clickTelecom(this,'airtel')">
+            <img src="https://s3-ap-southeast-1.amazonaws.com/bsy/iportal/images/airtel-logo-white-text-vertical.jpg" alt="Airtel">
+            <span class="tc-name">Airtel</span>
+        </div>
+        <div class="tc-btn active" id="tc_jio" onclick="f_clickTelecom(this,'jio')">
+            <img src="https://seeklogo.com/images/J/jio-logo-7720D2E7BA-seeklogo.com.png" alt="Jio">
+            <span class="tc-name">Jio</span>
+        </div>
+        <div class="tc-btn bsnl-btn" id="tc_bsnl" onclick="f_clickTelecom(this,'bsnl')">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/0/07/Bsnl_Mobile_logo.png" alt="BSNL">
+            <span class="tc-name">BSNL</span>
+        </div>
+    </div>
+
+    <!-- Amount + Contact -->
+    <div class="card">
+        <div class="field">
+            <label>Amount</label>
+            <div class="input-box">
+                <span class="input-prefix">₹</span>
+                <input id="txt_amt" type="text" placeholder="0.00">
+            </div>
+        </div>
+        <div class="field">
+            <label>UPI ID</label>
+            <div class="input-box">
+                <input id="txt_upi" type="text" placeholder="yourname@bank">
+            </div>
+        </div>
+        <div class="field">
+            <label>Phone Number</label>
+            <div class="input-box">
+                <span class="input-prefix">+91</span>
+                <input id="txt_phone" type="text" placeholder="10-digit number" maxlength="10">
+            </div>
+        </div>
+    </div>
+
+    <!-- Date & Time -->
+    <div class="card">
+        <div class="field">
+            <label>Date</label>
+            <div class="date-time-row">
+                <div class="input-box">
+                    <select id="days">
+                        <option value="">DD</option>
+                        <script>for(let i=1;i<=31;i++) document.write(`<option value="${i}">${i}</option>`);</script>
+                    </select>
+                </div>
+                <div class="input-box">
+                    <select id="months">
+                        <option value="Jan">January</option><option value="Feb">February</option>
+                        <option value="Mar">March</option><option value="Apr">April</option>
+                        <option value="May">May</option><option value="Jun">June</option>
+                        <option value="Jul">July</option><option value="Aug">August</option>
+                        <option value="Sep">September</option><option value="Oct">October</option>
+                        <option value="Nov">November</option><option value="Dec">December</option>
+                    </select>
+                </div>
+                <div class="input-box">
+                    <select id="years">
+                        <option value="2024">2024</option>
+                        <option value="2025">2025</option>
+                        <option value="2026" selected>2026</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="field">
+            <label>Time</label>
+            <div class="date-time-row">
+                <div class="input-box">
+                    <select id="hr">
+                        <script>for(let i=1;i<=12;i++) document.write(`<option value="${i}">${i}</option>`);</script>
+                    </select>
+                </div>
+                <div class="input-box">
+                    <select id="min">
+                        <script>for(let i=0;i<=59;i++) document.write(`<option value="${i}">${String(i).padStart(2,'0')}</option>`);</script>
+                    </select>
+                </div>
+                <div class="input-box">
+                    <select id="ampm">
+                        <option value="AM">AM</option>
+                        <option value="PM">PM</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bank -->
+    <div class="card">
+        <div class="section-label" style="margin-bottom:14px;">Select Bank</div>
+        <div class="bank-row">
+            <div class="bank-btn" id="dv_sbi2" onclick="f_clickBank('sbi')">
+                <img id="sbi" src="https://seeklogo.com/images/S/sbi-logo-744E8B0C10-seeklogo.com.png" alt="SBI">
+                <span class="bank-name">SBI</span>
+            </div>
+            <div class="bank-btn" id="dv_hdfc2" onclick="f_clickBank('hdfc')">
+                <img id="hdfc" src="https://companieslogo.com/img/orig/HDB-bb6241fe.png?t=1633497370" alt="HDFC">
+                <span class="bank-name">HDFC</span>
+            </div>
+            <div class="bank-btn" id="dv_pnb2" onclick="f_clickBank('pnb')">
+                <img id="pnb" src="data:image/png;base64,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" alt="PNB">
+                <span class="bank-name">PNB</span>
+            </div>
+            <div class="bank-btn" id="dv_canara2" onclick="f_clickBank('canara')">
+                <img id="canara" src="https://companieslogo.com/img/orig/CANBK.NS-94324ae3.png?t=1613453726" alt="Canara">
+                <span class="bank-name">Canara</span>
+            </div>
+        </div>
+    </div>
+
+    <button class="btn-generate" id="btn_generate" onclick="generateBill()">Generate Bill</button>
+</div>
+
+<!-- ═══════════════ OUTPUT AREA (unchanged) ═══════════════ -->
+<div class="output-area">
+    <center>
+        <div style="position:relative ;margin-top:50px;">
+            <img id="img_telecom2" class="brandLogo3" style="margin-top:30px;" src="https://seeklogo.com/images/J/jio-logo-7720D2E7BA-seeklogo.com.png" alt="jio">
+            <div id="dvTelecomName2" style="font-weight: 500; font-size: 1.0rem; font-family: 'Roboto', sans-serif; margin:15px 0px 0px 0px">Jio Pay Prepaid</div>
+            <div style=" font-family: 'Roboto', sans-serif; margin: 25px 0px 0px 0px;vertical-align :top;height :60px;">
+                <div style="display: flex; justify-content: center;">
+                    <div style="font-size:30px;margin-top:7px;color:#000;">₹</div>
+                    <div id="dvAmt2" style="font-size:45px;color:#000;"> 599.00  </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="font-family: 'Roboto', sans-serif; padding: 10px; width: 150px; background-color: #0B57CF; color: white; border: solid 1px #1F4DAD; border-radius: 25px; text-align: center; margin-top: 15px; ">Repeat Recharge</div>
+        
+        <div style="display: flex; text-align: center; justify-content: center;margin-top:20px; ">
+            <center>
+                <div style="font-family: 'Roboto', sans-serif; color:#565656; "><i style='font-size:18px;color:green;' class='fas'>&#xf058;</i>&nbsp;&nbsp;Completed</div>
+                <div style="border-bottom: solid 1px #b8b8b8; width: 200px; margin-top: 10px; "></div>
+                <div id="dv_date2" style="font-family: 'Roboto', sans-serif; color: #565656; margin-top: 15px;">Jan 29, 2025 10:09 PM</div>
+            </center>
+        </div>
+    </center>
+
+    <div style=" height: 80px; position: relative; margin: 40px 10px 0px 10px; border-left: solid 1px #b8b8b8; border-top-left-radius: 10px; border-top-right-radius: 10px; border-top: solid 1px #b8b8b8; border-right: solid 1px #b8b8b8; font-family: 'Roboto', sans-serif">
+        <i style='font-size:24px;color:green;position : absolute ;margin:10px 0px 0px 20px' class='fas'>&#xf058;</i>
+        <div id="dv_amt3" style="position: absolute ;font-weight: 500; font-size: 1.05rem; font-family: 'Roboto', sans-serif; margin: 10px 0px 0px 63px;color:#000;">499.00 paid</div>
+        <div id="dv_datetime3" style="position: absolute; margin: 30px 0px 0px 63px; color: #565656; width: 160px;">December 30, 2023 at 2.11 PM</div>
+        <div style="position: absolute; right: 0; margin: 25px 38px 0px 0px; border: solid 1px #b8b8b8; padding:0px 10px;border-radius :3px;">
+            <img id="img_bank2" class="" style="width:30px;height :30px;" src="https://seeklogo.com/images/S/sbi-logo-744E8B0C10-seeklogo.com.png" alt="x"></div>
+        <i style="font-size: 20px; position: absolute; right: 0; margin: 30px 14px 0px 0px; color: #565656; " class="fa">&#xf106;</i>
+    </div>
+    
+    <div style="position: relative; border: solid 1px #b8b8b8; padding: 20px 20px 20px 70px;margin:0px 10px 0px 10px; ">
+        <div>
+            <div style="position: absolute; border-left: 3px dashed #808080; height: 140px; margin-left: -40px; margin-top: 10px; "></div>
+            <i style='font-size: 24px; color: green; position: absolute; margin-left: -50px; margin-top: 10px; background-color:white;' class='far'>&#xf058;</i>
+            <i style='font-size: 24px; color: green; position: absolute; margin-left: -50px; margin-top: 70px; background-color: white;' class='far'>&#xf058;</i>
+            <i style='font-size: 24px; color: green; position: absolute; margin-left: -50px; margin-top: 135px; background-color: white;' class='far'>&#xf058;</i>
+        </div>
+        <div style="font-family: 'Roboto', sans-serif; color: #2B2B2B; margin-left :-7px;">
+            <div style="font-weight :500;">Payment started</div>
+            <div id="dv_datetime4" style="color: #565656">December 30, 2023 at 2.11 PM</div>
+            <div style="margin-top: 30px; font-weight: 500;">Pay intermediary</div>
+            <div style="margin-top: 30px; font-weight: 500; ">Recharge processed</div>
+            <div style="color: #565656;width:200px;text-align:justify ;">Your recharge should reflect shortly in your <span id="sp_telecomName3"></span> account</div>
+        </div>
+    </div>
+
+    <div style="position: relative; border: solid 1px #b8b8b8; border-top: none; padding: 20px 20px 20px 20px; margin: 0px 10px 0px 10px; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; ">
+        <div style="font-family: 'Roboto', sans-serif; color: #2B2B2B; ">
+            <div style="font-weight :500;">From</div>
+            <div id="dv_upi" style="color: #565656;margin-top:7px;">your-bank-up@id</div>
+            <div style="font-weight :500;margin-top:25px;">UPI transaction ID</div>
+            <div id="dv_upi_transaction_id" style="color: #565656;margin-top:7px;">128034208427</div>
+            <div style="font-weight :500;margin-top:25px;">Google transaction ID</div>
+            <div id="dv_google_transaction_id" style="color: #565656;margin-top:7px;">AaLKJASAdaASF</div>
+            <div style="font-weight :500;margin-top:25px;">Intermediary ID</div>
+            <div id="dv_intermediary_id" style="color: #565656;margin-top:7px;">982340582345345</div>
+            <div style="font-weight :500;margin-top:25px;">Approval reference  no.</div>
+            <div id="dv_approval_ref_no" style="color: #565656;margin-top:7px;">2834509234</div>
+            <div style="font-weight :500;margin-top:25px;">Mobile number</div>
+            <div id="dv_phone" style="color: #565656;margin-top:7px;">+91 xxxxx xxxxx</div>
+            <div class="container">
+                <div style="padding: 10px; width: 120px; color: #055DC9; border: solid 1px #565656; border-radius: 25px; text-align: center;margin-top:20px;margin-right:5px; ">Raise dispute</div>
+                <div style="padding: 10px; width: 120px; background-color: #0B57CF; color: white; border: solid 1px #1F4DAD; border-radius: 25px; text-align: center; margin-top: 20px; margin-left: 5px; ">Having issues?</div>
+            </div>
+        </div>
+    </div>
+
+    <center>
+        <div style="color: #565656; margin-top: 20px; font-family: 'Roboto', sans-serif; font-size:12px;text-align:center;width:300px;">Plans may have changed. Please check with your operator for latest plan details.</div>
+        <div><img style="width:50px;margin-top:40px;" src="https://seeklogo.com/images/G/google-pay-logo-AA826E728D-seeklogo.com.png" alt="gpay"></div>
+    </center>
+</div>
+
+<script>
+    // — Hidden original img refs for src copying —
+    // (we repurpose existing id="sbi", "hdfc", "pnb", "canara" in bank-row)
+
+    let selectedTelecom = 'jio';
+    let selectedBank = null;
+
+    const telecomData = {
+        airtel: { src: "https://s3-ap-southeast-1.amazonaws.com/bsy/iportal/images/airtel-logo-white-text-vertical.jpg", name: "Airtel Prepaid" },
+        jio:    { src: "https://seeklogo.com/images/J/jio-logo-7720D2E7BA-seeklogo.com.png", name: "Jio Prepaid" },
+        bsnl:   { src: "https://upload.wikimedia.org/wikipedia/commons/0/07/Bsnl_Mobile_logo.png", name: "Bsnl Prepaid" }
+    };
+
+    function f_clickTelecom(el, p_telecom) {
+        selectedTelecom = p_telecom;
+        ['airtel','jio','bsnl'].forEach(t => {
+            document.getElementById('tc_' + t).classList.remove('active');
+        });
+        document.getElementById('tc_' + p_telecom).classList.add('active');
+
+        const d = telecomData[p_telecom];
+        const img2 = document.getElementById("img_telecom2");
+        img2.src = d.src;
+        img2.className = p_telecom === 'bsnl' ? 'bsnl' : 'brandLogo3';
+        if (p_telecom === 'bsnl') img2.style.border = 'solid 1px silver';
+        else img2.style.border = '';
+        document.getElementById("dvTelecomName2").innerText = d.name;
+        document.getElementById("sp_telecomName3").innerText = d.name;
+    }
+
+    function f_clickBank(p_bank) {
+        ['sbi','hdfc','pnb','canara'].forEach(b => {
+            document.getElementById('dv_' + b + '2').classList.remove('active');
+        });
+        document.getElementById('dv_' + p_bank + '2').classList.add('active');
+        document.getElementById("img_bank2").src = document.getElementById(p_bank).src;
+        selectedBank = p_bank;
+    }
+
+    function set_upi_transaction_id() {
+        let min = 100000000000, max = 500000000000;
+        document.getElementById("dv_upi_transaction_id").innerText = Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    function set_google_transaction_id(length) {
+        let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', r = '';
+        for (let i = 0; i < length; i++) r += chars[Math.floor(Math.random() * chars.length)];
+        document.getElementById("dv_google_transaction_id").innerText = r;
+    }
+    function set_intermediary_id(length) {
+        let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789', r = '';
+        for (let i = 0; i < length; i++) r += chars[Math.floor(Math.random() * chars.length)];
+        document.getElementById("dv_intermediary_id").innerText = r;
+    }
+    function set_approval_ref_no() {
+        let min = 10000000000000, max = 99999999999999;
+        document.getElementById("dv_approval_ref_no").innerText = Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    set_upi_transaction_id();
+    set_google_transaction_id(14);
+    set_intermediary_id(32);
+    set_approval_ref_no();
+
+    function generateBill() {
+        // Amount
+        let raw = parseFloat(document.getElementById('txt_amt').value) || 0;
+        document.getElementById('dvAmt2').innerText = ' ' + raw.toFixed(2) + '  ';
+        document.getElementById('dv_amt3').innerText = raw.toFixed(2) + ' paid';
+
+        // Date
+        let day = document.getElementById('days').value;
+        let monthSel = document.getElementById('months');
+        let monthShort = monthSel.value;
+        let monthFull = monthSel.selectedOptions[0].innerHTML;
+        let year = document.getElementById('years').value;
+        let hr = document.getElementById('hr').value;
+        let minSel = document.getElementById('min');
+        let minDisp = minSel.selectedOptions[0].innerHTML;
+        let ampm = document.getElementById('ampm').value;
+        let TIME = hr + ':' + minDisp + ' ' + ampm;
+        document.getElementById('dv_date2').innerText = monthShort + ' ' + day + ', ' + year + ' ' + TIME;
+        let fullDate = monthFull + ' ' + day + ', ' + year + ' at ' + TIME;
+        document.getElementById('dv_datetime3').innerText = fullDate;
+        document.getElementById('dv_datetime4').innerText = fullDate;
+
+        // UPI & Phone
+        document.getElementById('dv_upi').innerText = document.getElementById('txt_upi').value || 'your-bank@upi';
+        let ph = document.getElementById('txt_phone').value;
+        document.getElementById('dv_phone').innerText = '+91 ' + ph.substring(0,5) + ' ' + ph.substring(ph.length - 5);
+
+        // Refresh IDs
+        set_upi_transaction_id();
+        set_google_transaction_id(14);
+        set_intermediary_id(32);
+        set_approval_ref_no();
+
+        // Scroll to output
+        document.getElementById("img_telecom2").scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+</script>
+</body>
+</html>
