@@ -1,0 +1,360 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); }
+.dash { padding: 1.25rem; }
+.header { margin-bottom: 1.25rem; }
+.header h1 { font-size: 18px; font-weight: 500; color: var(--color-text-primary); }
+.header p { font-size: 13px; color: var(--color-text-secondary); margin-top: 2px; }
+.metrics { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-bottom: 1.25rem; }
+.metric { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px 14px; }
+.metric-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px; }
+.metric-value { font-size: 22px; font-weight: 500; color: var(--color-text-primary); }
+.metric-sub { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 1rem; margin-bottom: 1rem; }
+.card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem; }
+.card-title { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+.party-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.party-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.party-name { font-size: 13px; color: var(--color-text-primary); flex: 1; }
+.party-bar-wrap { flex: 2; height: 8px; background: var(--color-border-tertiary); border-radius: 4px; overflow: hidden; }
+.party-bar { height: 100%; border-radius: 4px; }
+.party-count { font-size: 13px; font-weight: 500; color: var(--color-text-primary); min-width: 28px; text-align: right; }
+.status-badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+.badge-won { background: #EAF3DE; color: #3B6D11; }
+.badge-leading { background: #FAEEDA; color: #854F0B; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); text-align: left; padding: 6px 8px; border-bottom: 0.5px solid var(--color-border-tertiary); }
+td { padding: 7px 8px; border-bottom: 0.5px solid var(--color-border-tertiary); color: var(--color-text-primary); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+.winner-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 10px; }
+.pill-tmp { background: rgba(218,202,44,0.15); color: #6b6200; }
+.pill-bjp { background: rgba(255,150,51,0.15); color: #7a4600; }
+.votes-label { font-size: 12px; color: var(--color-text-secondary); }
+.full-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem; margin-bottom: 1rem; }
+.donut-wrap { display: flex; align-items: center; gap: 1.5rem; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--color-text-secondary); margin-bottom: 6px; }
+.legend-sq { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+.prog-wrap { margin-bottom: 8px; }
+.prog-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--color-text-secondary); margin-bottom: 3px; }
+.prog-track { height: 6px; background: var(--color-border-tertiary); border-radius: 3px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 3px; }
+.district-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
+.dist-card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 12px; }
+.dist-name { font-size: 12px; font-weight: 500; color: var(--color-text-primary); }
+.dist-stats { font-size: 11px; color: var(--color-text-secondary); margin-top: 3px; }
+</style>
+
+<div class="dash">
+  <h2 class="sr-only">TTAADC Election 2026 results dashboard showing TMP winning 20 seats and BJP winning 3 seats out of 28 total constituencies.</h2>
+
+  <div class="header">
+    <h1>TTAADC Election 2026 — live results</h1>
+    <p>Last updated: 17 Apr 2026, 2:14 PM &nbsp;·&nbsp; 23 of 28 constituencies declared &nbsp;·&nbsp; 5 pending</p>
+  </div>
+
+  <div class="metrics">
+    <div class="metric">
+      <div class="metric-label">Total constituencies</div>
+      <div class="metric-value">28</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Declared</div>
+      <div class="metric-value" style="color:#3B6D11;">23</div>
+      <div class="metric-sub">82% counted</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Pending</div>
+      <div class="metric-value" style="color:#854F0B;">5</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Total votes counted</div>
+      <div class="metric-value">787K+</div>
+      <div class="metric-sub">across declared seats</div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">Seats won + leading</div>
+      <div class="party-row">
+        <div class="party-dot" style="background:#DAC A2C;background:#c8b500;"></div>
+        <span class="party-name">TMP <span style="font-size:11px;color:var(--color-text-secondary);">Tipra Motha Party</span></span>
+        <div class="party-bar-wrap"><div class="party-bar" style="width:85.7%;background:#c8b500;"></div></div>
+        <span class="party-count">20+4</span>
+      </div>
+      <div class="party-row">
+        <div class="party-dot" style="background:#FF9633;"></div>
+        <span class="party-name">BJP <span style="font-size:11px;color:var(--color-text-secondary);">Bharatiya Janata Party</span></span>
+        <div class="party-bar-wrap"><div class="party-bar" style="width:14.3%;background:#FF9633;"></div></div>
+        <span class="party-count">3+1</span>
+      </div>
+      <div class="party-row">
+        <div class="party-dot" style="background:#999;"></div>
+        <span class="party-name">Others</span>
+        <div class="party-bar-wrap"><div class="party-bar" style="width:0%;background:#aaa;"></div></div>
+        <span class="party-count">0</span>
+      </div>
+      <div style="margin-top:12px;border-top:0.5px solid var(--color-border-tertiary);padding-top:10px;">
+        <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:6px;">Majority mark: 15 seats</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="flex:1;height:10px;background:var(--color-border-tertiary);border-radius:5px;overflow:hidden;position:relative;">
+            <div style="position:absolute;left:0;top:0;height:100%;width:85.7%;background:#c8b500;border-radius:5px;"></div>
+            <div style="position:absolute;left:53.6%;top:-2px;height:14px;width:1.5px;background:var(--color-text-primary);"></div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--color-text-secondary);margin-top:4px;">TMP well above majority threshold</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Vote share (declared seats)</div>
+      <div style="position:relative;width:100%;height:200px;">
+        <canvas id="voteChart" role="img" aria-label="Donut chart showing TMP at 57.7% and BJP at 26.9% of total votes">TMP: 443651 votes; BJP: 206479 votes; CPI(M): 65095; INC: 14260; Others: ~57K</canvas>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;">
+        <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--color-text-secondary);"><span style="width:10px;height:10px;border-radius:2px;background:#c8b500;display:inline-block;"></span>TMP 57.7%</span>
+        <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--color-text-secondary);"><span style="width:10px;height:10px;border-radius:2px;background:#FF9633;display:inline-block;"></span>BJP 26.9%</span>
+        <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--color-text-secondary);"><span style="width:10px;height:10px;border-radius:2px;background:#e24b4a;display:inline-block;"></span>CPI(M) 8.5%</span>
+        <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--color-text-secondary);"><span style="width:10px;height:10px;border-radius:2px;background:#378ADD;display:inline-block;"></span>INC 1.9%</span>
+        <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--color-text-secondary);"><span style="width:10px;height:10px;border-radius:2px;background:#888;display:inline-block;"></span>Others 5%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="full-card">
+    <div class="card-title">District-wise status</div>
+    <div class="district-grid">
+      <div class="dist-card">
+        <div class="dist-name">Dhalai</div>
+        <div class="dist-stats">6 constituencies · 5 declared</div>
+        <div style="margin-top:6px;font-size:11px;">
+          <span class="winner-pill pill-tmp">TMP 4</span>&nbsp;
+          <span class="winner-pill pill-bjp">BJP 1</span>&nbsp;
+          <span style="font-size:11px;color:var(--color-text-secondary);">1 leading</span>
+        </div>
+      </div>
+      <div class="dist-card">
+        <div class="dist-name">Gomati</div>
+        <div class="dist-stats">5 constituencies · 5 declared</div>
+        <div style="margin-top:6px;font-size:11px;">
+          <span class="winner-pill pill-tmp">TMP 5</span>
+        </div>
+      </div>
+      <div class="dist-card">
+        <div class="dist-name">Khowai</div>
+        <div class="dist-stats">3 constituencies · 3 declared</div>
+        <div style="margin-top:6px;font-size:11px;">
+          <span class="winner-pill pill-tmp">TMP 3</span>
+        </div>
+      </div>
+      <div class="dist-card">
+        <div class="dist-name">North Tripura</div>
+        <div class="dist-stats">2 constituencies · 2 declared</div>
+        <div style="margin-top:6px;font-size:11px;">
+          <span class="winner-pill pill-tmp">TMP 1</span>&nbsp;
+          <span class="winner-pill pill-bjp">BJP 1</span>
+        </div>
+      </div>
+      <div class="dist-card">
+        <div class="dist-name">Sepahijala</div>
+        <div class="dist-stats">3 constituencies · 2 declared · 1 pending</div>
+        <div style="margin-top:6px;font-size:11px;">
+          <span class="winner-pill pill-tmp">TMP 2</span>&nbsp;
+          <span style="font-size:11px;color:var(--color-text-secondary);">1 leading</span>
+        </div>
+      </div>
+      <div class="dist-card">
+        <div class="dist-name">South Tripura</div>
+        <div class="dist-stats">3 constituencies · 1 declared · 2 pending</div>
+        <div style="margin-top:6px;font-size:11px;">
+          <span class="winner-pill pill-tmp">TMP 1</span>&nbsp;
+          <span style="font-size:11px;color:var(--color-text-secondary);">1 leading</span>&nbsp;
+          <span class="winner-pill pill-bjp" style="background:rgba(255,150,51,0.12);color:#7a4600;">BJP leading 1</span>
+        </div>
+      </div>
+      <div class="dist-card">
+        <div class="dist-name">Unakoti</div>
+        <div class="dist-stats">2 constituencies · 2 declared</div>
+        <div style="margin-top:6px;font-size:11px;">
+          <span class="winner-pill pill-tmp">TMP 1</span>&nbsp;
+          <span class="winner-pill pill-bjp">BJP 1</span>
+        </div>
+      </div>
+      <div class="dist-card">
+        <div class="dist-name">West Tripura</div>
+        <div class="dist-stats">4 constituencies · 3 declared · 1 pending</div>
+        <div style="margin-top:6px;font-size:11px;">
+          <span class="winner-pill pill-tmp">TMP 3</span>&nbsp;
+          <span style="font-size:11px;color:var(--color-text-secondary);">1 leading</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="full-card">
+    <div class="card-title">Constituency-wise results (all 28)</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Constituency</th>
+            <th>District</th>
+            <th>Winner / Leader</th>
+            <th>Party</th>
+            <th>Votes</th>
+            <th>%</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="constTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="full-card">
+    <div class="card-title">Top TMP wins by vote margin</div>
+    <div style="position:relative;width:100%;height:320px;">
+      <canvas id="marginChart" role="img" aria-label="Horizontal bar chart showing vote margins for top TMP wins">Constituency-wise TMP winning margins</canvas>
+    </div>
+  </div>
+
+  <div class="full-card">
+    <div class="card-title">All parties — total votes secured</div>
+    <div style="position:relative;width:100%;height:260px;">
+      <canvas id="partyVotesChart" role="img" aria-label="Bar chart of total votes by party">TMP leads with 443651 votes</canvas>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const constituencies = [
+  {code:1,name:"Damcherra-Jampui(ST)",district:"North Tripura",winner:"Bhaba Ranjan Reang",party:"TMP",votes:12836,pct:37.43,status:"won"},
+  {code:2,name:"Machmara",district:"Unakoti",winner:"Manju Rani Sarkar",party:"BJP",votes:13700,pct:48.36,status:"won"},
+  {code:3,name:"Dasda-Kanchanpur",district:"North Tripura",winner:"Shailendra Nath",party:"BJP",votes:13467,pct:46.46,status:"won"},
+  {code:4,name:"Karamchhara(ST)",district:"Unakoti",winner:"Ratish Tripura",party:"TMP",votes:14348,pct:41.18,status:"won"},
+  {code:5,name:"Chhawmanu(ST)",district:"Dhalai",winner:"Esmel Joy Tripura",party:"BJP",votes:12789,pct:46.11,status:"won"},
+  {code:6,name:"Manu-Chailengta",district:"Dhalai",winner:"Hollywood Chakma",party:"TMP",votes:5350,pct:61.81,status:"leading"},
+  {code:7,name:"Demchhara-Kachuchhara(ST)",district:"Dhalai",winner:"Dhirendra Debbarma",party:"TMP",votes:17726,pct:59.72,status:"won"},
+  {code:8,name:"Ganganagar-Gandachhara(ST)",district:"Dhalai",winner:"Khotrojoy Reang",party:"TMP",votes:11264,pct:44.70,status:"won"},
+  {code:9,name:"Halahali-Asharambari(ST)",district:"Khowai",winner:"Prasmit Debbarma",party:"TMP",votes:17796,pct:63.73,status:"won"},
+  {code:10,name:"Kulai-Champahour(ST)",district:"Dhalai",winner:"Rajeshwar Debbarma",party:"TMP",votes:19536,pct:68.65,status:"won"},
+  {code:11,name:"Maharanipur-Teliamura(ST)",district:"Khowai",winner:"Utpal Debbarma",party:"TMP",votes:19393,pct:72.98,status:"won"},
+  {code:12,name:"Ramchandraghat(ST)",district:"Khowai",winner:"James Debbarma",party:"TMP",votes:20837,pct:81.57,status:"won"},
+  {code:13,name:"Simna-Tamakari(ST)",district:"West Tripura",winner:"Rabindra Debbarma",party:"TMP",votes:17862,pct:79.82,status:"won"},
+  {code:14,name:"Bodhjungnagar-Wakkinagar(ST)",district:"West Tripura",winner:"Runeil Debbarma",party:"TMP",votes:20055,pct:80.22,status:"won"},
+  {code:15,name:"Jirania(ST)",district:"West Tripura",winner:"Jagadish Debbarma",party:"TMP",votes:21162,pct:80.40,status:"leading"},
+  {code:16,name:"Mandainagar-Pulinpur(ST)",district:"West Tripura",winner:"Jitendra DebBarma",party:"TMP",votes:19033,pct:78.47,status:"won"},
+  {code:17,name:"Pekuarjala-Janmejoy Nagar(ST)",district:"Sepahijala",winner:"Gita Debbarma",party:"TMP",votes:22707,pct:87.87,status:"won"},
+  {code:18,name:"Takarjala-Jampuijala(ST)",district:"Sepahijala",winner:"Suraj Debbarma",party:"TMP",votes:16055,pct:89.03,status:"won"},
+  {code:19,name:"Amtali-Golaghati(ST)",district:"Sepahijala",winner:"Buddha Kumar Debbarma",party:"TMP",votes:29312,pct:85.42,status:"leading"},
+  {code:20,name:"Killa-Bagma(ST)",district:"Gomati",winner:"Purna Ch. Jamatia",party:"TMP",votes:17082,pct:61.73,status:"won"},
+  {code:21,name:"Maharani-Chelagang(ST)",district:"Gomati",winner:"Chandra Kumar Jamatia",party:"TMP",votes:10329,pct:48.65,status:"won"},
+  {code:22,name:"Kathalia-Mirja-Rajapur(ST)",district:"Gomati",winner:"David Murasing",party:"TMP",votes:21608,pct:56.44,status:"won"},
+  {code:23,name:"Ampinagar(ST)",district:"Gomati",winner:"Kamal Kalai",party:"TMP",votes:15278,pct:58.39,status:"won"},
+  {code:24,name:"Raima Valley(ST)",district:"Dhalai",winner:"Dhananjoy Tripura",party:"TMP",votes:11065,pct:39.21,status:"won"},
+  {code:25,name:"Nutanbazar-Malbasa(ST)",district:"Gomati",winner:"Sujoy Uchoi",party:"TMP",votes:17284,pct:46.54,status:"won"},
+  {code:26,name:"Birchandranagar-Kalashi(ST)",district:"South Tripura",winner:"Kenaram Reang",party:"TMP",votes:14937,pct:46.73,status:"won"},
+  {code:27,name:"Purba Muhuripur-Bhuratali(ST)",district:"South Tripura",winner:"Debajit Tripura",party:"TMP",votes:8768,pct:42.64,status:"leading"},
+  {code:28,name:"Silachhari-Manubankul(ST)",district:"South Tripura",winner:"Kangjaong Mog",party:"BJP",votes:13965,pct:37.98,status:"leading"},
+];
+
+const tbody = document.getElementById('constTable');
+constituencies.forEach(c => {
+  const isTMP = c.party==='TMP';
+  const isBJP = c.party==='BJP';
+  const pillClass = isTMP ? 'pill-tmp' : 'pill-bjp';
+  const partyColor = isTMP ? '#c8b500' : '#FF9633';
+  const statusClass = c.status==='won' ? 'badge-won' : 'badge-leading';
+  const statusText = c.status==='won' ? 'Declared' : 'Leading';
+  tbody.innerHTML += `<tr>
+    <td style="color:var(--color-text-secondary);font-size:11px;">${c.code}</td>
+    <td style="font-size:12px;">${c.name}</td>
+    <td style="font-size:11px;color:var(--color-text-secondary);">${c.district}</td>
+    <td style="font-size:12px;">${c.winner}</td>
+    <td><span class="winner-pill ${pillClass}" style="display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:${partyColor};display:inline-block;"></span>${c.party}</span></td>
+    <td style="font-size:12px;">${c.votes.toLocaleString()}</td>
+    <td style="font-size:12px;">${c.pct.toFixed(1)}%</td>
+    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+  </tr>`;
+});
+
+const tmpsorted = constituencies.filter(c=>c.party==='TMP' && c.status==='won').sort((a,b)=>b.pct-a.pct).slice(0,8);
+new Chart(document.getElementById('marginChart'), {
+  type: 'bar',
+  data: {
+    labels: tmpsorted.map(c=>`#${c.code} ${c.name.split('(')[0].trim().substring(0,20)}`),
+    datasets:[{
+      label:'Vote %',
+      data: tmpsorted.map(c=>c.pct),
+      backgroundColor:'rgba(200,181,0,0.75)',
+      borderColor:'#a09000',
+      borderWidth:1,
+    }]
+  },
+  options:{
+    indexAxis:'y',
+    responsive:true,
+    maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:v=>`${v.raw.toFixed(1)}%`}}},
+    scales:{
+      x:{min:0,max:100,ticks:{callback:v=>`${v}%`,font:{size:11}},grid:{color:'rgba(128,128,128,0.1)'}},
+      y:{ticks:{font:{size:10}}}
+    }
+  }
+});
+
+const partyData = [
+  {name:'TMP',votes:443651,color:'#c8b500'},
+  {name:'BJP',votes:206479,color:'#FF9633'},
+  {name:'CPI(M)',votes:65095,color:'#e24b4a'},
+  {name:'INC',votes:14260,color:'#378ADD'},
+  {name:'IPFT',votes:17295,color:'#7a3db5'},
+  {name:'IND',votes:9872,color:'#888'},
+  {name:'CPI',votes:3701,color:'#a32d2d'},
+  {name:'Others',votes:3989,color:'#b4b2a9'},
+];
+new Chart(document.getElementById('partyVotesChart'), {
+  type:'bar',
+  data:{
+    labels:partyData.map(p=>p.name),
+    datasets:[{
+      label:'Total votes',
+      data:partyData.map(p=>p.votes),
+      backgroundColor:partyData.map(p=>p.color),
+      borderWidth:0,
+    }]
+  },
+  options:{
+    responsive:true,
+    maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:v=>v.raw.toLocaleString()+' votes'}}},
+    scales:{
+      y:{ticks:{callback:v=>v>=1000?Math.round(v/1000)+'K':v,font:{size:11}},grid:{color:'rgba(128,128,128,0.1)'}},
+      x:{ticks:{font:{size:11}}}
+    }
+  }
+});
+
+new Chart(document.getElementById('voteChart'), {
+  type:'doughnut',
+  data:{
+    labels:['TMP','BJP','CPI(M)','INC','Others'],
+    datasets:[{
+      data:[443651,206479,65095,14260,57000],
+      backgroundColor:['#c8b500','#FF9633','#e24b4a','#378ADD','#888780'],
+      borderWidth:2,
+      borderColor:'transparent',
+    }]
+  },
+  options:{
+    responsive:true,
+    maintainAspectRatio:false,
+    cutout:'65%',
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:v=>`${v.label}: ${v.raw.toLocaleString()}`}}}
+  }
+});
+</script>
