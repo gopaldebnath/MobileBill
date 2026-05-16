@@ -37,24 +37,21 @@
     .screen { display: none; min-height: 100vh; }
     .screen.active { display: flex; }
 
-    /* ── LOGIN SCREEN ── */
-    #loginScreen {
+    /* ── AUTH SCREEN ── */
+    #authScreen {
       align-items: center;
       justify-content: center;
       padding: 2rem 1rem;
     }
 
-    .login-box {
-      width: 100%;
-      max-width: 420px;
-    }
+    .auth-box { width: 100%; max-width: 430px; }
 
-    .login-header { margin-bottom: 2rem; }
-    .login-header .line { display: block; width: 36px; height: 3px; background: var(--accent); border-radius: 2px; margin-bottom: 0.9rem; }
-    .login-header h1 { font-family: 'DM Serif Display', serif; font-size: 2rem; color: var(--ink); letter-spacing: -0.02em; }
-    .login-header p { color: var(--muted); font-size: 0.88rem; margin-top: 0.35rem; }
+    .auth-header { margin-bottom: 1.8rem; }
+    .auth-header .line { display: block; width: 36px; height: 3px; background: var(--accent); border-radius: 2px; margin-bottom: 0.9rem; }
+    .auth-header h1 { font-family: 'DM Serif Display', serif; font-size: 2rem; color: var(--ink); letter-spacing: -0.02em; }
+    .auth-header p { color: var(--muted); font-size: 0.88rem; margin-top: 0.35rem; line-height: 1.5; }
 
-    .login-card {
+    .auth-card {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 10px;
@@ -62,10 +59,39 @@
       box-shadow: var(--shadow);
     }
 
+    /* Tab switcher inside auth card */
+    .auth-tabs {
+      display: flex;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 3px;
+      margin-bottom: 1.6rem;
+      gap: 3px;
+    }
+    .auth-tab {
+      flex: 1;
+      padding: 0.5rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--muted);
+      background: transparent;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.02em;
+    }
+    .auth-tab.active {
+      background: var(--card);
+      color: var(--accent);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+
     /* ── APP SCREEN ── */
     #appScreen { flex-direction: column; }
 
-    /* Top nav */
     .topnav {
       background: var(--card);
       border-bottom: 1px solid var(--border);
@@ -79,7 +105,6 @@
       z-index: 10;
       box-shadow: 0 1px 4px rgba(0,0,0,0.05);
     }
-
     .topnav-brand {
       font-family: 'DM Serif Display', serif;
       font-size: 1.15rem;
@@ -88,29 +113,9 @@
       align-items: center;
       gap: 0.5rem;
     }
-
-    .topnav-brand .dot {
-      width: 8px; height: 8px;
-      background: var(--accent);
-      border-radius: 50%;
-      display: inline-block;
-    }
-
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
-    }
-
-    .user-email {
-      font-size: 0.8rem;
-      color: var(--muted);
-      max-width: 200px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
+    .topnav-brand .dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; }
+    .user-info { display: flex; align-items: center; gap: 0.8rem; }
+    .user-email { font-size: 0.8rem; color: var(--muted); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .logout-btn {
       padding: 0.38rem 0.85rem;
       font-family: 'DM Sans', sans-serif;
@@ -122,16 +127,10 @@
       border-radius: var(--radius);
       cursor: pointer;
       transition: background 0.15s;
-      letter-spacing: 0.02em;
     }
     .logout-btn:hover { background: #efd6d0; }
 
-    /* App body */
-    .app-body {
-      padding: 2rem 1rem 4rem;
-      flex: 1;
-    }
-
+    .app-body { padding: 2rem 1rem 4rem; flex: 1; }
     .page-header { max-width: 960px; margin: 0 auto 1.8rem; }
     .page-header .line { display: block; width: 36px; height: 3px; background: var(--accent); border-radius: 2px; margin-bottom: 0.7rem; }
     .page-header h2 { font-family: 'DM Serif Display', serif; font-size: 1.7rem; color: var(--ink); letter-spacing: -0.02em; }
@@ -163,7 +162,7 @@
     /* Card */
     .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 2rem; box-shadow: var(--shadow); }
 
-    /* Form fields */
+    /* Fields */
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
     .field { margin-bottom: 1.2rem; }
     .field.full { grid-column: 1/-1; }
@@ -185,6 +184,11 @@
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a6f63' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
       background-repeat: no-repeat; background-position: right 0.9rem center; padding-right: 2.2rem; cursor: pointer;
     }
+    .pw-wrap { position: relative; }
+    .pw-wrap input { padding-right: 2.6rem; }
+    .pw-toggle { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--muted); padding: 0; display: flex; align-items: center; }
+    .pw-toggle:hover { color: var(--ink); }
+
     .divider { border: none; border-top: 1px dashed var(--border); margin: 0.4rem 0 1.3rem; }
     .section-label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem; }
     .form-actions { display: flex; gap: 0.8rem; margin-top: 0.5rem; }
@@ -216,14 +220,13 @@
     /* Edit banner */
     .edit-banner { display: none; padding: 0.6rem 0.9rem; background: var(--warn-bg); color: var(--warn); border-radius: var(--radius); font-size: 0.84rem; font-weight: 600; margin-bottom: 1.2rem; border: 1px solid #fcd34d; }
 
-    /* Grid toolbar */
+    /* Grid */
     .grid-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; gap: 1rem; flex-wrap: wrap; }
     .search-wrap { position: relative; flex: 1; min-width: 180px; max-width: 300px; }
     .search-wrap svg { position: absolute; left: 0.7rem; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
     .search-wrap input { padding-left: 2.2rem; font-size: 0.88rem; }
     .record-count { font-size: 0.82rem; color: var(--muted); }
 
-    /* Table */
     .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow); overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 0.87rem; }
     thead { background: var(--bg); border-bottom: 2px solid var(--border); }
@@ -260,6 +263,16 @@
     .modal p { font-size: 0.9rem; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.5; }
     .modal-actions { display: flex; gap: 0.7rem; }
 
+    /* Confirm email notice */
+    .confirm-notice {
+      text-align: center;
+      padding: 1.5rem 1rem;
+    }
+    .confirm-notice .big-icon { font-size: 2.5rem; margin-bottom: 0.8rem; }
+    .confirm-notice h3 { font-family: 'DM Serif Display', serif; font-size: 1.4rem; color: var(--ink); margin-bottom: 0.5rem; }
+    .confirm-notice p { color: var(--muted); font-size: 0.88rem; line-height: 1.6; }
+    .confirm-notice .back-link { margin-top: 1.2rem; display: inline-block; font-size: 0.85rem; font-weight: 600; color: var(--accent); cursor: pointer; text-decoration: underline; }
+
     /* Pagination */
     .pagination { display: flex; align-items: center; justify-content: center; gap: 0.4rem; margin-top: 1.2rem; flex-wrap: wrap; }
     .page-btn { padding: 0.33rem 0.72rem; border-radius: var(--radius); border: 1.5px solid var(--border); background: var(--card); color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
@@ -267,16 +280,15 @@
     .page-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
     .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    /* Password toggle */
-    .pw-wrap { position: relative; }
-    .pw-wrap input { padding-right: 2.6rem; }
-    .pw-toggle { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--muted); padding: 0; display: flex; align-items: center; }
-    .pw-toggle:hover { color: var(--ink); }
+    /* Password strength */
+    .pw-strength { margin-top: 0.4rem; height: 3px; border-radius: 2px; background: var(--border); overflow: hidden; }
+    .pw-strength-bar { height: 100%; width: 0%; transition: width 0.3s, background 0.3s; border-radius: 2px; }
+    .pw-hint { font-size: 0.74rem; color: var(--muted); margin-top: 0.3rem; }
 
     @media (max-width: 600px) {
       .form-row { grid-template-columns: 1fr; }
       .card { padding: 1.3rem; }
-      .login-header h1 { font-size: 1.7rem; }
+      .auth-header h1 { font-size: 1.7rem; }
       .user-email { display: none; }
       tbody td { padding: 0.6rem 0.65rem; font-size: 0.81rem; }
       thead th { padding: 0.6rem 0.65rem; }
@@ -285,54 +297,117 @@
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════════
-     LOGIN SCREEN
-═══════════════════════════════════════════════ -->
-<div class="screen active" id="loginScreen">
-  <div class="login-box">
-    <div class="login-header">
+<!-- ═══════════════════════════════════════════
+     AUTH SCREEN
+═══════════════════════════════════════════ -->
+<div class="screen active" id="authScreen">
+  <div class="auth-box">
+
+    <div class="auth-header">
       <span class="line"></span>
-      <h1>Welcome Back</h1>
-      <p>Sign in to manage your addresses.</p>
+      <h1 id="authTitle">Welcome Back</h1>
+      <p id="authSubtitle">Sign in to manage your addresses.</p>
     </div>
-    <div class="login-card">
-      <div id="loginToast" class="toast"></div>
-      <form id="loginForm" novalidate>
-        <div class="field" id="lfield-email">
-          <label>Email Address <span class="req">*</span></label>
-          <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email"/>
-          <div class="error-msg">Enter a valid email address.</div>
+
+    <div class="auth-card">
+
+      <!-- Mode: signin / signup / confirm -->
+      <div id="modeSignin">
+        <div class="auth-tabs">
+          <button class="auth-tab active" onclick="setMode('signin')">Sign In</button>
+          <button class="auth-tab" onclick="setMode('signup')">Sign Up</button>
         </div>
-        <div class="field" id="lfield-password">
-          <label>Password <span class="req">*</span></label>
-          <div class="pw-wrap">
-            <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"/>
-            <button type="button" class="pw-toggle" onclick="togglePw()" id="pwToggle" title="Show/hide password">
-              <svg id="eyeIcon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                <circle cx="12" cy="12" r="3"/>
-              </svg>
+
+        <div id="authToast" class="toast"></div>
+
+        <!-- SIGN IN FORM -->
+        <form id="signinForm" novalidate>
+          <div class="field" id="si-field-email">
+            <label>Email Address <span class="req">*</span></label>
+            <input type="email" id="siEmail" placeholder="you@example.com" autocomplete="email"/>
+            <div class="error-msg">Enter a valid email address.</div>
+          </div>
+          <div class="field" id="si-field-password">
+            <label>Password <span class="req">*</span></label>
+            <div class="pw-wrap">
+              <input type="password" id="siPassword" placeholder="••••••••" autocomplete="current-password"/>
+              <button type="button" class="pw-toggle" onclick="togglePw('siPassword', 'siEye')">
+                <svg id="siEye" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+            <div class="error-msg">Password is required.</div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="siBtn">
+              <div class="spinner" id="siSpinner"></div>
+              <span id="siBtnText">Sign In</span>
             </button>
           </div>
-          <div class="error-msg">Password is required.</div>
+        </form>
+
+        <!-- SIGN UP FORM -->
+        <form id="signupForm" novalidate style="display:none;">
+          <div class="field" id="su-field-email">
+            <label>Email Address <span class="req">*</span></label>
+            <input type="email" id="suEmail" placeholder="you@example.com" autocomplete="email"/>
+            <div class="error-msg">Enter a valid email address.</div>
+          </div>
+          <div class="field" id="su-field-password">
+            <label>Password <span class="req">*</span></label>
+            <div class="pw-wrap">
+              <input type="password" id="suPassword" placeholder="Min. 6 characters" autocomplete="new-password" oninput="checkStrength(this.value)"/>
+              <button type="button" class="pw-toggle" onclick="togglePw('suPassword', 'suEye')">
+                <svg id="suEye" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+            <div class="pw-strength"><div class="pw-strength-bar" id="pwBar"></div></div>
+            <div class="pw-hint" id="pwHint">Enter a password</div>
+            <div class="error-msg">Password must be at least 6 characters.</div>
+          </div>
+          <div class="field" id="su-field-confirm">
+            <label>Confirm Password <span class="req">*</span></label>
+            <div class="pw-wrap">
+              <input type="password" id="suConfirm" placeholder="Re-enter password" autocomplete="new-password"/>
+              <button type="button" class="pw-toggle" onclick="togglePw('suConfirm', 'suEye2')">
+                <svg id="suEye2" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+            <div class="error-msg">Passwords do not match.</div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="suBtn">
+              <div class="spinner" id="suSpinner"></div>
+              <span id="suBtnText">Create Account</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- CONFIRM EMAIL NOTICE -->
+      <div id="modeConfirm" style="display:none;">
+        <div class="confirm-notice">
+          <div class="big-icon">📬</div>
+          <h3>Check Your Email</h3>
+          <p>We sent a confirmation link to <strong id="confirmEmail"></strong>.<br/>
+          Click the link in the email to activate your account, then sign in.</p>
+          <span class="back-link" onclick="setMode('signin')">← Back to Sign In</span>
         </div>
-        <div class="form-actions" style="margin-top:0.2rem;">
-          <button type="submit" class="btn btn-primary" id="loginBtn">
-            <div class="spinner" id="loginSpinner"></div>
-            <span id="loginBtnText">Sign In</span>
-          </button>
-        </div>
-      </form>
+      </div>
+
     </div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════
+<!-- ═══════════════════════════════════════════
      APP SCREEN
-═══════════════════════════════════════════════ -->
+═══════════════════════════════════════════ -->
 <div class="screen" id="appScreen">
-
-  <!-- Top Nav -->
   <nav class="topnav">
     <div class="topnav-brand">
       <span class="dot"></span> Address Manager
@@ -346,11 +421,10 @@
   <div class="app-body">
     <div class="page-header">
       <span class="line"></span>
-      <h2>Addresses</h2>
-      <p>Add, view, edit and delete saved addresses.</p>
+      <h2>My Addresses</h2>
+      <p>Add, view, edit and delete your saved addresses.</p>
     </div>
 
-    <!-- Tabs -->
     <div class="tabs">
       <button class="tab-btn active" onclick="switchTab('form')">＋ Add Address</button>
       <button class="tab-btn" onclick="switchTab('grid')">☰ View All</button>
@@ -380,17 +454,17 @@
           <p class="section-label">Address Details</p>
           <div class="field" id="field-address_line1">
             <label>Address Line 1 <span class="req">*</span></label>
-            <input type="text" id="address_line1" placeholder="House No., Street, Locality" autocomplete="address-line1"/>
+            <input type="text" id="address_line1" placeholder="House No., Street, Locality"/>
             <div class="error-msg">Address Line 1 is required.</div>
           </div>
           <div class="field" id="field-address_line2">
             <label>Address Line 2</label>
-            <input type="text" id="address_line2" placeholder="Landmark, Area (optional)" autocomplete="address-line2"/>
+            <input type="text" id="address_line2" placeholder="Landmark, Area (optional)"/>
           </div>
           <div class="form-row">
             <div class="field" id="field-city">
               <label>City <span class="req">*</span></label>
-              <input type="text" id="city" placeholder="e.g. Agartala" autocomplete="address-level2"/>
+              <input type="text" id="city" placeholder="e.g. Agartala"/>
               <div class="error-msg">City is required.</div>
             </div>
             <div class="field" id="field-state">
@@ -418,7 +492,7 @@
             </div>
             <div class="field" id="field-pincode">
               <label>PIN Code <span class="req">*</span></label>
-              <input type="text" id="pincode" placeholder="e.g. 799001" maxlength="6" autocomplete="postal-code"/>
+              <input type="text" id="pincode" placeholder="e.g. 799001" maxlength="6"/>
               <div class="error-msg">Enter a valid 6-digit PIN code.</div>
             </div>
           </div>
@@ -481,33 +555,36 @@
 </div>
 
 <script>
-// ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════
 // CONFIG
-// ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════
 const SUPABASE_URL      = "https://aaqqkaiwanmgguabeujr.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhcXFrYWl3YW5tZ2d1YWJldWpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2Mjc1OTYsImV4cCI6MjA4NjIwMzU5Nn0.ydoqHbVpe_xi_PFNK2OTsq0NmXlFs4J4gz6cHBy_aEA";
 const TABLE             = "addresses";
 const PAGE_SIZE         = 10;
 
-// ══════════════════════════════════════════════════════════
-// AUTH STATE
-// ══════════════════════════════════════════════════════════
-let accessToken  = null;
-let allRows      = [];
-let filteredRows = [];
-let currentPage  = 1;
-let sortCol      = "created_at";
-let sortDir      = "desc";
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+let accessToken    = null;
+let currentUserId  = null;
+let allRows        = [];
+let filteredRows   = [];
+let currentPage    = 1;
+let sortCol        = "created_at";
+let sortDir        = "desc";
 let deleteTargetId = null;
+let currentAuthMode = "signin"; // "signin" | "signup"
 
-// Restore session from localStorage on page load
+// ══════════════════════════════════════════════
+// SESSION
+// ══════════════════════════════════════════════
 function restoreSession() {
-  const stored = localStorage.getItem("sb_session");
-  if (!stored) return false;
   try {
-    const s = JSON.parse(stored);
-    if (s.access_token && s.expires_at && Date.now() < s.expires_at * 1000) {
-      accessToken = s.access_token;
+    const s = JSON.parse(localStorage.getItem("sb_session") || "null");
+    if (s && s.access_token && Date.now() < s.expires_at * 1000) {
+      accessToken   = s.access_token;
+      currentUserId = s.user_id;
       document.getElementById("userEmail").textContent = s.email || "";
       return true;
     }
@@ -520,38 +597,252 @@ function saveSession(data) {
   localStorage.setItem("sb_session", JSON.stringify({
     access_token: data.access_token,
     expires_at:   data.expires_at,
+    user_id:      data.user?.id || "",
     email:        data.user?.email || ""
   }));
 }
 
 function clearSession() {
   localStorage.removeItem("sb_session");
-  accessToken = null;
+  accessToken   = null;
+  currentUserId = null;
 }
 
-// ══════════════════════════════════════════════════════════
-// SCREEN SWITCHING
-// ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════
+// SCREENS
+// ══════════════════════════════════════════════
 function showScreen(id) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
 }
 
-// ══════════════════════════════════════════════════════════
-// API HELPERS
-// ══════════════════════════════════════════════════════════
-function authHeaders(extra = {}) {
-  return {
-    "Content-Type": "application/json",
-    "apikey": SUPABASE_ANON_KEY,
-    "Authorization": `Bearer ${accessToken || SUPABASE_ANON_KEY}`,
-    ...extra
-  };
+// ══════════════════════════════════════════════
+// AUTH MODE SWITCHER
+// ══════════════════════════════════════════════
+function setMode(mode) {
+  currentAuthMode = mode;
+  document.getElementById("authToast").className = "toast";
+  document.getElementById("modeSignin").style.display = "block";
+  document.getElementById("modeConfirm").style.display = "none";
+
+  const isSignup = mode === "signup";
+  document.getElementById("signinForm").style.display  = isSignup ? "none" : "block";
+  document.getElementById("signupForm").style.display  = isSignup ? "block" : "none";
+  document.getElementById("authTitle").textContent     = isSignup ? "Create Account" : "Welcome Back";
+  document.getElementById("authSubtitle").textContent  = isSignup
+    ? "Sign up to start managing your addresses."
+    : "Sign in to manage your addresses.";
+
+  document.querySelectorAll(".auth-tab").forEach((t, i) => {
+    t.classList.toggle("active", (i === 0 && !isSignup) || (i === 1 && isSignup));
+  });
+
+  // clear errors
+  document.querySelectorAll(".field.has-error").forEach(f => f.classList.remove("has-error"));
 }
 
+// ══════════════════════════════════════════════
+// PASSWORD TOGGLE
+// ══════════════════════════════════════════════
+function togglePw(inputId, iconId) {
+  const inp  = document.getElementById(inputId);
+  const icon = document.getElementById(iconId);
+  if (inp.type === "password") {
+    inp.type = "text";
+    icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>`;
+  } else {
+    inp.type = "password";
+    icon.innerHTML = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+  }
+}
+
+// ══════════════════════════════════════════════
+// PASSWORD STRENGTH
+// ══════════════════════════════════════════════
+function checkStrength(val) {
+  const bar  = document.getElementById("pwBar");
+  const hint = document.getElementById("pwHint");
+  let score  = 0;
+  if (val.length >= 6)  score++;
+  if (val.length >= 10) score++;
+  if (/[A-Z]/.test(val)) score++;
+  if (/[0-9]/.test(val)) score++;
+  if (/[^a-zA-Z0-9]/.test(val)) score++;
+
+  const levels = [
+    { pct: "0%",   bg: "transparent", label: "Enter a password" },
+    { pct: "25%",  bg: "#ef4444",     label: "Weak" },
+    { pct: "50%",  bg: "#f97316",     label: "Fair" },
+    { pct: "75%",  bg: "#eab308",     label: "Good" },
+    { pct: "100%", bg: "#22c55e",     label: "Strong" },
+  ];
+  const lvl = levels[Math.min(score, 4)];
+  bar.style.width      = lvl.pct;
+  bar.style.background = lvl.bg;
+  hint.textContent     = lvl.label;
+}
+
+// ══════════════════════════════════════════════
+// TOAST (auth)
+// ══════════════════════════════════════════════
+function showAuthToast(type, msg) {
+  const t = document.getElementById("authToast");
+  const icon = type === "success"
+    ? `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>`
+    : `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>`;
+  t.className = "toast " + (type === "success" ? "success" : "error-toast");
+  t.innerHTML = icon + " " + msg;
+}
+
+// ══════════════════════════════════════════════
+// SIGN IN
+// ══════════════════════════════════════════════
+document.getElementById("signinForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const email    = document.getElementById("siEmail").value.trim();
+  const password = document.getElementById("siPassword").value;
+  let ok = true;
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    document.getElementById("si-field-email").classList.add("has-error"); ok = false;
+  } else { document.getElementById("si-field-email").classList.remove("has-error"); }
+
+  if (!password) {
+    document.getElementById("si-field-password").classList.add("has-error"); ok = false;
+  } else { document.getElementById("si-field-password").classList.remove("has-error"); }
+
+  if (!ok) return;
+
+  setAuthLoading("si", true);
+  try {
+    const res  = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error_description || data.msg || "Invalid email or password.");
+
+    accessToken   = data.access_token;
+    currentUserId = data.user?.id;
+    saveSession(data);
+    document.getElementById("userEmail").textContent = data.user?.email || email;
+    showScreen("appScreen");
+    switchTab("form");
+    loadGrid();
+  } catch(err) {
+    showAuthToast("error", err.message);
+  } finally {
+    setAuthLoading("si", false);
+  }
+});
+
+// clear errors on input
+document.getElementById("siEmail").addEventListener("input",    () => document.getElementById("si-field-email").classList.remove("has-error"));
+document.getElementById("siPassword").addEventListener("input", () => document.getElementById("si-field-password").classList.remove("has-error"));
+
+// ══════════════════════════════════════════════
+// SIGN UP
+// ══════════════════════════════════════════════
+document.getElementById("signupForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const email    = document.getElementById("suEmail").value.trim();
+  const password = document.getElementById("suPassword").value;
+  const confirm  = document.getElementById("suConfirm").value;
+  let ok = true;
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    document.getElementById("su-field-email").classList.add("has-error"); ok = false;
+  } else { document.getElementById("su-field-email").classList.remove("has-error"); }
+
+  if (password.length < 6) {
+    document.getElementById("su-field-password").classList.add("has-error"); ok = false;
+  } else { document.getElementById("su-field-password").classList.remove("has-error"); }
+
+  if (password !== confirm || !confirm) {
+    document.getElementById("su-field-confirm").classList.add("has-error"); ok = false;
+  } else { document.getElementById("su-field-confirm").classList.remove("has-error"); }
+
+  if (!ok) return;
+
+  setAuthLoading("su", true);
+  try {
+    const res  = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.msg || data.error_description || "Sign up failed.");
+
+    // If email confirmation is required, show notice
+    // If auto-confirmed (email confirm disabled), log in directly
+    if (data.access_token) {
+      accessToken   = data.access_token;
+      currentUserId = data.user?.id;
+      saveSession(data);
+      document.getElementById("userEmail").textContent = data.user?.email || email;
+      showScreen("appScreen");
+      loadGrid();
+    } else {
+      // Show confirm notice
+      document.getElementById("confirmEmail").textContent = email;
+      document.getElementById("modeSignin").style.display  = "none";
+      document.getElementById("modeConfirm").style.display = "block";
+      document.getElementById("authTitle").textContent     = "Almost There!";
+      document.getElementById("authSubtitle").textContent  = "One last step before you can sign in.";
+    }
+  } catch(err) {
+    showAuthToast("error", err.message);
+  } finally {
+    setAuthLoading("su", false);
+  }
+});
+
+document.getElementById("suEmail").addEventListener("input",    () => document.getElementById("su-field-email").classList.remove("has-error"));
+document.getElementById("suPassword").addEventListener("input", () => document.getElementById("su-field-password").classList.remove("has-error"));
+document.getElementById("suConfirm").addEventListener("input",  () => document.getElementById("su-field-confirm").classList.remove("has-error"));
+
+// ══════════════════════════════════════════════
+// AUTH LOADING STATE
+// ══════════════════════════════════════════════
+function setAuthLoading(prefix, on) {
+  document.getElementById(prefix + "Btn").disabled             = on;
+  document.getElementById(prefix + "Spinner").style.display    = on ? "block" : "none";
+  document.getElementById(prefix + "BtnText").textContent      =
+    on ? "Please wait…" : (prefix === "si" ? "Sign In" : "Create Account");
+}
+
+// ══════════════════════════════════════════════
+// LOGOUT
+// ══════════════════════════════════════════════
+async function doLogout() {
+  try {
+    await fetch(`${SUPABASE_URL}/auth/v1/logout`, {
+      method: "POST",
+      headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${accessToken}` }
+    });
+  } catch(e) {}
+  clearSession();
+  document.getElementById("siEmail").value    = "";
+  document.getElementById("siPassword").value = "";
+  document.getElementById("authToast").className = "toast";
+  cancelEdit();
+  setMode("signin");
+  showScreen("authScreen");
+}
+
+// ══════════════════════════════════════════════
+// API HELPER
+// ══════════════════════════════════════════════
 async function sbFetch(path, opts = {}) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-    headers: authHeaders(opts.extraHeaders || {}),
+    headers: {
+      "Content-Type": "application/json",
+      "apikey": SUPABASE_ANON_KEY,
+      "Authorization": `Bearer ${accessToken}`,
+      ...(opts.extraHeaders || {})
+    },
     ...opts
   });
   if (!res.ok) {
@@ -562,117 +853,27 @@ async function sbFetch(path, opts = {}) {
   return res.json();
 }
 
-// ══════════════════════════════════════════════════════════
-// LOGIN
-// ══════════════════════════════════════════════════════════
-function togglePw() {
-  const inp = document.getElementById("loginPassword");
-  const icon = document.getElementById("eyeIcon");
-  if (inp.type === "password") {
-    inp.type = "text";
-    icon.innerHTML = `<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>`;
-  } else {
-    inp.type = "password";
-    icon.innerHTML = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+function handleApiError(err) {
+  if (err.message.includes("JWT") || err.message.includes("401")) {
+    clearSession(); showScreen("authScreen"); setMode("signin");
   }
 }
 
-function setLoginLoading(on) {
-  document.getElementById("loginBtn").disabled = on;
-  document.getElementById("loginSpinner").style.display = on ? "block" : "none";
-  document.getElementById("loginBtnText").textContent = on ? "Signing in…" : "Sign In";
-}
-
-function showLoginToast(type, msg) {
-  const t = document.getElementById("loginToast");
-  const icon = type === "success"
-    ? `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>`
-    : `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>`;
-  t.className = "toast " + (type === "success" ? "success" : "error-toast");
-  t.innerHTML = icon + " " + msg;
-}
-
-document.getElementById("loginForm").addEventListener("submit", async e => {
-  e.preventDefault();
-  const email = document.getElementById("loginEmail").value.trim();
-  const password = document.getElementById("loginPassword").value;
-
-  // Basic validation
-  let ok = true;
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    document.getElementById("lfield-email").classList.add("has-error"); ok = false;
-  } else {
-    document.getElementById("lfield-email").classList.remove("has-error");
-  }
-  if (!password) {
-    document.getElementById("lfield-password").classList.add("has-error"); ok = false;
-  } else {
-    document.getElementById("lfield-password").classList.remove("has-error");
-  }
-  if (!ok) return;
-
-  setLoginLoading(true);
-  try {
-    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY },
-      body: JSON.stringify({ email, password })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error_description || data.msg || "Login failed.");
-
-    accessToken = data.access_token;
-    saveSession(data);
-    document.getElementById("userEmail").textContent = data.user?.email || email;
-    showScreen("appScreen");
-    loadGrid();
-  } catch (err) {
-    showLoginToast("error", err.message);
-  } finally {
-    setLoginLoading(false);
-  }
-});
-
-// Clear field errors on input
-["loginEmail","loginPassword"].forEach(id => {
-  document.getElementById(id).addEventListener("input", () => {
-    document.getElementById(id === "loginEmail" ? "lfield-email" : "lfield-password").classList.remove("has-error");
-  });
-});
-
-// ══════════════════════════════════════════════════════════
-// LOGOUT
-// ══════════════════════════════════════════════════════════
-async function doLogout() {
-  try {
-    await fetch(`${SUPABASE_URL}/auth/v1/logout`, {
-      method: "POST",
-      headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${accessToken}` }
-    });
-  } catch(e) {}
-  clearSession();
-  document.getElementById("loginEmail").value = "";
-  document.getElementById("loginPassword").value = "";
-  document.getElementById("loginToast").className = "toast";
-  cancelEdit();
-  showScreen("loginScreen");
-}
-
-// ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════
 // TABS
-// ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════
 function switchTab(tab) {
   document.querySelectorAll(".tab-btn").forEach((b, i) => {
-    b.classList.toggle("active", (i === 0 && tab === "form") || (i === 1 && tab === "grid"));
+    b.classList.toggle("active", (i===0 && tab==="form") || (i===1 && tab==="grid"));
   });
   document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
   document.getElementById("panel-" + tab).classList.add("active");
   if (tab === "grid") loadGrid();
 }
 
-// ══════════════════════════════════════════════════════════
-// TOAST
-// ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════
+// TOAST (app)
+// ══════════════════════════════════════════════
 function showToast(elId, type, msg) {
   const t = document.getElementById(elId);
   const icon = type === "success"
@@ -684,9 +885,9 @@ function showToast(elId, type, msg) {
   setTimeout(() => { t.className = "toast"; }, 5000);
 }
 
-// ══════════════════════════════════════════════════════════
-// ADDRESS FORM VALIDATION
-// ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════
+// ADDRESS VALIDATION
+// ══════════════════════════════════════════════
 const RULES = [
   { id: "full_name",     test: v => v.trim().length > 0 },
   { id: "phone",         test: v => v === "" || /^\d{10}$/.test(v) },
@@ -707,16 +908,15 @@ function validate() {
   });
   return ok;
 }
-
 RULES.forEach(r => {
   document.getElementById(r.id).addEventListener("input", () => {
     document.getElementById("field-" + r.id).classList.remove("has-error");
   });
 });
 
-// ══════════════════════════════════════════════════════════
-// FORM SUBMIT (ADD / UPDATE)
-// ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════
+// FORM SUBMIT
+// ══════════════════════════════════════════════
 const submitBtn = document.getElementById("submitBtn");
 const btnText   = document.getElementById("btnText");
 const spinner   = document.getElementById("spinner");
@@ -742,6 +942,7 @@ document.getElementById("addressForm").addEventListener("submit", async e => {
     city:          document.getElementById("city").value.trim(),
     state:         document.getElementById("state").value,
     pincode:       document.getElementById("pincode").value.trim(),
+    user_id:       currentUserId,
   };
 
   setLoading(true);
@@ -764,21 +965,17 @@ document.getElementById("addressForm").addEventListener("submit", async e => {
       document.getElementById("addressForm").reset();
       document.getElementById("state").value = "";
     }
-  } catch (err) {
-    // Session may have expired
-    if (err.message.includes("JWT") || err.message.includes("401")) {
-      clearSession(); showScreen("loginScreen");
-    } else {
-      showToast("formToast", "error", "Error: " + err.message);
-    }
+  } catch(err) {
+    handleApiError(err);
+    showToast("formToast", "error", "Error: " + err.message);
   } finally {
     setLoading(false);
   }
 });
 
-// ══════════════════════════════════════════════════════════
-// EDIT HELPERS
-// ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════
+// EDIT
+// ══════════════════════════════════════════════
 function loadForEdit(row) {
   document.getElementById("editId").value        = row.id;
   document.getElementById("full_name").value     = row.full_name || "";
@@ -789,7 +986,7 @@ function loadForEdit(row) {
   document.getElementById("state").value         = row.state || "";
   document.getElementById("pincode").value       = row.pincode || "";
   btnText.textContent = "Update Address";
-  document.getElementById("editBanner").style.display = "block";
+  document.getElementById("editBanner").style.display    = "block";
   document.getElementById("cancelEditBtn").style.display = "inline-flex";
   switchTab("form");
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -800,14 +997,14 @@ function cancelEdit() {
   document.getElementById("editId").value = "";
   document.getElementById("state").value  = "";
   btnText.textContent = "Save Address";
-  document.getElementById("editBanner").style.display      = "none";
-  document.getElementById("cancelEditBtn").style.display   = "none";
+  document.getElementById("editBanner").style.display    = "none";
+  document.getElementById("cancelEditBtn").style.display = "none";
   document.querySelectorAll(".field.has-error").forEach(f => f.classList.remove("has-error"));
 }
 
-// ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════
 // GRID
-// ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════
 async function loadGrid() {
   document.getElementById("tableBody").innerHTML =
     `<tr><td colspan="7"><div class="empty-state"><p>Loading…</p></div></td></tr>`;
@@ -815,13 +1012,10 @@ async function loadGrid() {
     allRows = await sbFetch(`${TABLE}?select=*&order=created_at.desc`);
     document.getElementById("searchInput").value = "";
     applyFilter();
-  } catch (err) {
-    if (err.message.includes("JWT") || err.message.includes("401")) {
-      clearSession(); showScreen("loginScreen");
-    } else {
-      document.getElementById("tableBody").innerHTML =
-        `<tr><td colspan="7"><div class="empty-state"><p>⚠ ${esc(err.message)}</p></div></td></tr>`;
-    }
+  } catch(err) {
+    handleApiError(err);
+    document.getElementById("tableBody").innerHTML =
+      `<tr><td colspan="7"><div class="empty-state"><p>⚠ ${esc(err.message)}</p></div></td></tr>`;
   }
 }
 
@@ -924,19 +1118,17 @@ function gotoPage(p) {
   currentPage = p; renderTable();
 }
 
-// ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════
 // DELETE
-// ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════
 function confirmDelete(id) {
   deleteTargetId = id;
   document.getElementById("deleteModal").classList.add("open");
 }
-
 function closeModal() {
   deleteTargetId = null;
   document.getElementById("deleteModal").classList.remove("open");
 }
-
 document.getElementById("confirmDeleteBtn").addEventListener("click", async () => {
   if (!deleteTargetId) return;
   try {
@@ -944,26 +1136,21 @@ document.getElementById("confirmDeleteBtn").addEventListener("click", async () =
       method: "DELETE",
       extraHeaders: { "Prefer": "return=minimal" }
     });
-    closeModal();
-    loadGrid();
-  } catch (err) {
-    closeModal();
-    alert("Delete failed: " + err.message);
-  }
+    closeModal(); loadGrid();
+  } catch(err) { closeModal(); alert("Delete failed: " + err.message); }
 });
-
 document.getElementById("deleteModal").addEventListener("click", function(e) {
   if (e.target === this) closeModal();
 });
 
-// ══════════════════════════════════════════════════════════
-// INIT — restore session or show login
-// ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
 if (restoreSession()) {
   showScreen("appScreen");
   loadGrid();
 } else {
-  showScreen("loginScreen");
+  showScreen("authScreen");
 }
 </script>
 </body>
