@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Save Address</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <title>Address Manager</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -18,238 +18,198 @@
       --border: #e0d8cc;
       --success: #2d6a4f;
       --success-bg: #d8f3dc;
+      --warn: #92400e;
+      --warn-bg: #fef3c7;
       --radius: 4px;
+      --shadow: 0 2px 12px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04);
     }
 
     body {
       font-family: 'DM Sans', sans-serif;
       background: var(--bg);
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem 1rem;
+      padding: 2rem 1rem 4rem;
       background-image:
-        radial-gradient(circle at 15% 85%, rgba(200,75,47,0.06) 0%, transparent 50%),
-        radial-gradient(circle at 85% 15%, rgba(26,22,18,0.04) 0%, transparent 50%);
+        radial-gradient(circle at 10% 90%, rgba(200,75,47,0.06) 0%, transparent 45%),
+        radial-gradient(circle at 90% 10%, rgba(26,22,18,0.04) 0%, transparent 45%);
     }
 
-    .wrapper {
-      width: 100%;
-      max-width: 560px;
+    .page-header { max-width: 960px; margin: 0 auto 2rem; }
+    .page-header .line { display:block; width:40px; height:3px; background:var(--accent); border-radius:2px; margin-bottom:0.8rem; }
+    .page-header h1 { font-family:'DM Serif Display',serif; font-size:2rem; color:var(--ink); letter-spacing:-0.02em; }
+    .page-header p { color:var(--muted); font-size:0.92rem; margin-top:0.3rem; }
+
+    /* Tabs */
+    .tabs { max-width:960px; margin:0 auto 1.5rem; display:flex; border-bottom:2px solid var(--border); }
+    .tab-btn {
+      padding:0.6rem 1.4rem; font-family:'DM Sans',sans-serif; font-size:0.88rem;
+      font-weight:600; letter-spacing:0.04em; text-transform:uppercase; color:var(--muted);
+      background:none; border:none; border-bottom:2px solid transparent; margin-bottom:-2px;
+      cursor:pointer; transition:color 0.2s, border-color 0.2s;
     }
+    .tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); }
+    .tab-btn:hover:not(.active) { color:var(--ink); }
 
-    .header {
-      margin-bottom: 2rem;
-    }
+    .panel { display:none; max-width:960px; margin:0 auto; }
+    .panel.active { display:block; }
 
-    .header h1 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 2.2rem;
-      color: var(--ink);
-      line-height: 1.15;
-      letter-spacing: -0.02em;
-    }
+    /* Card */
+    .card { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:2rem; box-shadow:var(--shadow); }
 
-    .header p {
-      margin-top: 0.5rem;
-      color: var(--muted);
-      font-size: 0.95rem;
-    }
-
-    .header .line {
-      display: block;
-      width: 40px;
-      height: 3px;
-      background: var(--accent);
-      margin-bottom: 1rem;
-      border-radius: 2px;
-    }
-
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 2rem;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
-    }
-
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-    }
-
-    .field {
-      margin-bottom: 1.2rem;
-    }
-
-    .field.full { grid-column: 1 / -1; }
-
-    label {
-      display: block;
-      font-size: 0.8rem;
-      font-weight: 600;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 0.4rem;
-    }
-
-    label .req {
-      color: var(--accent);
-      margin-left: 2px;
-    }
-
+    /* Form */
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+    .field { margin-bottom:1.2rem; }
+    .field.full { grid-column:1/-1; }
+    label { display:block; font-size:0.78rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted); margin-bottom:0.4rem; }
+    label .req { color:var(--accent); margin-left:2px; }
     input, select {
-      width: 100%;
-      padding: 0.65rem 0.85rem;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.95rem;
-      color: var(--ink);
-      background: var(--bg);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius);
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      appearance: none;
+      width:100%; padding:0.65rem 0.85rem; font-family:'DM Sans',sans-serif; font-size:0.95rem;
+      color:var(--ink); background:var(--bg); border:1.5px solid var(--border);
+      border-radius:var(--radius); outline:none; transition:border-color 0.2s, box-shadow 0.2s; appearance:none;
     }
-
-    input::placeholder { color: #b0a898; }
-
-    input:focus, select:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(200,75,47,0.1);
-      background: #fff;
-    }
-
-    input.error { border-color: var(--accent); }
-
-    .error-msg {
-      font-size: 0.78rem;
-      color: var(--accent);
-      margin-top: 0.3rem;
-      display: none;
-    }
-
-    .field.has-error .error-msg { display: block; }
-    .field.has-error input { border-color: var(--accent); }
-
-    .divider {
-      border: none;
-      border-top: 1px dashed var(--border);
-      margin: 0.5rem 0 1.4rem;
-    }
-
-    .section-label {
-      font-size: 0.72rem;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 1rem;
-    }
-
-    .btn {
-      width: 100%;
-      padding: 0.8rem 1.5rem;
-      background: var(--accent);
-      color: #fff;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.95rem;
-      font-weight: 600;
-      border: none;
-      border-radius: var(--radius);
-      cursor: pointer;
-      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      letter-spacing: 0.02em;
-      margin-top: 0.5rem;
-    }
-
-    .btn:hover { background: #b03d22; box-shadow: 0 4px 12px rgba(200,75,47,0.25); }
-    .btn:active { transform: scale(0.98); }
-    .btn:disabled { background: #c8a9a1; cursor: not-allowed; transform: none; box-shadow: none; }
-
-    .spinner {
-      width: 16px; height: 16px;
-      border: 2px solid rgba(255,255,255,0.4);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      display: none;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .toast {
-      display: none;
-      margin-top: 1rem;
-      padding: 0.9rem 1rem;
-      border-radius: var(--radius);
-      font-size: 0.9rem;
-      font-weight: 500;
-      align-items: center;
-      gap: 0.6rem;
-    }
-
-    .toast.success {
-      display: flex;
-      background: var(--success-bg);
-      color: var(--success);
-      border: 1px solid #b7e4c7;
-    }
-
-    .toast.error-toast {
-      display: flex;
-      background: var(--accent-light);
-      color: var(--accent);
-      border: 1px solid #f0c4bc;
-    }
-
-    .toast svg { flex-shrink: 0; }
-
+    input::placeholder { color:#b0a898; }
+    input:focus, select:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(200,75,47,0.1); background:#fff; }
+    .field.has-error input, .field.has-error select { border-color:var(--accent); }
+    .error-msg { font-size:0.78rem; color:var(--accent); margin-top:0.3rem; display:none; }
+    .field.has-error .error-msg { display:block; }
     select {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a6f63' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 0.9rem center;
-      padding-right: 2.2rem;
-      cursor: pointer;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a6f63' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat:no-repeat; background-position:right 0.9rem center; padding-right:2.2rem; cursor:pointer;
     }
+    .divider { border:none; border-top:1px dashed var(--border); margin:0.4rem 0 1.3rem; }
+    .section-label { font-size:0.72rem; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--accent); margin-bottom:1rem; }
+    .form-actions { display:flex; gap:0.8rem; margin-top:0.5rem; }
 
-    @media (max-width: 480px) {
-      .form-row { grid-template-columns: 1fr; }
-      .card { padding: 1.4rem; }
-      .header h1 { font-size: 1.8rem; }
+    /* Buttons */
+    .btn {
+      padding:0.75rem 1.4rem; font-family:'DM Sans',sans-serif; font-size:0.92rem; font-weight:600;
+      border:none; border-radius:var(--radius); cursor:pointer;
+      transition:background 0.2s, transform 0.1s, box-shadow 0.2s;
+      display:inline-flex; align-items:center; justify-content:center; gap:0.45rem; letter-spacing:0.02em;
+    }
+    .btn-primary { background:var(--accent); color:#fff; flex:1; }
+    .btn-primary:hover { background:#b03d22; box-shadow:0 4px 12px rgba(200,75,47,0.25); }
+    .btn-primary:active { transform:scale(0.98); }
+    .btn-primary:disabled { background:#c8a9a1; cursor:not-allowed; }
+    .btn-ghost { background:transparent; color:var(--muted); border:1.5px solid var(--border); flex:none; }
+    .btn-ghost:hover { background:var(--bg); color:var(--ink); border-color:#c5bdb4; }
+
+    .spinner { width:15px; height:15px; border:2px solid rgba(255,255,255,0.4); border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; display:none; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* Toast */
+    .toast { display:none; padding:0.85rem 1rem; border-radius:var(--radius); font-size:0.88rem; font-weight:500; align-items:center; gap:0.6rem; margin-bottom:1.2rem; }
+    .toast.success { display:flex; background:var(--success-bg); color:var(--success); border:1px solid #b7e4c7; }
+    .toast.error-toast { display:flex; background:var(--accent-light); color:var(--accent); border:1px solid #f0c4bc; }
+    .toast svg { flex-shrink:0; }
+
+    /* Edit banner */
+    .edit-banner { display:none; padding:0.6rem 0.9rem; background:var(--warn-bg); color:var(--warn); border-radius:var(--radius); font-size:0.85rem; font-weight:600; margin-bottom:1.2rem; border:1px solid #fcd34d; }
+
+    /* Grid toolbar */
+    .grid-toolbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; gap:1rem; flex-wrap:wrap; }
+    .search-wrap { position:relative; flex:1; min-width:180px; max-width:300px; }
+    .search-wrap svg { position:absolute; left:0.7rem; top:50%; transform:translateY(-50%); color:var(--muted); pointer-events:none; }
+    .search-wrap input { padding-left:2.2rem; font-size:0.88rem; }
+    .record-count { font-size:0.82rem; color:var(--muted); }
+    .refresh-btn { padding:0.6rem 1rem; font-size:0.85rem; }
+
+    /* Table */
+    .table-wrap { background:var(--card); border:1px solid var(--border); border-radius:8px; box-shadow:var(--shadow); overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; font-size:0.88rem; }
+    thead { background:var(--bg); border-bottom:2px solid var(--border); }
+    thead th {
+      padding:0.7rem 1rem; text-align:left; font-size:0.72rem; font-weight:700;
+      letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); white-space:nowrap;
+      cursor:pointer; user-select:none;
+    }
+    thead th:hover { color:var(--ink); }
+    thead th .sort-icon { display:inline-block; margin-left:4px; opacity:0.4; font-size:0.7rem; }
+    thead th.sort-asc .sort-icon::after { content:'▲'; opacity:1; }
+    thead th.sort-desc .sort-icon::after { content:'▼'; opacity:1; }
+    thead th:not(.sort-asc):not(.sort-desc) .sort-icon::after { content:'⇅'; }
+    thead th.no-sort { cursor:default; }
+
+    tbody tr { border-bottom:1px solid var(--border); transition:background 0.15s; }
+    tbody tr:last-child { border-bottom:none; }
+    tbody tr:hover { background:#faf7f2; }
+    tbody td { padding:0.75rem 1rem; color:var(--ink); vertical-align:middle; }
+
+    .badge { display:inline-block; padding:0.15rem 0.55rem; border-radius:20px; font-size:0.75rem; font-weight:600; background:var(--accent-light); color:var(--accent); }
+    .cell-muted { color:var(--muted); font-style:italic; }
+    .addr-sub { color:var(--muted); font-size:0.8rem; }
+
+    .action-btns { display:flex; gap:0.4rem; }
+    .icon-btn {
+      padding:0.32rem 0.6rem; border-radius:var(--radius); border:1.5px solid var(--border);
+      background:transparent; cursor:pointer; font-size:0.78rem; font-family:'DM Sans',sans-serif;
+      font-weight:600; display:inline-flex; align-items:center; gap:0.3rem;
+      transition:all 0.15s; white-space:nowrap;
+    }
+    .icon-btn.edit { color:#1d4ed8; border-color:#bfdbfe; }
+    .icon-btn.edit:hover { background:#eff6ff; }
+    .icon-btn.delete { color:var(--accent); border-color:#f0c4bc; }
+    .icon-btn.delete:hover { background:var(--accent-light); }
+
+    .empty-state { text-align:center; padding:3rem 1rem; color:var(--muted); }
+    .empty-state svg { margin-bottom:0.8rem; opacity:0.4; }
+    .empty-state p { font-size:0.92rem; }
+
+    /* Modal */
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(26,22,18,0.45); z-index:100; align-items:center; justify-content:center; backdrop-filter:blur(2px); }
+    .modal-overlay.open { display:flex; }
+    .modal { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:2rem; max-width:380px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.18); animation:popIn 0.2s ease; }
+    @keyframes popIn { from { transform:scale(0.94); opacity:0; } to { transform:scale(1); opacity:1; } }
+    .modal h3 { font-family:'DM Serif Display',serif; font-size:1.3rem; color:var(--ink); margin-bottom:0.5rem; }
+    .modal p { font-size:0.9rem; color:var(--muted); margin-bottom:1.5rem; line-height:1.5; }
+    .modal-actions { display:flex; gap:0.7rem; }
+
+    /* Pagination */
+    .pagination { display:flex; align-items:center; justify-content:center; gap:0.4rem; margin-top:1.2rem; flex-wrap:wrap; }
+    .page-btn { padding:0.35rem 0.75rem; border-radius:var(--radius); border:1.5px solid var(--border); background:var(--card); color:var(--muted); font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:600; cursor:pointer; transition:all 0.15s; }
+    .page-btn:hover { background:var(--bg); color:var(--ink); }
+    .page-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+    .page-btn:disabled { opacity:0.4; cursor:not-allowed; }
+
+    @media (max-width:600px) {
+      .form-row { grid-template-columns:1fr; }
+      .card { padding:1.3rem; }
+      .page-header h1 { font-size:1.7rem; }
+      tbody td { padding:0.6rem 0.7rem; font-size:0.82rem; }
+      thead th { padding:0.6rem 0.7rem; }
     }
   </style>
 </head>
 <body>
 
-<div class="wrapper">
-  <div class="header">
-    <span class="line"></span>
-    <h1>Save Your Address</h1>
-    <p>Fill in the details below and we'll store them securely.</p>
-  </div>
+<div class="page-header">
+  <span class="line"></span>
+  <h1>Address Manager</h1>
+  <p>Add, view, edit and delete saved addresses — synced live with Supabase.</p>
+</div>
 
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('form')">＋ Add Address</button>
+  <button class="tab-btn" onclick="switchTab('grid')">☰ View All</button>
+</div>
+
+<!-- FORM PANEL -->
+<div class="panel active" id="panel-form">
   <div class="card">
-    <div id="toast" class="toast"></div>
+    <div id="formToast" class="toast"></div>
+    <div id="editBanner" class="edit-banner">✏️ Editing record — make changes and click Update.</div>
 
     <form id="addressForm" novalidate>
+      <input type="hidden" id="editId"/>
 
       <p class="section-label">Personal Info</p>
-
       <div class="form-row">
         <div class="field full" id="field-full_name">
           <label>Full Name <span class="req">*</span></label>
           <input type="text" id="full_name" placeholder="e.g. Gopal Das" autocomplete="name"/>
           <div class="error-msg">Full name is required.</div>
         </div>
-
         <div class="field full" id="field-phone">
           <label>Phone Number</label>
           <input type="tel" id="phone" placeholder="e.g. 9876543210" maxlength="10" autocomplete="tel"/>
@@ -265,7 +225,6 @@
         <input type="text" id="address_line1" placeholder="House No., Street, Locality" autocomplete="address-line1"/>
         <div class="error-msg">Address Line 1 is required.</div>
       </div>
-
       <div class="field" id="field-address_line2">
         <label>Address Line 2</label>
         <input type="text" id="address_line2" placeholder="Landmark, Area (optional)" autocomplete="address-line2"/>
@@ -277,7 +236,6 @@
           <input type="text" id="city" placeholder="e.g. Agartala" autocomplete="address-level2"/>
           <div class="error-msg">City is required.</div>
         </div>
-
         <div class="field" id="field-state">
           <label>State <span class="req">*</span></label>
           <select id="state">
@@ -291,7 +249,7 @@
             <option>Manipur</option><option>Meghalaya</option><option>Mizoram</option>
             <option>Nagaland</option><option>Odisha</option><option>Punjab</option>
             <option>Rajasthan</option><option>Sikkim</option><option>Tamil Nadu</option>
-            <option>Telangana</option><option selected>Tripura</option>
+            <option>Telangana</option><option>Tripura</option>
             <option>Uttar Pradesh</option><option>Uttarakhand</option>
             <option>West Bengal</option>
             <option>Andaman and Nicobar Islands</option>
@@ -301,7 +259,6 @@
           </select>
           <div class="error-msg">Please select a state.</div>
         </div>
-
         <div class="field" id="field-pincode">
           <label>PIN Code <span class="req">*</span></label>
           <input type="text" id="pincode" placeholder="e.g. 799001" maxlength="6" autocomplete="postal-code"/>
@@ -309,117 +266,392 @@
         </div>
       </div>
 
-      <button type="submit" class="btn" id="submitBtn">
-        <div class="spinner" id="spinner"></div>
-        <span id="btnText">Save Address</span>
-      </button>
-
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" id="submitBtn">
+          <div class="spinner" id="spinner"></div>
+          <span id="btnText">Save Address</span>
+        </button>
+        <button type="button" class="btn btn-ghost" id="cancelEditBtn" style="display:none;" onclick="cancelEdit()">Cancel</button>
+      </div>
     </form>
   </div>
 </div>
 
+<!-- GRID PANEL -->
+<div class="panel" id="panel-grid">
+  <div class="grid-toolbar">
+    <div class="search-wrap">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35" stroke-linecap="round"/>
+      </svg>
+      <input type="text" id="searchInput" placeholder="Search name, city, state, PIN…" oninput="applyFilter()"/>
+    </div>
+    <span class="record-count" id="recordCount"></span>
+    <button class="btn btn-primary refresh-btn" onclick="loadGrid()">↻ Refresh</button>
+  </div>
+
+  <div class="table-wrap">
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th onclick="sortBy('full_name')" data-col="full_name">Name <span class="sort-icon"></span></th>
+          <th onclick="sortBy('phone')" data-col="phone">Phone <span class="sort-icon"></span></th>
+          <th onclick="sortBy('address_line1')" data-col="address_line1">Address <span class="sort-icon"></span></th>
+          <th onclick="sortBy('city')" data-col="city">City <span class="sort-icon"></span></th>
+          <th onclick="sortBy('state')" data-col="state">State <span class="sort-icon"></span></th>
+          <th onclick="sortBy('pincode')" data-col="pincode">PIN <span class="sort-icon"></span></th>
+          <th class="no-sort">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <tr><td colspan="7"><div class="empty-state"><p>Loading…</p></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="pagination" id="pagination"></div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal">
+    <h3>Delete Address?</h3>
+    <p>This will permanently remove this record. This action cannot be undone.</p>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="confirmDeleteBtn" style="background:#c84b2f; flex:0 0 auto; padding:0.7rem 1.2rem;">Yes, Delete</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <script>
-  // ─── Supabase Config ───────────────────────────────────────────────
-  const SUPABASE_URL = "https://aaqqkaiwanmgguabeujr.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhcXFrYWl3YW5tZ2d1YWJldWpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2Mjc1OTYsImV4cCI6MjA4NjIwMzU5Nn0.ydoqHbVpe_xi_PFNK2OTsq0NmXlFs4J4gz6cHBy_aEA";
-  // ──────────────────────────────────────────────────────────────────
+// ── Config ──────────────────────────────────────────────────────────────
+const SUPABASE_URL      = "https://aaqqkaiwanmgguabeujr.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhcXFrYWl3YW5tZ2d1YWJldWpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2Mjc1OTYsImV4cCI6MjA4NjIwMzU5Nn0.ydoqHbVpe_xi_PFNK2OTsq0NmXlFs4J4gz6cHBy_aEA";
+const TABLE             = "addresses";
+const PAGE_SIZE         = 10;
 
-  const form = document.getElementById("addressForm");
-  const btn  = document.getElementById("submitBtn");
-  const spinner = document.getElementById("spinner");
-  const btnText = document.getElementById("btnText");
-  const toast = document.getElementById("toast");
+// ── State ───────────────────────────────────────────────────────────────
+let allRows        = [];
+let filteredRows   = [];
+let currentPage    = 1;
+let sortCol        = "created_at";
+let sortDir        = "desc";
+let deleteTargetId = null;
 
-  function showToast(type, message) {
-    const icon = type === "success"
-      ? `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>`
-      : `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>`;
-    toast.className = "toast " + (type === "success" ? "success" : "error-toast");
-    toast.innerHTML = icon + message;
-    toast.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }
+// ── Supabase fetch ──────────────────────────────────────────────────────
+function sbHeaders(extra = {}) {
+  return {
+    "Content-Type": "application/json",
+    "apikey": SUPABASE_ANON_KEY,
+    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+    ...extra
+  };
+}
 
-  function setLoading(on) {
-    btn.disabled = on;
-    spinner.style.display = on ? "block" : "none";
-    btnText.textContent = on ? "Saving…" : "Save Address";
-  }
-
-  function validate() {
-    let valid = true;
-    const rules = [
-      { id: "full_name",     test: v => v.trim().length > 0 },
-      { id: "phone",         test: v => v === "" || /^\d{10}$/.test(v) },
-      { id: "address_line1", test: v => v.trim().length > 0 },
-      { id: "city",          test: v => v.trim().length > 0 },
-      { id: "state",         test: v => v !== "" },
-      { id: "pincode",       test: v => /^\d{6}$/.test(v) },
-    ];
-
-    rules.forEach(r => {
-      const el = document.getElementById(r.id);
-      const field = document.getElementById("field-" + r.id);
-      const ok = r.test(el.value.trim());
-      field.classList.toggle("has-error", !ok);
-      if (!ok) valid = false;
-    });
-
-    return valid;
-  }
-
-  // Clear error on input
-  ["full_name","phone","address_line1","city","state","pincode"].forEach(id => {
-    document.getElementById(id).addEventListener("input", () => {
-      document.getElementById("field-" + id).classList.remove("has-error");
-    });
+async function sbFetch(path, opts = {}) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    headers: sbHeaders(opts.extraHeaders || {}),
+    ...opts
   });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || `HTTP ${res.status}`);
+  }
+  if (res.status === 204) return null;
+  return res.json();
+}
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    toast.className = "toast"; // hide
+// ── Tabs ─────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    b.classList.toggle('active', (i === 0 && tab === 'form') || (i === 1 && tab === 'grid'));
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+  if (tab === 'grid') loadGrid();
+}
 
-    if (!validate()) return;
+// ── Toast ─────────────────────────────────────────────────────────────────
+function showToast(elId, type, msg) {
+  const t = document.getElementById(elId);
+  const icon = type === "success"
+    ? `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>`
+    : `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>`;
+  t.className = "toast " + (type === "success" ? "success" : "error-toast");
+  t.innerHTML = icon + " " + msg;
+  t.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  setTimeout(() => { t.className = "toast"; }, 5000);
+}
 
-    const payload = {
-      full_name:     document.getElementById("full_name").value.trim(),
-      phone:         document.getElementById("phone").value.trim() || null,
-      address_line1: document.getElementById("address_line1").value.trim(),
-      address_line2: document.getElementById("address_line2").value.trim() || null,
-      city:          document.getElementById("city").value.trim(),
-      state:         document.getElementById("state").value,
-      pincode:       document.getElementById("pincode").value.trim(),
-    };
+// ── Validation ────────────────────────────────────────────────────────────
+const RULES = [
+  { id: "full_name",     test: v => v.trim().length > 0 },
+  { id: "phone",         test: v => v === "" || /^\d{10}$/.test(v) },
+  { id: "address_line1", test: v => v.trim().length > 0 },
+  { id: "city",          test: v => v.trim().length > 0 },
+  { id: "state",         test: v => v !== "" },
+  { id: "pincode",       test: v => /^\d{6}$/.test(v) },
+];
 
-    setLoading(true);
+function validate() {
+  let ok = true;
+  RULES.forEach(r => {
+    const el = document.getElementById(r.id);
+    const field = document.getElementById("field-" + r.id);
+    const valid = r.test(el.value.trim());
+    field.classList.toggle("has-error", !valid);
+    if (!valid) ok = false;
+  });
+  return ok;
+}
 
-    try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/addresses`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "apikey": SUPABASE_ANON_KEY,
-          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-          "Prefer": "return=minimal"
-        },
+RULES.forEach(r => {
+  document.getElementById(r.id).addEventListener("input", () => {
+    document.getElementById("field-" + r.id).classList.remove("has-error");
+  });
+});
+
+// ── Loading state ──────────────────────────────────────────────────────────
+const submitBtn = document.getElementById("submitBtn");
+const btnText   = document.getElementById("btnText");
+const spinner   = document.getElementById("spinner");
+
+function setLoading(on) {
+  submitBtn.disabled = on;
+  spinner.style.display = on ? "block" : "none";
+  const isEdit = !!document.getElementById("editId").value;
+  btnText.textContent = on ? "Saving…" : (isEdit ? "Update Address" : "Save Address");
+}
+
+// ── Form submit ───────────────────────────────────────────────────────────
+document.getElementById("addressForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  document.getElementById("formToast").className = "toast";
+  if (!validate()) return;
+
+  const editId = document.getElementById("editId").value;
+  const payload = {
+    full_name:     document.getElementById("full_name").value.trim(),
+    phone:         document.getElementById("phone").value.trim() || null,
+    address_line1: document.getElementById("address_line1").value.trim(),
+    address_line2: document.getElementById("address_line2").value.trim() || null,
+    city:          document.getElementById("city").value.trim(),
+    state:         document.getElementById("state").value,
+    pincode:       document.getElementById("pincode").value.trim(),
+  };
+
+  setLoading(true);
+  try {
+    if (editId) {
+      await sbFetch(`${TABLE}?id=eq.${editId}`, {
+        method: "PATCH",
+        extraHeaders: { "Prefer": "return=minimal" },
         body: JSON.stringify(payload)
       });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || "Submission failed.");
-      }
-
-      showToast("success", "Address saved successfully!");
-      form.reset();
+      showToast("formToast", "success", "Address updated successfully!");
+      cancelEdit();
+    } else {
+      await sbFetch(TABLE, {
+        method: "POST",
+        extraHeaders: { "Prefer": "return=minimal" },
+        body: JSON.stringify(payload)
+      });
+      showToast("formToast", "success", "Address saved successfully!");
+      document.getElementById("addressForm").reset();
       document.getElementById("state").value = "";
-
-    } catch (err) {
-      showToast("error", "Error: " + err.message);
-    } finally {
-      setLoading(false);
     }
-  });
-</script>
+  } catch (err) {
+    showToast("formToast", "error", "Error: " + err.message);
+  } finally {
+    setLoading(false);
+  }
+});
 
+// ── Edit ─────────────────────────────────────────────────────────────────
+function loadForEdit(row) {
+  document.getElementById("editId").value        = row.id;
+  document.getElementById("full_name").value     = row.full_name || "";
+  document.getElementById("phone").value         = row.phone || "";
+  document.getElementById("address_line1").value = row.address_line1 || "";
+  document.getElementById("address_line2").value = row.address_line2 || "";
+  document.getElementById("city").value          = row.city || "";
+  document.getElementById("state").value         = row.state || "";
+  document.getElementById("pincode").value       = row.pincode || "";
+  btnText.textContent = "Update Address";
+  document.getElementById("editBanner").style.display = "block";
+  document.getElementById("cancelEditBtn").style.display = "inline-flex";
+  switchTab("form");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function cancelEdit() {
+  document.getElementById("addressForm").reset();
+  document.getElementById("editId").value = "";
+  document.getElementById("state").value = "";
+  btnText.textContent = "Save Address";
+  document.getElementById("editBanner").style.display = "none";
+  document.getElementById("cancelEditBtn").style.display = "none";
+  document.querySelectorAll(".field.has-error").forEach(f => f.classList.remove("has-error"));
+}
+
+// ── Load grid ─────────────────────────────────────────────────────────────
+async function loadGrid() {
+  document.getElementById("tableBody").innerHTML =
+    `<tr><td colspan="7"><div class="empty-state"><p>Loading…</p></div></td></tr>`;
+  try {
+    allRows = await sbFetch(`${TABLE}?select=*&order=created_at.desc`);
+    document.getElementById("searchInput").value = "";
+    applyFilter();
+  } catch (err) {
+    document.getElementById("tableBody").innerHTML =
+      `<tr><td colspan="7"><div class="empty-state"><p>⚠ ${esc(err.message)}</p></div></td></tr>`;
+  }
+}
+
+// ── Filter ────────────────────────────────────────────────────────────────
+function applyFilter() {
+  const q = document.getElementById("searchInput").value.toLowerCase();
+  filteredRows = allRows.filter(r =>
+    (r.full_name||"").toLowerCase().includes(q) ||
+    (r.city||"").toLowerCase().includes(q) ||
+    (r.state||"").toLowerCase().includes(q) ||
+    (r.phone||"").includes(q) ||
+    (r.pincode||"").includes(q) ||
+    (r.address_line1||"").toLowerCase().includes(q)
+  );
+  currentPage = 1;
+  applySortAndRender();
+}
+
+// ── Sort ──────────────────────────────────────────────────────────────────
+function sortBy(col) {
+  sortDir = (sortCol === col && sortDir === "asc") ? "desc" : "asc";
+  sortCol = col;
+  document.querySelectorAll("thead th[data-col]").forEach(th => {
+    th.classList.remove("sort-asc", "sort-desc");
+    if (th.dataset.col === sortCol) th.classList.add("sort-" + sortDir);
+  });
+  applySortAndRender();
+}
+
+function applySortAndRender() {
+  filteredRows.sort((a, b) => {
+    const va = (a[sortCol] || "").toString().toLowerCase();
+    const vb = (b[sortCol] || "").toString().toLowerCase();
+    return sortDir === "asc" ? va.localeCompare(vb) : vb.localeCompare(va);
+  });
+  renderTable();
+}
+
+// ── Render table ──────────────────────────────────────────────────────────
+function renderTable() {
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const page  = filteredRows.slice(start, start + PAGE_SIZE);
+  const tbody = document.getElementById("tableBody");
+
+  document.getElementById("recordCount").textContent =
+    `${filteredRows.length} record${filteredRows.length !== 1 ? "s" : ""}`;
+
+  if (page.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state">
+      <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.3" viewBox="0 0 24 24">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <path d="M9 9h6M9 13h4" stroke-linecap="round"/>
+      </svg>
+      <p>No records found.</p></div></td></tr>`;
+    document.getElementById("pagination").innerHTML = "";
+    return;
+  }
+
+  tbody.innerHTML = page.map(r => {
+    const addr2 = r.address_line2 ? `<div class="addr-sub">${esc(r.address_line2)}</div>` : "";
+    const phone = r.phone ? esc(r.phone) : `<span class="cell-muted">—</span>`;
+    const rowJson = esc(JSON.stringify(r));
+    return `<tr>
+      <td><strong>${esc(r.full_name)}</strong></td>
+      <td>${phone}</td>
+      <td>${esc(r.address_line1)}${addr2}</td>
+      <td>${esc(r.city)}</td>
+      <td><span class="badge">${esc(r.state)}</span></td>
+      <td>${esc(r.pincode)}</td>
+      <td>
+        <div class="action-btns">
+          <button class="icon-btn edit" onclick="handleEdit(this)" data-row="${rowJson}">✏ Edit</button>
+          <button class="icon-btn delete" onclick="confirmDelete(${r.id})">✕ Delete</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join("");
+
+  renderPagination();
+}
+
+function handleEdit(btn) {
+  const row = JSON.parse(btn.getAttribute("data-row"));
+  loadForEdit(row);
+}
+
+function esc(s) {
+  return String(s || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+// ── Pagination ────────────────────────────────────────────────────────────
+function renderPagination() {
+  const total = Math.ceil(filteredRows.length / PAGE_SIZE);
+  const pg    = document.getElementById("pagination");
+  if (total <= 1) { pg.innerHTML = ""; return; }
+  let html = `<button class="page-btn" onclick="gotoPage(${currentPage - 1})" ${currentPage === 1 ? "disabled" : ""}>‹ Prev</button>`;
+  for (let i = 1; i <= total; i++) {
+    html += `<button class="page-btn ${i === currentPage ? "active" : ""}" onclick="gotoPage(${i})">${i}</button>`;
+  }
+  html += `<button class="page-btn" onclick="gotoPage(${currentPage + 1})" ${currentPage === total ? "disabled" : ""}>Next ›</button>`;
+  pg.innerHTML = html;
+}
+
+function gotoPage(p) {
+  const total = Math.ceil(filteredRows.length / PAGE_SIZE);
+  if (p < 1 || p > total) return;
+  currentPage = p;
+  renderTable();
+}
+
+// ── Delete ────────────────────────────────────────────────────────────────
+function confirmDelete(id) {
+  deleteTargetId = id;
+  document.getElementById("deleteModal").classList.add("open");
+}
+
+function closeModal() {
+  deleteTargetId = null;
+  document.getElementById("deleteModal").classList.remove("open");
+}
+
+document.getElementById("confirmDeleteBtn").addEventListener("click", async () => {
+  if (!deleteTargetId) return;
+  try {
+    await sbFetch(`${TABLE}?id=eq.${deleteTargetId}`, {
+      method: "DELETE",
+      extraHeaders: { "Prefer": "return=minimal" }
+    });
+    closeModal();
+    loadGrid();
+  } catch (err) {
+    closeModal();
+    alert("Delete failed: " + err.message);
+  }
+});
+
+document.getElementById("deleteModal").addEventListener("click", function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────
+loadGrid();
+</script>
 </body>
 </html>
