@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Save Address</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f5f0e8;
+      --card: #fffdf8;
+      --ink: #1a1612;
+      --muted: #7a6f63;
+      --accent: #c84b2f;
+      --accent-light: #f5e6e2;
+      --border: #e0d8cc;
+      --success: #2d6a4f;
+      --success-bg: #d8f3dc;
+      --radius: 4px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      background-image:
+        radial-gradient(circle at 15% 85%, rgba(200,75,47,0.06) 0%, transparent 50%),
+        radial-gradient(circle at 85% 15%, rgba(26,22,18,0.04) 0%, transparent 50%);
+    }
+
+    .wrapper {
+      width: 100%;
+      max-width: 560px;
+    }
+
+    .header {
+      margin-bottom: 2rem;
+    }
+
+    .header h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2.2rem;
+      color: var(--ink);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+
+    .header p {
+      margin-top: 0.5rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .header .line {
+      display: block;
+      width: 40px;
+      height: 3px;
+      background: var(--accent);
+      margin-bottom: 1rem;
+      border-radius: 2px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .field {
+      margin-bottom: 1.2rem;
+    }
+
+    .field.full { grid-column: 1 / -1; }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+    }
+
+    label .req {
+      color: var(--accent);
+      margin-left: 2px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.65rem 0.85rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      color: var(--ink);
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      appearance: none;
+    }
+
+    input::placeholder { color: #b0a898; }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(200,75,47,0.1);
+      background: #fff;
+    }
+
+    input.error { border-color: var(--accent); }
+
+    .error-msg {
+      font-size: 0.78rem;
+      color: var(--accent);
+      margin-top: 0.3rem;
+      display: none;
+    }
+
+    .field.has-error .error-msg { display: block; }
+    .field.has-error input { border-color: var(--accent); }
+
+    .divider {
+      border: none;
+      border-top: 1px dashed var(--border);
+      margin: 0.5rem 0 1.4rem;
+    }
+
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 0.8rem 1.5rem;
+      background: var(--accent);
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      letter-spacing: 0.02em;
+      margin-top: 0.5rem;
+    }
+
+    .btn:hover { background: #b03d22; box-shadow: 0 4px 12px rgba(200,75,47,0.25); }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { background: #c8a9a1; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .toast {
+      display: none;
+      margin-top: 1rem;
+      padding: 0.9rem 1rem;
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      font-weight: 500;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .toast.success {
+      display: flex;
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid #b7e4c7;
+    }
+
+    .toast.error-toast {
+      display: flex;
+      background: var(--accent-light);
+      color: var(--accent);
+      border: 1px solid #f0c4bc;
+    }
+
+    .toast svg { flex-shrink: 0; }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a6f63' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.9rem center;
+      padding-right: 2.2rem;
+      cursor: pointer;
+    }
+
+    @media (max-width: 480px) {
+      .form-row { grid-template-columns: 1fr; }
+      .card { padding: 1.4rem; }
+      .header h1 { font-size: 1.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="wrapper">
+  <div class="header">
+    <span class="line"></span>
+    <h1>Save Your Address</h1>
+    <p>Fill in the details below and we'll store them securely.</p>
+  </div>
+
+  <div class="card">
+    <div id="toast" class="toast"></div>
+
+    <form id="addressForm" novalidate>
+
+      <p class="section-label">Personal Info</p>
+
+      <div class="form-row">
+        <div class="field full" id="field-full_name">
+          <label>Full Name <span class="req">*</span></label>
+          <input type="text" id="full_name" placeholder="e.g. Gopal Das" autocomplete="name"/>
+          <div class="error-msg">Full name is required.</div>
+        </div>
+
+        <div class="field full" id="field-phone">
+          <label>Phone Number</label>
+          <input type="tel" id="phone" placeholder="e.g. 9876543210" maxlength="10" autocomplete="tel"/>
+          <div class="error-msg">Enter a valid 10-digit phone number.</div>
+        </div>
+      </div>
+
+      <hr class="divider"/>
+      <p class="section-label">Address Details</p>
+
+      <div class="field" id="field-address_line1">
+        <label>Address Line 1 <span class="req">*</span></label>
+        <input type="text" id="address_line1" placeholder="House No., Street, Locality" autocomplete="address-line1"/>
+        <div class="error-msg">Address Line 1 is required.</div>
+      </div>
+
+      <div class="field" id="field-address_line2">
+        <label>Address Line 2</label>
+        <input type="text" id="address_line2" placeholder="Landmark, Area (optional)" autocomplete="address-line2"/>
+      </div>
+
+      <div class="form-row">
+        <div class="field" id="field-city">
+          <label>City <span class="req">*</span></label>
+          <input type="text" id="city" placeholder="e.g. Agartala" autocomplete="address-level2"/>
+          <div class="error-msg">City is required.</div>
+        </div>
+
+        <div class="field" id="field-state">
+          <label>State <span class="req">*</span></label>
+          <select id="state">
+            <option value="">— Select State —</option>
+            <option>Andhra Pradesh</option><option>Arunachal Pradesh</option>
+            <option>Assam</option><option>Bihar</option><option>Chhattisgarh</option>
+            <option>Goa</option><option>Gujarat</option><option>Haryana</option>
+            <option>Himachal Pradesh</option><option>Jharkhand</option>
+            <option>Karnataka</option><option>Kerala</option>
+            <option>Madhya Pradesh</option><option>Maharashtra</option>
+            <option>Manipur</option><option>Meghalaya</option><option>Mizoram</option>
+            <option>Nagaland</option><option>Odisha</option><option>Punjab</option>
+            <option>Rajasthan</option><option>Sikkim</option><option>Tamil Nadu</option>
+            <option>Telangana</option><option selected>Tripura</option>
+            <option>Uttar Pradesh</option><option>Uttarakhand</option>
+            <option>West Bengal</option>
+            <option>Andaman and Nicobar Islands</option>
+            <option>Chandigarh</option><option>Delhi</option>
+            <option>Jammu and Kashmir</option><option>Ladakh</option>
+            <option>Lakshadweep</option><option>Puducherry</option>
+          </select>
+          <div class="error-msg">Please select a state.</div>
+        </div>
+
+        <div class="field" id="field-pincode">
+          <label>PIN Code <span class="req">*</span></label>
+          <input type="text" id="pincode" placeholder="e.g. 799001" maxlength="6" autocomplete="postal-code"/>
+          <div class="error-msg">Enter a valid 6-digit PIN code.</div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn" id="submitBtn">
+        <div class="spinner" id="spinner"></div>
+        <span id="btnText">Save Address</span>
+      </button>
+
+    </form>
+  </div>
+</div>
+
+<script>
+  // ─── Supabase Config ───────────────────────────────────────────────
+  const SUPABASE_URL = "https://aaqqkaiwanmgguabeujr.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhcXFrYWl3YW5tZ2d1YWJldWpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2Mjc1OTYsImV4cCI6MjA4NjIwMzU5Nn0.ydoqHbVpe_xi_PFNK2OTsq0NmXlFs4J4gz6cHBy_aEA";
+  // ──────────────────────────────────────────────────────────────────
+
+  const form = document.getElementById("addressForm");
+  const btn  = document.getElementById("submitBtn");
+  const spinner = document.getElementById("spinner");
+  const btnText = document.getElementById("btnText");
+  const toast = document.getElementById("toast");
+
+  function showToast(type, message) {
+    const icon = type === "success"
+      ? `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>`
+      : `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>`;
+    toast.className = "toast " + (type === "success" ? "success" : "error-toast");
+    toast.innerHTML = icon + message;
+    toast.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  function setLoading(on) {
+    btn.disabled = on;
+    spinner.style.display = on ? "block" : "none";
+    btnText.textContent = on ? "Saving…" : "Save Address";
+  }
+
+  function validate() {
+    let valid = true;
+    const rules = [
+      { id: "full_name",     test: v => v.trim().length > 0 },
+      { id: "phone",         test: v => v === "" || /^\d{10}$/.test(v) },
+      { id: "address_line1", test: v => v.trim().length > 0 },
+      { id: "city",          test: v => v.trim().length > 0 },
+      { id: "state",         test: v => v !== "" },
+      { id: "pincode",       test: v => /^\d{6}$/.test(v) },
+    ];
+
+    rules.forEach(r => {
+      const el = document.getElementById(r.id);
+      const field = document.getElementById("field-" + r.id);
+      const ok = r.test(el.value.trim());
+      field.classList.toggle("has-error", !ok);
+      if (!ok) valid = false;
+    });
+
+    return valid;
+  }
+
+  // Clear error on input
+  ["full_name","phone","address_line1","city","state","pincode"].forEach(id => {
+    document.getElementById(id).addEventListener("input", () => {
+      document.getElementById("field-" + id).classList.remove("has-error");
+    });
+  });
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    toast.className = "toast"; // hide
+
+    if (!validate()) return;
+
+    const payload = {
+      full_name:     document.getElementById("full_name").value.trim(),
+      phone:         document.getElementById("phone").value.trim() || null,
+      address_line1: document.getElementById("address_line1").value.trim(),
+      address_line2: document.getElementById("address_line2").value.trim() || null,
+      city:          document.getElementById("city").value.trim(),
+      state:         document.getElementById("state").value,
+      pincode:       document.getElementById("pincode").value.trim(),
+    };
+
+    setLoading(true);
+
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/addresses`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_ANON_KEY,
+          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+          "Prefer": "return=minimal"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Submission failed.");
+      }
+
+      showToast("success", "Address saved successfully!");
+      form.reset();
+      document.getElementById("state").value = "";
+
+    } catch (err) {
+      showToast("error", "Error: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  });
+</script>
+
+</body>
+</html>
