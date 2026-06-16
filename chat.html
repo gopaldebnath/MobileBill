@@ -792,9 +792,33 @@ async function enterChat() {
   document.head.appendChild(style);
 
   myBrowserId = getBrowserId();
-  myName = nameInput.value.trim();
+  const baseName = nameInput.value.trim();
+
+  // ── Resolve unique display name ──────────────────────────────
+  // Fetch all chat_users whose display_name starts with baseName
+  // but whose browser_id is NOT mine (so my own previous session is ignored).
+  const { data: existing } = await db
+    .from('chat_users')
+    .select('display_name, browser_id')
+    .ilike('display_name', baseName + '%');
+
+  const otherNames = (existing || [])
+    .filter(u => u.browser_id !== myBrowserId)
+    .map(u => u.display_name.toLowerCase());
+
+  let resolvedName = baseName;
+  if (otherNames.includes(baseName.toLowerCase())) {
+    let suffix = 2;
+    while (otherNames.includes((baseName + '-' + suffix).toLowerCase())) {
+      suffix++;
+    }
+    resolvedName = baseName + '-' + suffix;
+  }
+  myName = resolvedName;
+  // ─────────────────────────────────────────────────────────────
+
   localStorage.setItem('anony_avatar', myAvatar);
-  localStorage.setItem('anony_name', myName);
+  localStorage.setItem('anony_name', baseName); // save original, not suffixed
 
   await db.from('chat_users').upsert({
     browser_id: myBrowserId,
