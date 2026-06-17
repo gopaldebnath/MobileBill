@@ -964,13 +964,25 @@ const originalTitle = 'Chat';
 function requestNotifPermission() {
   if (!('Notification' in window)) return;
   if (Notification.permission === 'default') {
-    // Small delay so the UI is visible first
     setTimeout(() => {
-      Notification.requestPermission().then(updateNotifBadge);
+      Notification.requestPermission().then(p => {
+        updateNotifBadge(p);
+        if (p === 'granted') fireTestNotification();
+      });
     }, 1200);
   } else {
     updateNotifBadge(Notification.permission);
   }
+}
+
+function fireTestNotification() {
+  try {
+    const n = new Notification('Chat 🐾', {
+      body: 'Notifications are ON — you\'ll be alerted when new messages arrive.',
+      silent: true
+    });
+    setTimeout(() => n.close(), 4000);
+  } catch(e) {}
 }
 
 function updateNotifBadge(permission) {
@@ -999,37 +1011,40 @@ function updateNotifBadge(permission) {
 }
 
 function pushNotification(msg) {
-  // Only notify for others' messages when tab is not focused
+  // Don't notify for own messages
   if (msg.browser_id === myBrowserId) return;
-  if (document.visibilityState === 'visible') return;
 
-  // Tab title badge
+  // Tab title badge — always update regardless of focus
   unreadCount++;
   document.title = `(${unreadCount}) ${originalTitle}`;
 
+  // Don't show popup if user is actively looking at the tab
+  if (document.visibilityState === 'visible' && document.hasFocus()) return;
+
   // Browser notification
-  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  if (!('Notification' in window)) return;
+  if (Notification.permission !== 'granted') return;
 
   const preview = msg.message.length > 60
     ? msg.message.slice(0, 60) + '…'
     : msg.message;
 
-  const notif = new Notification(`${msg.avatar} ${msg.display_name}`, {
-    body: preview,
-    icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>' + encodeURIComponent(msg.avatar) + '</text></svg>',
-    badge: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%2325D366%22/></svg>',
-    tag: 'chat-msg',          // replaces previous notification instead of stacking
-    renotify: true,
-    silent: false
-  });
+  try {
+    const notif = new Notification(`${msg.avatar} ${msg.display_name}`, {
+      body: preview,
+      icon: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f4ac.png',
+      silent: false
+    });
 
-  notif.onclick = () => {
-    window.focus();
-    notif.close();
-  };
+    notif.onclick = () => {
+      window.focus();
+      notif.close();
+    };
 
-  // Auto-close after 5s
-  setTimeout(() => notif.close(), 5000);
+    setTimeout(() => notif.close(), 6000);
+  } catch(e) {
+    console.warn('Notification error:', e);
+  }
 }
 
 // Reset unread count when tab becomes visible
