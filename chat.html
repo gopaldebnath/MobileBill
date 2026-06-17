@@ -617,7 +617,7 @@
     </div>
 
     <div>
-      <div class="ob-section-label">Your Name (Use Fake New for Fun)</div>
+      <div class="ob-section-label">Your name</div>
       <div class="name-wrap">
         <span class="name-avatar-preview" id="nameAvatarPreview"></span>
         <input type="text" id="nameInput" class="name-input no-avatar"
@@ -647,6 +647,7 @@
       <div class="online-dot"></div>
       <div class="online-label">Live</div>
     </div>
+    <span id="notifBadge" style="font-size:1.1rem;margin-left:8px;opacity:0.45;cursor:pointer;transition:opacity 0.2s;" title="Notifications">🔔</span>
   </div>
 
   <div class="messages-container" id="msgContainer"></div>
@@ -861,6 +862,10 @@ async function enterChat() {
 
   appendSystemMsg(`${myAvatar} You joined as ${myName}`);
 
+  // ── Request notification permission ──────────────────────────
+  requestNotifPermission();
+  // ─────────────────────────────────────────────────────────────
+
   setInterval(() => {
     db.from('chat_users').update({ last_seen: new Date().toISOString() }).eq('browser_id', myBrowserId);
   }, 30000);
@@ -894,6 +899,9 @@ function formatDate(iso) {
 function appendMessage(msg, skipScroll) {
   const c = document.getElementById('msgContainer');
   const isMe = msg.browser_id === myBrowserId;
+
+  // Trigger browser notification for others' messages
+  if (!skipScroll) pushNotification(msg);
 
   const dateLabel = formatDate(msg.created_at);
   if (dateLabel !== lastDateShown) {
@@ -948,6 +956,89 @@ function scrollBottom() {
   const c = document.getElementById('msgContainer');
   c.scrollTop = c.scrollHeight;
 }
+
+// ===================== NOTIFICATIONS =====================
+let unreadCount = 0;
+const originalTitle = 'Chat';
+
+function requestNotifPermission() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'default') {
+    // Small delay so the UI is visible first
+    setTimeout(() => {
+      Notification.requestPermission().then(updateNotifBadge);
+    }, 1200);
+  } else {
+    updateNotifBadge(Notification.permission);
+  }
+}
+
+function updateNotifBadge(permission) {
+  const badge = document.getElementById('notifBadge');
+  if (!badge) return;
+  if (permission === 'granted') {
+    badge.title = 'Notifications on';
+    badge.textContent = '🔔';
+    badge.style.opacity = '0.85';
+  } else if (permission === 'denied') {
+    badge.title = 'Notifications blocked — enable in browser settings';
+    badge.textContent = '🔕';
+    badge.style.opacity = '0.5';
+  } else {
+    badge.title = 'Click to enable notifications';
+    badge.textContent = '🔔';
+    badge.style.opacity = '0.45';
+    badge.style.cursor = 'pointer';
+    badge.onclick = () => {
+      Notification.requestPermission().then(p => {
+        updateNotifBadge(p);
+        badge.onclick = null;
+      });
+    };
+  }
+}
+
+function pushNotification(msg) {
+  // Only notify for others' messages when tab is not focused
+  if (msg.browser_id === myBrowserId) return;
+  if (document.visibilityState === 'visible') return;
+
+  // Tab title badge
+  unreadCount++;
+  document.title = `(${unreadCount}) ${originalTitle}`;
+
+  // Browser notification
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+  const preview = msg.message.length > 60
+    ? msg.message.slice(0, 60) + '…'
+    : msg.message;
+
+  const notif = new Notification(`${msg.avatar} ${msg.display_name}`, {
+    body: preview,
+    icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>' + encodeURIComponent(msg.avatar) + '</text></svg>',
+    badge: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%2325D366%22/></svg>',
+    tag: 'chat-msg',          // replaces previous notification instead of stacking
+    renotify: true,
+    silent: false
+  });
+
+  notif.onclick = () => {
+    window.focus();
+    notif.close();
+  };
+
+  // Auto-close after 5s
+  setTimeout(() => notif.close(), 5000);
+}
+
+// Reset unread count when tab becomes visible
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    unreadCount = 0;
+    document.title = originalTitle;
+  }
+});
 
 // ===================== SEND =====================
 async function sendMessage() {
