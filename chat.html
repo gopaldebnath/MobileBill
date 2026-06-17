@@ -192,6 +192,30 @@
   /* ============================================================
      CHAT ROOM
   ============================================================ */
+  /* Load older messages button */
+  .load-older-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 8px auto 4px;
+    padding: 6px 16px;
+    background: rgba(255,255,255,0.92);
+    border: none;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--wa-green-dk);
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    transition: background 0.15s, transform 0.1s;
+    backdrop-filter: blur(4px);
+  }
+  .load-older-btn:hover { background: #fff; transform: translateY(-1px); }
+  .load-older-btn:active { transform: scale(0.97); }
+  .load-older-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .load-older-btn svg { width:13px; height:13px; fill:none; stroke:var(--wa-green-dk); stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+
   #chatroom {
     display: none;
     height: 100%;
@@ -910,31 +934,157 @@ async function initChatRoom() {
 }
 
 // ===================== MESSAGES =====================
+const MSG_PAGE = 200;
+let oldestLoadedCreatedAt = null;  // ISO string of oldest message currently shown
+let allOlderLoaded = false;
+
 async function loadMessages() {
-  // Load ALL messages with no limit — paginate 1000 at a time until exhausted
-  let allMessages = [];
-  let from = 0;
-  const PAGE = 1000;
+  // Get total count first so we know if there are older messages
+  const { count } = await db.from('chat_messages')
+    .select('*', { count: 'exact', head: true })
+    .eq('room_id', roomId);
 
-  while (true) {
-    const { data, error } = await db.from('chat_messages')
-      .select('*')
-      .eq('room_id', roomId)
-      .order('created_at', { ascending: true })
-      .range(from, from + PAGE - 1);
-
-    if (error || !data || data.length === 0) break;
-    allMessages = allMessages.concat(data);
-    if (data.length < PAGE) break; // reached last page
-    from += PAGE;
-  }
+  // Load last 200 messages (most recent)
+  const { data, error } = await db.from('chat_messages')
+    .select('*')
+    .eq('room_id', roomId)
+    .order('created_at', { ascending: false })
+    .limit(MSG_PAGE);
 
   const c = document.getElementById('msgContainer');
   c.innerHTML = ''; lastDateShown = '';
 
-  if (allMessages.length > 0) allMessages.forEach(m => appendMessage(m, true));
-  else appendSystemMsg('No messages yet — say hello! 👋');
+  if (error || !data || data.length === 0) {
+    appendSystemMsg('No messages yet — say hello! 👋');
+    scrollBottom();
+    return;
+  }
+
+  // Reverse to show oldest→newest
+  const msgs = [...data].reverse();
+  oldestLoadedCreatedAt = msgs[0].created_at;
+
+  // Show "Load older messages" button if there are more
+  const totalCount = count || 0;
+  allOlderLoaded = totalCount <= MSG_PAGE;
+  if (!allOlderLoaded) {
+    insertLoadOlderBtn(c, totalCount - MSG_PAGE);
+  }
+
+  msgs.forEach(m => appendMessage(m, true));
   scrollBottom();
+}
+
+function insertLoadOlderBtn(container, olderCount) {
+  const existing = document.getElementById('loadOlderBtn');
+  if (existing) existing.remove();
+
+  const btn = document.createElement('button');
+  btn.id = 'loadOlderBtn';
+  btn.className = 'load-older-btn';
+  btn.innerHTML = `<svg viewBox="0 0 24 24"><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg> Load older messages (${olderCount} more)`;
+  btn.onclick = loadOlderMessages;
+
+  // Insert at very top of container
+  container.insertBefore(btn, container.firstChild);
+}
+
+async function loadOlderMessages() {
+  const btn = document.getElementById('loadOlderBtn');
+  if (!btn || !oldestLoadedCreatedAt) return;
+
+  btn.disabled = true;
+  btn.innerHTML = `<svg viewBox="0 0 24 24" style="animation:spin 0.8s linear infinite"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" opacity=".3" fill="var(--wa-green-dk)" stroke="none"/><path d="M12 2a10 10 0 0 1 10 10h-2a8 8 0 0 0-8-8z" fill="var(--wa-green-dk)" stroke="none"/></svg> Loading…`;
+
+  const { data, error } = await db.from('chat_messages')
+    .select('*')
+    .eq('room_id', roomId)
+    .lt('created_at', oldestLoadedCreatedAt)
+    .order('created_at', { ascending: false })
+    .limit(MSG_PAGE);
+
+  if (error || !data || data.length === 0) {
+    btn.remove();
+    return;
+  }
+
+  const msgs = [...data].reverse(); // oldest first
+  const c = document.getElementById('msgContainer');
+
+  // Remember scroll position to avoid jump
+  const prevScrollHeight = c.scrollHeight;
+
+  // Remove button temporarily
+  btn.remove();
+
+  // Insert a fresh button at top if more remain
+  if (data.length === MSG_PAGE) {
+    // Check if still more older messages exist
+    const { count } = await db.from('chat_messages')
+      .select('*', { count: 'exact', head: true })
+      .eq('room_id', roomId)
+      .lt('created_at', msgs[0].created_at);
+    if (count > 0) {
+      insertLoadOlderBtn(c, count);
+    }
+  }
+
+  // Prepend older messages after the button
+  const insertAfter = document.getElementById('loadOlderBtn');
+  const tempLastDate = lastDateShown;
+  lastDateShown = '';  // reset so date headers render correctly for old messages
+
+  const fragment = document.createDocumentFragment();
+  const tempDiv = document.createElement('div');
+
+  // We need to render old messages into temp container to get elements
+  msgs.forEach(m => {
+    const isMe = m.browser_id === myBrowserId;
+    const dateLabel = formatDate(m.created_at);
+
+    if (dateLabel !== lastDateShown) {
+      const dd = document.createElement('div'); dd.className = 'date-divider';
+      dd.innerHTML = `<span>${dateLabel}</span>`;
+      fragment.appendChild(dd); lastDateShown = dateLabel;
+    }
+
+    const row = document.createElement('div');
+    row.className = 'msg-row' + (isMe ? ' me' : '');
+    if (!isMe) {
+      const av = document.createElement('div');
+      av.className = 'msg-avatar'; av.textContent = m.avatar; av.title = m.display_name;
+      row.appendChild(av);
+    }
+    const wrap = document.createElement('div'); wrap.className = 'msg-bubble-wrap';
+    if (!isMe) {
+      const meta = document.createElement('div'); meta.className = 'msg-meta'; meta.textContent = m.display_name;
+      wrap.appendChild(meta);
+    }
+    const bubble = document.createElement('div'); bubble.className = 'msg-bubble';
+    bubble.textContent = m.message;
+    const footer = document.createElement('div'); footer.className = 'msg-footer';
+    const t = document.createElement('span'); t.className = 'msg-time-inner'; t.textContent = formatTime(m.created_at);
+    footer.appendChild(t);
+    if (isMe) { const tk = document.createElement('span'); tk.className = 'tick-icon'; tk.textContent = '✓✓'; footer.appendChild(tk); }
+    bubble.appendChild(footer);
+    wrap.appendChild(bubble);
+    row.appendChild(wrap);
+    fragment.appendChild(row);
+  });
+
+  // Restore lastDateShown to what it was for the newer messages
+  lastDateShown = tempLastDate;
+
+  // Insert fragment after the load button (or at top if no button)
+  const refNode = insertAfter ? insertAfter.nextSibling : c.firstChild;
+  c.insertBefore(fragment, refNode);
+
+  // Update oldest marker
+  oldestLoadedCreatedAt = msgs[0].created_at;
+
+  // Restore scroll position so user stays at same place
+  const newScrollHeight = c.scrollHeight;
+  c.scrollTop = newScrollHeight - prevScrollHeight;
 }
 
 // IST = UTC+5:30
