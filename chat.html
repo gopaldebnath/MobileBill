@@ -648,6 +648,9 @@
       <div class="online-label">Live</div>
     </div>
     <span id="notifBadge" style="font-size:1.1rem;margin-left:8px;opacity:0.45;cursor:pointer;transition:opacity 0.2s;" title="Notifications">🔔</span>
+    <button id="logoutBtn" title="Logout" style="background:none;border:none;cursor:pointer;margin-left:6px;padding:4px 6px;border-radius:8px;color:rgba(255,255,255,0.7);font-size:0.75rem;font-weight:600;letter-spacing:0.3px;display:flex;align-items:center;gap:4px;transition:background 0.15s;">
+      <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:rgba(255,255,255,0.8);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    </button>
   </div>
 
   <div class="messages-container" id="msgContainer"></div>
@@ -766,20 +769,52 @@ function checkReady() {
 
 enterBtn.addEventListener('click', enterChat);
 
-// Restore previous session
-const savedAvatar = localStorage.getItem('anony_avatar');
-const savedName   = localStorage.getItem('anony_name');
-if (savedAvatar) {
+// ===================== AUTO-RESUME SESSION =====================
+const savedAvatar   = localStorage.getItem('anony_avatar');
+const savedName     = localStorage.getItem('anony_name');
+const savedBrowserId = localStorage.getItem('anony_browser_id');
+
+if (savedAvatar && savedName && savedBrowserId) {
+  // Full session exists — skip onboarding, go straight to chat
+  myAvatar    = savedAvatar;
+  myName      = localStorage.getItem('anony_display') || savedName; // use resolved display name
+  myBrowserId = savedBrowserId;
+  // Pre-fill onboarding silently (in case auto-enter fails)
   const btn = [...document.querySelectorAll('.avatar-btn')].find(b => b.dataset.emoji === savedAvatar);
-  if (btn) {
-    btn.click();
-    // If user had a custom saved name, override the auto-fill
-    if (savedName) {
-      nameInput.value = savedName;
-      myName = savedName;
-      checkReady();
-    }
-  }
+  if (btn) { btn.classList.add('selected'); }
+  nameInput.value = savedName;
+  checkReady();
+  // Auto-enter
+  autoEnterChat();
+} else if (savedAvatar) {
+  // Partial — pre-fill avatar/name but show onboarding
+  const btn = [...document.querySelectorAll('.avatar-btn')].find(b => b.dataset.emoji === savedAvatar);
+  if (btn) btn.click();
+  if (savedName) { nameInput.value = savedName; myName = savedName; checkReady(); }
+}
+
+// ===================== LOGOUT =====================
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  if (!confirm('Logout and choose a new avatar/name?')) return;
+  localStorage.removeItem('anony_avatar');
+  localStorage.removeItem('anony_name');
+  localStorage.removeItem('anony_browser_id');
+  localStorage.removeItem('anony_display');
+  // Keep anony_browser_id so same browser gets a new one on next visit
+  location.reload();
+});
+
+// ===================== AUTO-ENTER (returning user) =====================
+async function autoEnterChat() {
+  // Show a brief loading overlay instead of onboarding
+  document.getElementById('onboarding').innerHTML = `
+    <div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
+      <div style="font-size:3rem;">${myAvatar}</div>
+      <div style="font-weight:700;font-size:1.1rem;color:#111;">Welcome back, ${myName}!</div>
+      <div style="color:#667781;font-size:0.85rem;">Loading your chats…</div>
+    </div>`;
+
+  await initChatRoom();
 }
 
 // ===================== ENTER CHAT =====================
@@ -796,8 +831,6 @@ async function enterChat() {
   const baseName = nameInput.value.trim();
 
   // ── Resolve unique display name ──────────────────────────────
-  // Fetch all chat_users whose display_name starts with baseName
-  // but whose browser_id is NOT mine (so my own previous session is ignored).
   const { data: existing } = await db
     .from('chat_users')
     .select('display_name, browser_id')
@@ -810,24 +843,32 @@ async function enterChat() {
   let resolvedName = baseName;
   if (otherNames.includes(baseName.toLowerCase())) {
     let suffix = 2;
-    while (otherNames.includes((baseName + '-' + suffix).toLowerCase())) {
-      suffix++;
-    }
+    while (otherNames.includes((baseName + '-' + suffix).toLowerCase())) suffix++;
     resolvedName = baseName + '-' + suffix;
   }
   myName = resolvedName;
   // ─────────────────────────────────────────────────────────────
 
-  localStorage.setItem('anony_avatar', myAvatar);
-  localStorage.setItem('anony_name', baseName); // save original, not suffixed
+  // Save full session to localStorage
+  localStorage.setItem('anony_avatar',     myAvatar);
+  localStorage.setItem('anony_name',       baseName);   // save original, not suffixed
+  localStorage.setItem('anony_browser_id', myBrowserId);
+  localStorage.setItem('anony_display',    myName);     // save resolved display name
 
+  await initChatRoom();
+}
+
+// ===================== SHARED CHAT INIT =====================
+async function initChatRoom() {
+  // Upsert user record
   await db.from('chat_users').upsert({
-    browser_id: myBrowserId,
+    browser_id:   myBrowserId,
     display_name: myName,
-    avatar: myAvatar,
-    last_seen: new Date().toISOString()
+    avatar:       myAvatar,
+    last_seen:    new Date().toISOString()
   }, { onConflict: 'browser_id' });
 
+  // Get or create room
   let { data: rooms } = await db.from('chat_rooms').select('id').eq('name', ROOM_NAME).limit(1);
   if (!rooms || rooms.length === 0) {
     const { data: nr } = await db.from('chat_rooms').insert({ name: ROOM_NAME }).select().single();
@@ -861,10 +902,7 @@ async function enterChat() {
     .subscribe();
 
   appendSystemMsg(`${myAvatar} You joined as ${myName}`);
-
-  // ── Request notification permission ──────────────────────────
-  requestNotifPermission(); // async, runs in background
-  // ─────────────────────────────────────────────────────────────
+  requestNotifPermission();
 
   setInterval(() => {
     db.from('chat_users').update({ last_seen: new Date().toISOString() }).eq('browser_id', myBrowserId);
