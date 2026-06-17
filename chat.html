@@ -911,27 +911,64 @@ async function initChatRoom() {
 
 // ===================== MESSAGES =====================
 async function loadMessages() {
-  const { data } = await db.from('chat_messages')
-    .select('*').eq('room_id', roomId)
-    .order('created_at', { ascending: true }).limit(80);
+  // Load ALL messages with no limit — paginate 1000 at a time until exhausted
+  let allMessages = [];
+  let from = 0;
+  const PAGE = 1000;
+
+  while (true) {
+    const { data, error } = await db.from('chat_messages')
+      .select('*')
+      .eq('room_id', roomId)
+      .order('created_at', { ascending: true })
+      .range(from, from + PAGE - 1);
+
+    if (error || !data || data.length === 0) break;
+    allMessages = allMessages.concat(data);
+    if (data.length < PAGE) break; // reached last page
+    from += PAGE;
+  }
 
   const c = document.getElementById('msgContainer');
   c.innerHTML = ''; lastDateShown = '';
 
-  if (data && data.length > 0) data.forEach(m => appendMessage(m, true));
+  if (allMessages.length > 0) allMessages.forEach(m => appendMessage(m, true));
   else appendSystemMsg('No messages yet — say hello! 👋');
   scrollBottom();
 }
 
-function formatTime(iso) {
-  return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+// IST = UTC+5:30
+const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
+
+function toIST(iso) {
+  // Parse UTC timestamp and shift to IST
+  const utcMs = new Date(iso).getTime();
+  return new Date(utcMs + IST_OFFSET_MS);
 }
+
+function formatTime(iso) {
+  const ist = toIST(iso);
+  const h = ist.getUTCHours();
+  const m = String(ist.getUTCMinutes()).padStart(2, '0');
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  return `${h12}:${m} ${ampm}`;
+}
+
 function formatDate(iso) {
-  const d = new Date(iso), today = new Date();
-  const yest = new Date(today); yest.setDate(today.getDate() - 1);
-  if (d.toDateString() === today.toDateString()) return 'Today';
-  if (d.toDateString() === yest.toDateString())  return 'Yesterday';
-  return d.toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' });
+  const ist = toIST(iso);
+  // Compare date in IST
+  const nowIST = toIST(new Date().toISOString());
+  const istDate = `${ist.getUTCFullYear()}-${ist.getUTCMonth()}-${ist.getUTCDate()}`;
+  const todayDate = `${nowIST.getUTCFullYear()}-${nowIST.getUTCMonth()}-${nowIST.getUTCDate()}`;
+  const yesterdayIST = new Date(nowIST.getTime() - 24 * 60 * 60 * 1000);
+  const yesterdayDate = `${yesterdayIST.getUTCFullYear()}-${yesterdayIST.getUTCMonth()}-${yesterdayIST.getUTCDate()}`;
+
+  if (istDate === todayDate) return 'Today';
+  if (istDate === yesterdayDate) return 'Yesterday';
+
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${ist.getUTCDate()} ${months[ist.getUTCMonth()]} ${ist.getUTCFullYear()}`;
 }
 
 function appendMessage(msg, skipScroll) {
