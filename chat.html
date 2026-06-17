@@ -863,7 +863,7 @@ async function enterChat() {
   appendSystemMsg(`${myAvatar} You joined as ${myName}`);
 
   // ── Request notification permission ──────────────────────────
-  requestNotifPermission();
+  requestNotifPermission(); // async, runs in background
   // ─────────────────────────────────────────────────────────────
 
   setInterval(() => {
@@ -960,94 +960,131 @@ function scrollBottom() {
 // ===================== NOTIFICATIONS =====================
 let unreadCount = 0;
 const originalTitle = 'Chat';
+let swRegistration = null;
 
-function requestNotifPermission() {
+// Inline Service Worker as a Blob — no separate file needed
+const SW_CODE = `
+self.addEventListener('message', e => {
+  if (e.data && e.data.type === 'SHOW_NOTIF') {
+    const d = e.data;
+    self.registration.showNotification(d.title, {
+      body: d.body,
+      icon: d.icon || '/favicon.ico',
+      vibrate: [200, 100, 200],
+      data: { url: d.url }
+    });
+  }
+});
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(clients.matchAll({ type:'window' }).then(list => {
+    for (const c of list) { if (c.focus) { c.focus(); return; } }
+    if (clients.openWindow) clients.openWindow(e.notification.data.url || '/');
+  }));
+});
+`;
+
+async function registerSW() {
+  if (!('serviceWorker' in navigator)) return null;
+  try {
+    const blob = new Blob([SW_CODE], { type: 'application/javascript' });
+    const swUrl = URL.createObjectURL(blob);
+    const reg = await navigator.serviceWorker.register(swUrl, { scope: './' });
+    await navigator.serviceWorker.ready;
+    return reg;
+  } catch(e) {
+    console.warn('SW register failed:', e);
+    return null;
+  }
+}
+
+async function requestNotifPermission() {
   if (!('Notification' in window)) return;
+
+  // Register SW first
+  swRegistration = await registerSW();
+
   if (Notification.permission === 'default') {
-    setTimeout(() => {
-      Notification.requestPermission().then(p => {
-        updateNotifBadge(p);
-        if (p === 'granted') fireTestNotification();
-      });
+    setTimeout(async () => {
+      const p = await Notification.requestPermission();
+      updateNotifBadge(p);
+      if (p === 'granted') fireTestNotification();
     }, 1200);
   } else {
     updateNotifBadge(Notification.permission);
+    if (Notification.permission === 'granted') {
+      // Re-register SW if permission was already granted
+    }
   }
 }
 
 function fireTestNotification() {
-  try {
-    const n = new Notification('Chat 🐾', {
-      body: 'Notifications are ON — you\'ll be alerted when new messages arrive.',
-      silent: true
-    });
-    setTimeout(() => n.close(), 4000);
-  } catch(e) {}
+  showChromeNotif('Chat ✅', 'Notifications enabled! You\'ll be alerted on new messages.');
 }
 
 function updateNotifBadge(permission) {
   const badge = document.getElementById('notifBadge');
   if (!badge) return;
   if (permission === 'granted') {
-    badge.title = 'Notifications on';
+    badge.title = 'Notifications ON — click to test';
     badge.textContent = '🔔';
-    badge.style.opacity = '0.85';
+    badge.style.opacity = '1';
+    badge.style.cursor = 'pointer';
+    badge.onclick = () => fireTestNotification();
   } else if (permission === 'denied') {
-    badge.title = 'Notifications blocked — enable in browser settings';
+    badge.title = 'Notifications BLOCKED — go to browser site settings to enable';
     badge.textContent = '🔕';
-    badge.style.opacity = '0.5';
+    badge.style.opacity = '0.45';
   } else {
     badge.title = 'Click to enable notifications';
     badge.textContent = '🔔';
     badge.style.opacity = '0.45';
     badge.style.cursor = 'pointer';
-    badge.onclick = () => {
-      Notification.requestPermission().then(p => {
-        updateNotifBadge(p);
-        badge.onclick = null;
-      });
+    badge.onclick = async () => {
+      const p = await Notification.requestPermission();
+      updateNotifBadge(p);
+      if (p === 'granted') fireTestNotification();
     };
   }
+}
+
+function showChromeNotif(title, body) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+  // Method 1: Service Worker showNotification (preferred — works in all Chrome)
+  if (swRegistration && swRegistration.active) {
+    swRegistration.active.postMessage({ type: 'SHOW_NOTIF', title, body, url: location.href });
+    return;
+  }
+
+  // Method 2: navigator.serviceWorker.ready fallback
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then(reg => {
+      reg.showNotification(title, { body, vibrate: [200, 100, 200] });
+    }).catch(() => {
+      // Method 3: Direct Notification (fallback for older browsers)
+      try { new Notification(title, { body }); } catch(e) {}
+    });
+    return;
+  }
+
+  // Method 3: Direct Notification
+  try { new Notification(title, { body }); } catch(e) {}
 }
 
 function pushNotification(msg) {
-  // Don't notify for own messages
   if (msg.browser_id === myBrowserId) return;
 
-  // Tab title badge — always update regardless of focus
+  // Always update tab title
   unreadCount++;
   document.title = `(${unreadCount}) ${originalTitle}`;
 
-  // Don't show popup if user is actively looking at the tab
-  if (document.visibilityState === 'visible' && document.hasFocus()) return;
-
-  // Browser notification
-  if (!('Notification' in window)) return;
-  if (Notification.permission !== 'granted') return;
-
-  const preview = msg.message.length > 60
-    ? msg.message.slice(0, 60) + '…'
-    : msg.message;
-
-  try {
-    const notif = new Notification(`${msg.avatar} ${msg.display_name}`, {
-      body: preview,
-      icon: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f4ac.png',
-      silent: false
-    });
-
-    notif.onclick = () => {
-      window.focus();
-      notif.close();
-    };
-
-    setTimeout(() => notif.close(), 6000);
-  } catch(e) {
-    console.warn('Notification error:', e);
-  }
+  // Fire notification regardless of focus state — let OS handle it
+  const preview = msg.message.length > 80 ? msg.message.slice(0, 80) + '…' : msg.message;
+  showChromeNotif(`${msg.avatar} ${msg.display_name}`, preview);
 }
 
-// Reset unread count when tab becomes visible
+// Reset unread count when user comes back to tab
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') {
     unreadCount = 0;
