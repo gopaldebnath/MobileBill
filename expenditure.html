@@ -44,8 +44,33 @@
   .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 0 8px; cursor: pointer; border: none; background: transparent; color: var(--muted); font-size: 10px; font-family: var(--font); transition: color .2s; }
   .nav-btn .icon { font-size: 22px; }
   .nav-btn.active { color: var(--accent); }
-  .nav-btn.add-btn { position: relative; top: -18px; background: var(--accent); color: white; width: 56px; height: 56px; border-radius: 50%; flex-direction: column; padding: 0; box-shadow: 0 4px 20px rgba(233,69,96,0.5); margin: 0 8px; font-size: 26px; }
-  .nav-btn.add-btn span { font-size: 26px; }
+  .nav-btn.add-btn {
+    position: relative; top: -20px;
+    background: linear-gradient(135deg, #ff6b6b 0%, #e94560 50%, #c0392b 100%);
+    color: white; width: 60px; height: 60px; border-radius: 50%;
+    flex-direction: column; padding: 0;
+    box-shadow: 0 6px 24px rgba(233,69,96,0.55), 0 2px 8px rgba(0,0,0,0.3);
+    margin: 0 10px; overflow: hidden; transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .nav-btn.add-btn:active { transform: scale(0.92); box-shadow: 0 2px 10px rgba(233,69,96,0.4); }
+  .add-btn-inner { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; position: relative; z-index: 1; }
+  .add-btn-plus { font-size: 28px; line-height: 1; font-weight: 300; transition: transform .2s ease; }
+  .nav-btn.add-btn:active .add-btn-plus { transform: rotate(45deg); }
+  .add-btn-ring {
+    position: absolute; inset: -2px; border-radius: 50%;
+    border: 2px solid rgba(233,69,96,0.4);
+    animation: ring-pulse 2.5s ease-out infinite;
+  }
+  .add-btn-ring2 {
+    position: absolute; inset: -6px; border-radius: 50%;
+    border: 1.5px solid rgba(233,69,96,0.2);
+    animation: ring-pulse 2.5s ease-out infinite .6s;
+  }
+  @keyframes ring-pulse {
+    0% { transform: scale(1); opacity: .7; }
+    60% { transform: scale(1.25); opacity: 0; }
+    100% { transform: scale(1.25); opacity: 0; }
+  }
 
   /* ── Pages ── */
   .page { display: none; padding: 16px; animation: fadeIn .2s ease; }
@@ -106,30 +131,161 @@
   .cat-bar-fill { height: 100%; border-radius: 100px; }
   .cat-amount { font-size: 14px; font-weight: 700; color: var(--text); }
 
-  /* ── Modal ── */
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 200; align-items: flex-end; justify-content: center; }
-  .modal-overlay.open { display: flex; }
-  .modal-sheet { background: var(--surface); border-radius: 24px 24px 0 0; width: 100%; max-width: 430px; padding: 20px 20px 36px; max-height: 90dvh; overflow-y: auto; animation: slideUp .25s ease; }
-  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-  .modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 100px; margin: 0 auto 20px; }
-  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+  /* ── Modal overlay ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0); z-index: 200;
+    align-items: flex-end; justify-content: center;
+    transition: background .3s ease;
+  }
+  .modal-overlay.open { display: flex; background: rgba(0,0,0,.72); }
 
-  /* ── Form elements ── */
+  /* ── Sheet ── */
+  .modal-sheet {
+    background: #12122a;
+    border-radius: 28px 28px 0 0;
+    width: 100%; max-width: 430px;
+    padding: 0;
+    max-height: 92dvh;
+    overflow: hidden;
+    transform: translateY(100%);
+    transition: transform .35s cubic-bezier(.32,1.25,.4,1);
+    display: flex; flex-direction: column;
+  }
+  .modal-overlay.open .modal-sheet { transform: translateY(0); }
+  .modal-handle-row { padding: 14px 20px 0; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .modal-handle { width: 36px; height: 4px; background: #2a2a4e; border-radius: 100px; }
+  .modal-close-btn { width: 32px; height: 32px; background: #1e1e3a; border: none; border-radius: 50%; color: var(--muted); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+  /* ── Step progress ── */
+  .step-bar { display: flex; gap: 6px; padding: 14px 20px 0; flex-shrink: 0; }
+  .step-dot { flex: 1; height: 3px; border-radius: 100px; background: #2a2a4e; transition: background .3s; }
+  .step-dot.done { background: var(--green); }
+  .step-dot.active { background: var(--accent); }
+
+  /* ── Step header ── */
+  .step-header { padding: 16px 20px 0; flex-shrink: 0; }
+  .step-eyebrow { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .7px; margin-bottom: 4px; }
+  .step-title { font-size: 20px; font-weight: 800; letter-spacing: -.3px; }
+
+  /* ── Step body ── */
+  .step-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
+  .step-body::-webkit-scrollbar { display: none; }
+
+  /* ── Amount display ── */
+  .amount-display-wrap { text-align: center; padding: 10px 0 20px; }
+  .currency-symbol { font-size: 28px; font-weight: 700; color: var(--muted); vertical-align: super; margin-right: 4px; }
+  .amount-display { font-size: 52px; font-weight: 800; color: var(--text); letter-spacing: -2px; min-height: 64px; display: inline-block; border-bottom: 3px solid var(--accent); padding-bottom: 4px; min-width: 80px; }
+  .amount-display.has-value { color: var(--gold); }
+  .amount-cursor { display: inline-block; width: 3px; height: 48px; background: var(--accent); border-radius: 2px; margin-left: 3px; vertical-align: middle; animation: blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ── Numpad ── */
+  .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 4px 0; }
+  .nk {
+    background: #1e1e3a; border: 1px solid #2a2a4e;
+    border-radius: 16px; height: 62px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 600; cursor: pointer; color: var(--text);
+    transition: background .1s, transform .1s; user-select: none;
+    -webkit-user-select: none; position: relative; overflow: hidden;
+  }
+  .nk:active { background: #2a2a52; transform: scale(0.94); }
+  .nk.nk-del { color: var(--accent); font-size: 18px; }
+  .nk.nk-zero { font-size: 22px; }
+  .nk.nk-dot { color: var(--muted); }
+  .nk-ripple { position: absolute; border-radius: 50%; background: rgba(233,69,96,.3); transform: scale(0); animation: ripple-out .45s ease-out forwards; pointer-events: none; }
+  @keyframes ripple-out { to { transform: scale(4); opacity: 0; } }
+
+  /* ── Category scroll ── */
+  .cat-scroll { display: flex; gap: 10px; overflow-x: auto; padding: 4px 2px 12px; scrollbar-width: none; }
+  .cat-scroll::-webkit-scrollbar { display: none; }
+  .cat-pill {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    background: #1e1e3a; border: 2px solid #2a2a4e;
+    border-radius: 18px; padding: 14px 12px 10px;
+    cursor: pointer; min-width: 72px; flex-shrink: 0;
+    transition: all .18s cubic-bezier(.34,1.56,.64,1);
+    position: relative; overflow: hidden;
+  }
+  .cat-pill:active { transform: scale(0.94); }
+  .cat-pill.selected {
+    border-color: var(--accent);
+    background: rgba(233,69,96,.12);
+    transform: scale(1.06);
+    box-shadow: 0 0 0 4px rgba(233,69,96,.1);
+  }
+  .cat-pill .cp-icon { font-size: 26px; }
+  .cat-pill .cp-name { font-size: 10px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+  .cat-pill.selected .cp-name { color: var(--text); }
+  .cat-pill-check {
+    position: absolute; top: 5px; right: 5px;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--accent); color: white;
+    font-size: 9px; display: none;
+    align-items: center; justify-content: center; font-weight: 700;
+  }
+  .cat-pill.selected .cat-pill-check { display: flex; }
+
+  /* ── Details form ── */
   .form-group { margin-bottom: 16px; }
-  .form-label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; display: block; }
-  .form-input { width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-size: 16px; padding: 12px 14px; font-family: var(--font); outline: none; }
-  .form-input:focus { border-color: var(--accent); }
-  .amount-input { font-size: 28px; font-weight: 700; text-align: center; color: var(--gold); letter-spacing: -1px; }
-  .cat-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-  .cat-chip { background: var(--card); border: 2px solid var(--border); border-radius: 12px; padding: 8px 4px; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; font-size: 10px; color: var(--muted); transition: all .15s; }
-  .cat-chip .ce { font-size: 20px; }
-  .cat-chip.selected { border-color: var(--accent); background: rgba(233,69,96,.1); color: var(--text); }
-  .pay-row { display: flex; gap: 8px; }
-  .pay-chip { flex: 1; background: var(--card); border: 2px solid var(--border); border-radius: 10px; padding: 8px; text-align: center; font-size: 12px; cursor: pointer; color: var(--muted); }
-  .pay-chip.selected { border-color: var(--gold); color: var(--gold); background: rgba(245,166,35,.08); }
-  .btn-primary { width: 100%; background: var(--accent); color: white; border: none; border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 8px; letter-spacing: .3px; font-family: var(--font); }
+  .form-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 8px; display: block; }
+  .form-input {
+    width: 100%; background: #1e1e3a; border: 1.5px solid #2a2a4e;
+    border-radius: 14px; color: var(--text); font-size: 15px;
+    padding: 13px 16px; font-family: var(--font); outline: none;
+    transition: border-color .2s;
+  }
+  .form-input:focus { border-color: var(--accent); background: #1a1a38; }
+  .input-icon-wrap { position: relative; }
+  .input-icon-wrap .form-input { padding-left: 44px; }
+  .input-icon-wrap .i-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 18px; }
+
+  /* ── Pay mode ── */
+  .pay-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .pay-card {
+    background: #1e1e3a; border: 2px solid #2a2a4e;
+    border-radius: 14px; padding: 14px 12px;
+    display: flex; align-items: center; gap: 10px;
+    cursor: pointer; transition: all .15s;
+  }
+  .pay-card:active { transform: scale(0.96); }
+  .pay-card.selected { border-color: var(--gold); background: rgba(245,166,35,.08); }
+  .pay-card-icon { font-size: 22px; }
+  .pay-card-label { font-size: 13px; font-weight: 600; color: var(--muted); }
+  .pay-card.selected .pay-card-label { color: var(--gold); }
+
+  /* ── Step footer ── */
+  .step-footer { padding: 12px 20px 28px; flex-shrink: 0; border-top: 1px solid #1e1e3a; }
+  .btn-next {
+    width: 100%; border: none; border-radius: 16px;
+    padding: 17px; font-size: 16px; font-weight: 800;
+    cursor: pointer; font-family: var(--font);
+    background: linear-gradient(135deg, #ff6b6b 0%, #e94560 100%);
+    color: white; letter-spacing: .3px;
+    box-shadow: 0 4px 20px rgba(233,69,96,.4);
+    transition: opacity .15s, transform .15s, box-shadow .15s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn-next:active { transform: scale(0.97); opacity: .9; box-shadow: 0 2px 10px rgba(233,69,96,.3); }
+  .btn-next:disabled { background: #2a2a4e; color: var(--muted); box-shadow: none; cursor: not-allowed; }
+  .btn-next .btn-arrow { transition: transform .2s; }
+  .btn-next:not(:disabled):hover .btn-arrow { transform: translateX(3px); }
+  .btn-next.saving { pointer-events: none; }
+  .btn-next .spin-sm { width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,.3); border-top-color: white; border-radius: 50%; animation: spin .6s linear infinite; }
+
+  .btn-back { width: 100%; background: transparent; border: 1.5px solid #2a2a4e; border-radius: 14px; padding: 13px; font-size: 14px; color: var(--muted); cursor: pointer; font-family: var(--font); margin-top: 8px; transition: border-color .15s; }
+  .btn-back:active { border-color: var(--muted); }
+
+  /* budget modal simple */
+  .budget-sheet { background: #12122a; border-radius: 28px 28px 0 0; width: 100%; max-width: 430px; padding: 20px 20px 36px; max-height: 90dvh; overflow-y: auto; transform: translateY(100%); transition: transform .35s cubic-bezier(.32,1.25,.4,1); }
+  .modal-overlay.open .budget-sheet { transform: translateY(0); }
+  .modal-title { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+  .modal-subtitle { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+  .btn-primary { width: 100%; background: linear-gradient(135deg,#ff6b6b,#e94560); color: white; border: none; border-radius: 16px; padding: 16px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 8px; font-family: var(--font); box-shadow: 0 4px 16px rgba(233,69,96,.35); transition: opacity .15s; }
   .btn-primary:active { opacity: .85; }
-  .btn-outline { width: 100%; background: transparent; color: var(--text); border: 1px solid var(--border); border-radius: 14px; padding: 14px; font-size: 15px; cursor: pointer; font-family: var(--font); margin-top: 8px; }
+  .btn-outline { width: 100%; background: transparent; color: var(--text); border: 1.5px solid #2a2a4e; border-radius: 14px; padding: 14px; font-size: 15px; cursor: pointer; font-family: var(--font); margin-top: 8px; }
+  .amount-input { font-size: 28px; font-weight: 700; text-align: center; color: var(--gold); letter-spacing: -1px; }
 
   /* ── Toast ── */
   #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-80px); background: var(--green); color: white; padding: 10px 22px; border-radius: 100px; font-size: 14px; font-weight: 600; z-index: 999; transition: transform .3s ease; white-space: nowrap; }
@@ -229,8 +385,12 @@
     <button class="nav-btn" id="nav-analysis" onclick="navTo('analysis')">
       <span class="icon">📊</span><span>Analysis</span>
     </button>
-    <button class="nav-btn add-btn" onclick="openAddModal()">
-      <span>+</span>
+    <button class="nav-btn add-btn" id="fab-btn" onclick="openAddModal()">
+      <div class="add-btn-ring"></div>
+      <div class="add-btn-ring2"></div>
+      <div class="add-btn-inner">
+        <span class="add-btn-plus" id="fab-plus">+</span>
+      </div>
     </button>
     <button class="nav-btn" id="nav-history" onclick="navTo('history')">
       <span class="icon">📋</span><span>History</span>
@@ -241,53 +401,140 @@
   </nav>
 </div>
 
-<!-- ADD EXPENSE MODAL -->
+<!-- ADD EXPENSE MODAL – 3-step wizard -->
 <div class="modal-overlay" id="add-modal" onclick="closeOnBg(event,'add-modal')">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <div class="modal-title">Add Expense</div>
-    <div class="form-group">
-      <label class="form-label">Amount (₹)</label>
-      <input type="number" class="form-input amount-input" id="inp-amount" placeholder="0.00" inputmode="decimal">
+  <div class="modal-sheet" id="add-sheet">
+
+    <!-- Handle + close -->
+    <div class="modal-handle-row">
+      <div class="modal-handle"></div>
+      <button class="modal-close-btn" onclick="closeModal('add-modal')">✕</button>
     </div>
-    <div class="form-group">
-      <label class="form-label">Category</label>
-      <div class="cat-grid" id="cat-grid"></div>
+
+    <!-- Step progress bar -->
+    <div class="step-bar">
+      <div class="step-dot active" id="sdot-0"></div>
+      <div class="step-dot" id="sdot-1"></div>
+      <div class="step-dot" id="sdot-2"></div>
     </div>
-    <div class="form-group">
-      <label class="form-label">Description (optional)</label>
-      <input type="text" class="form-input" id="inp-desc" placeholder="e.g. Dinner at restaurant">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Date</label>
-      <input type="date" class="form-input" id="inp-date">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Payment Mode</label>
-      <div class="pay-row">
-        <div class="pay-chip selected" data-mode="cash">💵 Cash</div>
-        <div class="pay-chip" data-mode="upi">📱 UPI</div>
-        <div class="pay-chip" data-mode="card">💳 Card</div>
-        <div class="pay-chip" data-mode="netbanking">🏦 Net</div>
+
+    <!-- ── STEP 0: Amount ── -->
+    <div id="ws-0">
+      <div class="step-header">
+        <div class="step-eyebrow">Step 1 of 3</div>
+        <div class="step-title">How much?</div>
+      </div>
+      <div class="step-body">
+        <div class="amount-display-wrap">
+          <span class="currency-symbol">₹</span><span class="amount-display" id="amt-display">0</span><span class="amount-cursor" id="amt-cursor"></span>
+        </div>
+        <div class="numpad" id="numpad">
+          <div class="nk" data-k="1">1</div>
+          <div class="nk" data-k="2">2</div>
+          <div class="nk" data-k="3">3</div>
+          <div class="nk" data-k="4">4</div>
+          <div class="nk" data-k="5">5</div>
+          <div class="nk" data-k="6">6</div>
+          <div class="nk" data-k="7">7</div>
+          <div class="nk" data-k="8">8</div>
+          <div class="nk" data-k="9">9</div>
+          <div class="nk nk-dot" data-k=".">.</div>
+          <div class="nk nk-zero" data-k="0">0</div>
+          <div class="nk nk-del" data-k="del">⌫</div>
+        </div>
+      </div>
+      <div class="step-footer">
+        <button class="btn-next" id="btn-next-0" onclick="goStep(1)" disabled>
+          Choose Category <span class="btn-arrow">→</span>
+        </button>
       </div>
     </div>
-    <button class="btn-primary" onclick="saveExpense()">Save Expense</button>
-    <button class="btn-outline" onclick="closeModal('add-modal')">Cancel</button>
+
+    <!-- ── STEP 1: Category ── -->
+    <div id="ws-1" style="display:none">
+      <div class="step-header">
+        <div class="step-eyebrow">Step 2 of 3</div>
+        <div class="step-title">What was it for?</div>
+      </div>
+      <div class="step-body">
+        <div class="cat-scroll" id="cat-scroll"></div>
+      </div>
+      <div class="step-footer">
+        <button class="btn-next" id="btn-next-1" onclick="goStep(2)" disabled>
+          Add Details <span class="btn-arrow">→</span>
+        </button>
+        <button class="btn-back" onclick="goStep(0)">← Back</button>
+      </div>
+    </div>
+
+    <!-- ── STEP 2: Details ── -->
+    <div id="ws-2" style="display:none">
+      <div class="step-header">
+        <div class="step-eyebrow">Step 3 of 3</div>
+        <div class="step-title">Final details</div>
+      </div>
+      <div class="step-body">
+        <!-- Summary chip -->
+        <div id="summary-chip" style="background:#1e1e3a;border:1.5px solid #2a2a4e;border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:18px">
+          <div id="sc-icon" style="font-size:26px"></div>
+          <div>
+            <div id="sc-cat" style="font-size:12px;color:var(--muted)">Category</div>
+            <div id="sc-amt" style="font-size:20px;font-weight:800;color:var(--gold)">₹0</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Note (optional)</label>
+          <div class="input-icon-wrap">
+            <span class="i-icon">📝</span>
+            <input type="text" class="form-input" id="inp-desc" placeholder="e.g. Dinner at dhaba">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <div class="input-icon-wrap">
+            <span class="i-icon">📅</span>
+            <input type="date" class="form-input" id="inp-date">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Payment Mode</label>
+          <div class="pay-grid">
+            <div class="pay-card selected" data-mode="cash"><span class="pay-card-icon">💵</span><span class="pay-card-label">Cash</span></div>
+            <div class="pay-card" data-mode="upi"><span class="pay-card-icon">📱</span><span class="pay-card-label">UPI</span></div>
+            <div class="pay-card" data-mode="card"><span class="pay-card-icon">💳</span><span class="pay-card-label">Card</span></div>
+            <div class="pay-card" data-mode="netbanking"><span class="pay-card-icon">🏦</span><span class="pay-card-label">Net Banking</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="step-footer">
+        <button class="btn-next" id="btn-save" onclick="saveExpense()">
+          Save Expense 💾
+        </button>
+        <button class="btn-back" onclick="goStep(1)">← Back</button>
+      </div>
+    </div>
+
   </div>
 </div>
 
 <!-- BUDGET MODAL -->
 <div class="modal-overlay" id="budget-modal" onclick="closeOnBg(event,'budget-modal')">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <div class="modal-title">Set Monthly Budget</div>
-    <div class="form-group">
-      <label class="form-label">Budget Amount (₹)</label>
-      <input type="number" class="form-input amount-input" id="inp-budget" placeholder="0" inputmode="decimal">
+  <div class="budget-sheet">
+    <div class="modal-handle-row">
+      <div class="modal-handle"></div>
+      <button class="modal-close-btn" onclick="closeModal('budget-modal')">✕</button>
     </div>
-    <div class="budget-form-note" id="budget-month-note"></div>
-    <button class="btn-primary" onclick="saveBudget()">Set Budget</button>
-    <button class="btn-outline" onclick="closeModal('budget-modal')">Cancel</button>
+    <div style="padding:16px 0 0">
+      <div class="modal-title">Monthly Budget</div>
+      <div class="modal-subtitle" id="budget-month-note">Set limit for this month</div>
+      <div class="form-group">
+        <label class="form-label">Budget Amount (₹)</label>
+        <input type="number" class="form-input amount-input" id="inp-budget" placeholder="0" inputmode="decimal">
+      </div>
+      <button class="btn-primary" onclick="saveBudget()">Set Budget</button>
+      <button class="btn-outline" onclick="closeModal('budget-modal')">Cancel</button>
+    </div>
   </div>
 </div>
 
@@ -503,43 +750,120 @@ function renderCatBreakdown() {
   }).join('');
 }
 
-// ── ADD EXPENSE ──
+// ── ADD EXPENSE – wizard state ──
+let amtStr = '';
+let wizStep = 0;
+
 function buildCatGrid() {
-  const grid = document.getElementById('cat-grid');
-  grid.innerHTML = categories.map(c => `
-    <div class="cat-chip" data-id="${c.id}" onclick="selectCat(${c.id})">
-      <span class="ce">${c.icon}</span>
-      <span>${c.name.split(' ')[0]}</span>
+  const scroll = document.getElementById('cat-scroll');
+  if (!scroll) return;
+  scroll.innerHTML = categories.map(c => `
+    <div class="cat-pill" data-id="${c.id}" onclick="selectCat(${c.id})">
+      <div class="cat-pill-check">✓</div>
+      <span class="cp-icon">${c.icon}</span>
+      <span class="cp-name">${c.name.split(' ')[0]}</span>
     </div>`).join('');
 }
 
 function selectCat(id) {
   selCatId = id;
-  document.querySelectorAll('.cat-chip').forEach(el => el.classList.toggle('selected', parseInt(el.dataset.id) === id));
+  document.querySelectorAll('.cat-pill').forEach(el => el.classList.toggle('selected', parseInt(el.dataset.id) === id));
+  document.getElementById('btn-next-1').disabled = false;
+}
+
+function goStep(n) {
+  document.getElementById('ws-' + wizStep).style.display = 'none';
+  wizStep = n;
+  document.getElementById('ws-' + wizStep).style.display = '';
+  // update step dots
+  for (let i = 0; i < 3; i++) {
+    const dot = document.getElementById('sdot-' + i);
+    dot.className = 'step-dot' + (i < n ? ' done' : i === n ? ' active' : '');
+  }
+  // update summary chip on step 2
+  if (n === 2) {
+    const cat = categories.find(c => c.id === selCatId) || {};
+    document.getElementById('sc-icon').textContent = cat.icon || '📦';
+    document.getElementById('sc-cat').textContent = cat.name || '';
+    document.getElementById('sc-amt').textContent = '₹' + parseFloat(amtStr||'0').toLocaleString('en-IN');
+    document.getElementById('summary-chip').style.borderColor = cat.color || '#2a2a4e';
+  }
 }
 
 function openAddModal() {
-  document.getElementById('inp-amount').value = '';
-  document.getElementById('inp-desc').value = '';
-  document.getElementById('inp-date').value = todayStr();
+  // reset
+  amtStr = '';
   selCatId = null;
   selPayMode = 'cash';
-  document.querySelectorAll('.cat-chip').forEach(el => el.classList.remove('selected'));
-  document.querySelectorAll('.pay-chip').forEach(el => { el.classList.toggle('selected', el.dataset.mode === 'cash'); });
-  document.querySelectorAll('.pay-chip').forEach(el => el.onclick = () => { selPayMode = el.dataset.mode; document.querySelectorAll('.pay-chip').forEach(p=>p.classList.toggle('selected',p===el)); });
+  wizStep = 0;
+  updateAmtDisplay();
+  document.querySelectorAll('.cat-pill').forEach(el => el.classList.remove('selected'));
+  document.getElementById('btn-next-0').disabled = true;
+  document.getElementById('btn-next-1').disabled = true;
+  document.getElementById('inp-desc').value = '';
+  document.getElementById('inp-date').value = todayStr();
+  document.querySelectorAll('.pay-card').forEach(el => el.classList.toggle('selected', el.dataset.mode === 'cash'));
+  // show step 0
+  ['ws-0','ws-1','ws-2'].forEach((id,i) => document.getElementById(id).style.display = i===0 ? '' : 'none');
+  for (let i = 0; i < 3; i++) {
+    const dot = document.getElementById('sdot-' + i);
+    dot.className = 'step-dot' + (i === 0 ? ' active' : '');
+  }
   document.getElementById('add-modal').classList.add('open');
-  setTimeout(() => document.getElementById('inp-amount').focus(), 300);
 }
 
+// ── Numpad ──
+function updateAmtDisplay() {
+  const disp = document.getElementById('amt-display');
+  const val = amtStr || '0';
+  disp.textContent = val;
+  disp.className = 'amount-display' + (amtStr ? ' has-value' : '');
+  document.getElementById('btn-next-0').disabled = !amtStr || parseFloat(amtStr) <= 0;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('numpad').addEventListener('click', e => {
+    const nk = e.target.closest('.nk');
+    if (!nk) return;
+    const k = nk.dataset.k;
+    // ripple
+    const r = document.createElement('span');
+    r.className = 'nk-ripple';
+    const rect = nk.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    r.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX-rect.left-size/2}px;top:${e.clientY-rect.top-size/2}px`;
+    nk.appendChild(r);
+    setTimeout(() => r.remove(), 450);
+    // logic
+    if (k === 'del') { amtStr = amtStr.slice(0,-1); }
+    else if (k === '.') { if (!amtStr.includes('.')) amtStr += (amtStr ? '' : '0') + '.'; }
+    else { if (amtStr.length < 10) amtStr += k; }
+    updateAmtDisplay();
+  });
+
+  // pay mode cards
+  document.querySelectorAll('.pay-card').forEach(card => {
+    card.addEventListener('click', () => {
+      selPayMode = card.dataset.mode;
+      document.querySelectorAll('.pay-card').forEach(c => c.classList.toggle('selected', c === card));
+    });
+  });
+});
+
 async function saveExpense() {
-  const amt = parseFloat(document.getElementById('inp-amount').value);
+  const amt = parseFloat(amtStr);
   const desc = document.getElementById('inp-desc').value.trim();
   const date = document.getElementById('inp-date').value;
   if (!amt || amt <= 0) { showToast('Enter a valid amount', true); return; }
   if (!selCatId) { showToast('Select a category', true); return; }
-  if (!date) { showToast('Select a date', true); return; }
+  if (!date) { showToast('Pick a date', true); return; }
+  const btn = document.getElementById('btn-save');
+  btn.classList.add('saving');
+  btn.innerHTML = '<div class="spin-sm"></div> Saving…';
   const { error } = await sb.from('expenses').insert({ amount: amt, category_id: selCatId, description: desc||null, expense_date: date, payment_mode: selPayMode });
-  if (error) { showToast('Error saving: ' + error.message, true); return; }
+  btn.classList.remove('saving');
+  btn.innerHTML = 'Save Expense 💾';
+  if (error) { showToast('Error: ' + error.message, true); return; }
   closeModal('add-modal');
   showToast('✓ Expense saved!');
   await loadData();
